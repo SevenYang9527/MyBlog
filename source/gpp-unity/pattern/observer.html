@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>观察者 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="让「发生了什么」和「谁关心」互不认识。代价是控制流消失，出问题只能靠日志回溯。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/observer.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="observer" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 1 · 引擎主干</span><span>/</span>
+      <span class="crumb-cur">观察者</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">04</span> 第 4 章 · Observer</p>
+        <h1>观察者</h1>
+        <p class="p-essence">让「发生了什么」和「谁关心」互不认识。代价是控制流消失，出问题只能靠日志回溯。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 1 · 引擎主干</li>
+          <li>event / Action · UnityEvent · SO 事件通道</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>成就系统要关心「敌人死亡」，UI 要关心「血量变化」，音效要关心「受击」。如果每处都直接引用，<code>Player</code> 就会认识所有人，改一个 UI 就要动核心类。</p>
+<p>观察者把它倒过来：<strong>发布者只喊一声，订阅者自己决定听不听</strong>。发布者不知道订阅者是谁、有几个、是否还活着。</p>
+<h2>Unity 里它长什么样</h2>
+<p>三档，按「要不要给策划连」选：</p>
+<pre class="code"><code>// 1) C# event：最快，纯代码
+public class Health : MonoBehaviour
+{
+    public event Action&lt;int&gt; Changed;
+    public event Action Died;
+    int hp = 100;
+
+    public void TakeDamage(int dmg)
+    {
+        hp -= dmg;
+        Changed?.Invoke(hp);
+        if (hp &lt;= 0) Died?.Invoke();
+    }
+}
+
+// 2) 订阅方必须成对退订，否则场景重载后旧对象还在被引用
+public class HealthBar : MonoBehaviour
+{
+    [SerializeField] Health health;
+    void OnEnable()  =&gt; health.Died += Hide;
+    void OnDisable() =&gt; health.Died -= Hide;
+}</code></pre>
+<ol class="p-list p-list-num"><li><code>UnityEvent</code>：<code>Inspector</code> 里能拖引用、能选方法，策划友好，但调用慢、改名易断，且不适合高频事件（如每帧血量）。</li></ol>
+<p>还有一种 <code>Unity</code> 特有的漂亮做法：<strong><code>ScriptableObject</code> 事件通道</strong>——把事件本身做成资产，发布者与订阅者都只引用这个资产，两个场景/两个预制体之间零直接引用。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>静态事件是内存泄漏头号来源：场景切换后旧对象仍挂在静态 <code>event</code> 上。一定要在 <code>OnDisable</code> 退订，或改用 <code>ScriptableObject</code> 通道。</li><li>事件链超过三层（A→B→C→D）就画不出调用栈了，这时该用显式调用或消息队列。</li><li>高频事件（每帧、每颗子弹）别用 <code>UnityEvent</code>。</li><li>留一份事件日志：<code>Debug.Log</code> 或自建环形缓冲，出 bug 时能倒推「谁触发的」。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>把 UI 里「直接引用玩家脚本读血量」改成订阅事件。</li><li>故意删掉 <code>OnDisable</code> 里的退订，重载场景，观察 <code>MissingReferenceException</code>。</li><li>加回退订，再测一次。这个报错你以后一定还会遇到，先认识它。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="update-method.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 更新方法</span></a>
+        <a class="p-nav p-nav-next" href="state.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">状态模式 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/observer.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

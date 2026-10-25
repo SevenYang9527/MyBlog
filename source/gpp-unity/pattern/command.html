@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>命令模式 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="把「一个动作」变成对象：能存、能传、能排队、能撤销、能重放。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/command.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="command" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 2 · 架构升级</span><span>/</span>
+      <span class="crumb-cur">命令模式</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">07</span> 第 7 章 · Command</p>
+        <h1>命令模式</h1>
+        <p class="p-essence">把「一个动作」变成对象：能存、能传、能排队、能撤销、能重放。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 2 · 架构升级</li>
+          <li>InputAction · 撤销栈 · 录像回放 · AI 指令</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>按键要能重绑、操作要能撤销、对局要能回放、<code>AI</code> 要能发出和玩家一样的指令——这四件事看起来无关，其实都需要同一个东西：<strong>动作被具体化成一个可传递的值</strong>，而不是「直接调用一个方法」。</p>
+<p><code>Unity</code> 的 <code>Input System</code> 就是命令模式的工业化版本：<code>InputAction</code> 是一个可序列化的动作对象，绑哪个键是资产配置，重绑不改代码。</p>
+<h2>Unity 里它长什么样</h2>
+<pre class="code"><code>public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+
+public class MoveCommand : ICommand
+{
+    readonly Transform target;
+    readonly Vector3 delta;
+    public MoveCommand(Transform t, Vector3 d) { target = t; delta = d; }
+    public void Execute() =&gt; target.position += delta;
+    public void Undo()    =&gt; target.position -= delta;
+}
+
+// 撤销栈：压栈即执行，出栈即回滚
+readonly Stack&lt;ICommand&gt; history = new();
+void Do(ICommand c) { c.Execute(); history.Push(c); }
+void UndoLast() { if (history.Count &gt; 0) history.Pop().Undo(); }</code></pre>
+<p>同一套结构还能干别的：</p>
+<ul class="p-list"><li><strong>回放</strong>：把每帧命令存进列表，回放时按顺序 <code>Execute</code>。</li><li><strong>网络</strong>：命令是天然的可序列化单位，比同步 <code>Transform</code> 便宜得多。</li><li><strong><code>AI</code></strong>：<code>AI</code> 和玩家都往同一个命令队列里塞指令，规则代码只认命令。</li></ul>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><strong>C# 的 <code>delegate / Action</code> 已经覆盖了「传递动作」</strong>，不需要为每个方法造一个类。只有当你要撤销、序列化、排队、或需要参数化配置时才建 <code>Command</code> 类。</li><li>命令对象会成为垃圾源：高频（每帧）动作别建对象，用结构体或复用池。</li><li>撤销栈要能处理「不可逆操作」（如抽卡），这类命令实现 <code>Undo</code> 时抛异常或明确不支持。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>给一个「放置建筑 / 摆放道具」功能加 <code>Ctrl+Z</code> 撤销。</li><li>用 <code>ICommand</code> 栈实现，至少两种命令（放置、删除）。</li><li>再试着录 5 秒操作并回放——如果回放正确，说明你的命令已经把「状态变化」和「触发方式」解耦了。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="type-object.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 类型对象</span></a>
+        <a class="p-nav p-nav-next" href="event-queue.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">事件队列 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/command.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

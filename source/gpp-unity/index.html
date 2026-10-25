@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《游戏编程模式》Unity 速学图谱</title>
+<meta name="description" content="把 Bob Nystrom《游戏编程模式》按 Unity 的视角重新编排：跳读顺序、每章对应物、动手练习与进度追踪。">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#top">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="章节导航">
+      <a href="#howto">读法</a>
+      <a href="#map">取舍</a>
+      <a href="#route">路线</a>
+      <a href="#sop">节奏</a>
+      <a href="#drills">练习</a>
+      <a href="#traps">避坑</a>
+      <a href="#progress">进度</a>
+    </nav>
+    <div class="topbar-progress" title="学习进度">
+      <svg viewBox="0 0 36 36" class="mini-ring" aria-hidden="true">
+        <circle cx="18" cy="18" r="15" class="ring-bg"></circle>
+        <circle cx="18" cy="18" r="15" class="ring-fg" id="miniRing"></circle>
+      </svg>
+      <span id="miniText">0 / 19</span>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Bob Nystrom 著 · tkchu 中译 · 免费在线</p>
+        <h1>把《游戏编程模式》<br><em>读进 Unity 里</em></h1>
+        <p class="lead">
+          这本书不是用来背的，是用来<strong>对照</strong>的：每一章都在讲一个你已经在 Unity 里天天用、
+          却不知道它叫什么的机制。所以最快的学法不是从头翻到尾，而是<strong>按痛点跳读 + 每章动一次手</strong>。
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#route">开始跳读路线</a>
+          <a class="btn btn-ghost" href="https://gpp.tkchu.me/" target="_blank" rel="noopener">打开原书 ↗</a>
+        </div>
+        <dl class="stats">
+          <div><dt>19</dt><dd>个模式</dd></div>
+          <div><dt>≈10h</dt><dd>有效学习</dd></div>
+          <div><dt>5</dt><dd>天节奏</dd></div>
+          <div><dt>7</dt><dd>个练习</dd></div>
+        </dl>
+      </div>
+
+      <figure class="hero-figure">
+        <svg viewBox="0 0 540 400" role="img" aria-label="书中模式与 Unity 设施的一一对应关系图">
+          <defs>
+            <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#8b8578"></path>
+            </marker>
+            <marker id="arw2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#c14a2b"></path>
+            </marker>
+          </defs>
+          <text x="16" y="16" class="fig-label">书里的章节</text>
+          <text x="364" y="16" class="fig-label">Unity 里的东西</text>
+
+          <!-- row 1 -->
+          <g>
+            <rect class="sheet" x="16" y="30" width="160" height="56" rx="6"></rect>
+            <path class="sheet-line" d="M28 68h80M28 76h50"></path>
+            <text x="28" y="54" class="fig-t1">组件模式</text>
+            <rect class="ubox" x="364" y="30" width="160" height="56" rx="6"></rect>
+            <text x="376" y="54" class="fig-t1">GameObject</text>
+            <text x="376" y="70" class="fig-t2">+ MonoBehaviour</text>
+            <path class="arrow" d="M180 58 C 240 40, 300 76, 356 58" marker-end="url(#arw)"></path>
+          </g>
+
+          <!-- row 2 -->
+          <g>
+            <rect class="sheet" x="16" y="122" width="160" height="56" rx="6"></rect>
+            <path class="sheet-line" d="M28 160h80M28 168h50"></path>
+            <text x="28" y="146" class="fig-t1">游戏循环</text>
+            <rect class="ubox" x="364" y="122" width="160" height="56" rx="6"></rect>
+            <text x="376" y="146" class="fig-t1">Update</text>
+            <text x="376" y="162" class="fig-t2">+ FixedUpdate</text>
+            <path class="arrow" d="M180 150 C 240 132, 300 168, 356 150" marker-end="url(#arw)"></path>
+          </g>
+
+          <!-- row 3 -->
+          <g>
+            <rect class="sheet" x="16" y="214" width="160" height="56" rx="6"></rect>
+            <path class="sheet-line" d="M28 252h80M28 260h50"></path>
+            <text x="28" y="238" class="fig-t1">观察者模式</text>
+            <rect class="ubox" x="364" y="214" width="160" height="56" rx="6"></rect>
+            <text x="376" y="238" class="fig-t1">event / Action</text>
+            <text x="376" y="254" class="fig-t2">+ UnityEvent</text>
+            <path class="arrow" d="M180 242 C 240 224, 300 260, 356 242" marker-end="url(#arw)"></path>
+          </g>
+
+          <!-- row 4 -->
+          <g>
+            <rect class="sheet" x="16" y="306" width="160" height="56" rx="6"></rect>
+            <path class="sheet-line" d="M28 344h80M28 352h50"></path>
+            <text x="28" y="330" class="fig-t1">类型对象</text>
+            <rect class="ubox ubox-hi" x="364" y="306" width="160" height="56" rx="6"></rect>
+            <text x="376" y="330" class="fig-t1">ScriptableObject</text>
+            <text x="376" y="346" class="fig-t2">最值钱的一章</text>
+            <path class="arrow arrow-hi" d="M180 334 C 240 316, 300 352, 356 334" marker-end="url(#arw2)"></path>
+          </g>
+
+          <text x="270" y="392" class="fig-note">同一件事，两种叫法 —— 书给你名字，引擎给你实现</text>
+        </svg>
+        <figcaption>读这本书的全部工作，就是把左列翻译成右列，然后判断「这一层间接值不值得」。</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ HOW TO READ ============ -->
+  <section class="section" id="howto">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">01 / 先改读法</p>
+        <h2>不要「读完」，要「用完」</h2>
+        <p class="sub">同一本书，两种读法差出十倍效果。左边这种很常见，而且几乎不留痕迹。</p>
+      </div>
+
+      <div class="compare">
+        <article class="cmp cmp-bad">
+          <h3><span class="cmp-tag">×</span> 按目录顺读</h3>
+          <ul>
+            <li>从「致谢」开始，读到「字节码」时已经忘了「状态」</li>
+            <li>每章只记住一个模式名，遇到问题想不起来用</li>
+            <li>跳过「什么时候不该用」——那恰好是全章最贵的部分</li>
+            <li>读完 17 章，项目代码一行没动</li>
+          </ul>
+        </article>
+        <article class="cmp cmp-good">
+          <h3><span class="cmp-tag">✓</span> 按痛点跳读</h3>
+          <ul>
+            <li>先读 <strong>3 篇总纲</strong>，建立「解耦 ↔ 性能」的坐标系</li>
+            <li>只读当下有痛感的章节，其余标记为「用到再翻」</li>
+            <li>每章 20 分钟，固定动作：读故事 → 看结构 → 读取舍 → 写一行对应物</li>
+            <li>每批读完，回项目重构一处真实代码</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="quote-strip">
+        <p>「这本书自己反复强调：模式是<strong>应对变化的成本</strong>，不是好代码的证明。」</p>
+        <p class="quote-sub">所以读完每一章，都要问一句：如果我不这么做，最坏会怎样？</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ MAP ============ -->
+  <section class="section section-tint" id="map">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">02 / 一根斜线</p>
+        <h2>全书其实只有一张图</h2>
+        <p class="sub">
+          19 个模式不是 19 个知识点，而是同一条取舍线上的 19 个落点：<strong>越往右上越灵活，越往左下越快</strong>。
+          理解了这条线，你就不需要「记住」它们了。
+        </p>
+      </div>
+
+      <figure class="map-figure">
+        <svg viewBox="0 0 700 440" class="map" role="img" aria-label="模式在解耦与性能之间的分布图">
+          <defs>
+            <marker id="axisArrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 z" fill="#8b8578"></path>
+            </marker>
+          </defs>
+
+          <rect x="90" y="40" width="550" height="340" class="plot-bg"></rect>
+          <path d="M90 380 H660 M90 380 V40" class="axis"></path>
+
+          <!-- tradeoff line -->
+          <path d="M110 62 L640 358" class="tradeoff"></path>
+
+          <text x="666" y="384" class="axis-label" text-anchor="end">更灵活 / 更解耦 →</text>
+          <text x="86" y="34" class="axis-label" text-anchor="start">↑ 更高性能</text>
+
+          <g id="mapDots"></g>
+        </svg>
+
+        <div class="map-legend">
+          <span><i class="dot-b1"></i>批次 1 · 引擎主干</span>
+          <span><i class="dot-b2"></i>批次 2 · 架构升级</span>
+          <span><i class="dot-b3"></i>批次 3 · 按需查</span>
+          <span><i class="line-swatch"></i>取舍线：想往上，就得往左</span>
+          <span class="legend-hint">点圆点 → 进解读页</span>
+        </div>
+        <figcaption>坐标是粗略示意（用来建立直觉，不是精确测量）。注意它们并没有散落在四个象限里，而是挤在同一条斜带上——这就是「没有免费的架构」。</figcaption>
+      </figure>
+
+      <div class="cards3">
+        <div class="mini-card">
+          <h4>左上角</h4>
+          <p>直接、快、省内存，但改一次动全身。原型期就该待在这儿。</p>
+        </div>
+        <div class="mini-card">
+          <h4>右下角</h4>
+          <p>能扛住需求变化，但每次调用多一层间接。上线前再往这边挪。</p>
+        </div>
+        <div class="mini-card">
+          <h4>唯一原则</h4>
+          <p>先站在左下，等某个具体痛点真的疼了，再往右上走一步。别预支。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ROUTE ============ -->
+  <section class="section" id="route">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">03 / 跳读路线</p>
+        <h2>19 张卡片，按批次读</h2>
+        <p class="sub">每张卡片底部都能进「Unity 视角解读」——原文的观点已经换成 Unity / C# 的说法，看完那一页就不必再读原文。点卡片上的圆圈可以勾掉，进度保存在本地。</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="tabs" role="tablist" aria-label="按批次筛选">
+          <button class="tab is-active" data-batch="all" role="tab" aria-selected="true">全部 <span>19</span></button>
+          <button class="tab" data-batch="b1" role="tab" aria-selected="false">引擎主干 <span>5</span></button>
+          <button class="tab" data-batch="b2" role="tab" aria-selected="false">架构升级 <span>5</span></button>
+          <button class="tab" data-batch="b3" role="tab" aria-selected="false">按需查 <span>9</span></button>
+        </div>
+        <div class="toolbar-right">
+          <label class="switch">
+            <input type="checkbox" id="hideDone">
+            <span>隐藏已完成</span>
+          </label>
+          <input type="search" id="search" class="search" placeholder="搜模式 / Unity 类名…" aria-label="搜索模式">
+        </div>
+      </div>
+
+      <div class="route-batches" id="cards"></div>
+      <p class="empty" id="empty" hidden>没有匹配的模式，换个关键词试试。</p>
+    </div>
+  </section>
+
+  <!-- ============ SOP ============ -->
+  <section class="section section-tint" id="sop">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">04 / 每章 20 分钟</p>
+        <h2>固定动作，别自由发挥</h2>
+        <p class="sub">同一套动作重复 19 次，比每周换一种学法有效得多。</p>
+      </div>
+
+      <ol class="steps">
+        <li>
+          <span class="step-no">5′</span>
+          <h3>读故事</h3>
+          <p>只看开头那几段「作者被坑了什么」，用一句话写下它要解决的具体痛苦。</p>
+          <p class="step-out">产出：一句「痛点是 ___」</p>
+        </li>
+        <li>
+          <span class="step-no">5′</span>
+          <h3>看结构</h3>
+          <p>跳过语言细节，只看角色关系、调用方向、谁持有谁。代码示例是 C++/Java 风格，别照抄。</p>
+          <p class="step-out">产出：一张 3 个方框的草图</p>
+        </li>
+        <li>
+          <span class="step-no">5′</span>
+          <h3>读取舍</h3>
+          <p>精读「什么时候不该用」。这是全书价值密度最高的部分，也是 90% 的人跳过的地方。</p>
+          <p class="step-out">产出：一句「代价是 ___」</p>
+        </li>
+        <li>
+          <span class="step-no">5′</span>
+          <h3>写对应物</h3>
+          <p>写下「我的项目里 ___ 正好有这个问题」。写不出来，就说明这章现在对你没用，标记跳过。</p>
+          <p class="step-out">产出：一行项目坐标</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- ============ DRILLS ============ -->
+  <section class="section" id="drills">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">05 / 七个练习</p>
+        <h2>做完一个胜过读三遍</h2>
+        <p class="sub">全部能在 Unity 里一小时内完成，全部有可观察的产出（Profiler 曲线、Diff、对比截图）。</p>
+      </div>
+
+      <div class="drills">
+        <article class="drill">
+          <header><span class="drill-idx">01</span><span class="drill-time">40 min</span></header>
+          <h3>帧率无关的移动</h3>
+          <p>把角色位移全部乘上 <code>Time.deltaTime</code>，再用 <code>Time.timeScale</code> 做一次慢动作，观察 <code>FixedUpdate</code> 与 <code>Update</code> 的错位。</p>
+          <p class="drill-out">产出：一份 60fps / 30fps 下轨迹一致的录屏</p>
+          <p class="drill-link">对应：游戏循环 · 更新方法</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">02</span><span class="drill-time">60 min</span></header>
+          <h3>拆掉一个 500 行的 Player</h3>
+          <p>拆成 <code>Mover</code> / <code>Health</code> / <code>InputReader</code> / <code>AnimBridge</code> 四个组件，彼此之间只通过事件通信，禁止互相 <code>GetComponent</code>。</p>
+          <p class="drill-out">产出：组件数从 1 变 4，<code>Player</code> 单文件降到 100 行内</p>
+          <p class="drill-link">对应：组件模式</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">03</span><span class="drill-time">45 min</span></header>
+          <h3>成就系统不认识玩家</h3>
+          <p>做一个「击杀 10 个敌人解锁成就」的功能，要求玩家代码里<strong>不出现</strong> <code>AchievementManager.Instance</code>，只发事件。</p>
+          <p class="drill-out">产出：删掉成就系统，游戏仍能编译通过</p>
+          <p class="drill-link">对应：观察者 · 事件队列</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">04</span><span class="drill-time">45 min</span></header>
+          <h3>干掉 AI 的 switch</h3>
+          <p>把敌人 <code>switch(state)</code> 拆成 <code>Idle</code> / <code>Chase</code> / <code>Attack</code> 三个状态类，转移条件集中到一处而不是散在各 case 里。</p>
+          <p class="drill-out">产出：新增一个「逃跑」状态时，不改任何已有类</p>
+          <p class="drill-link">对应：状态模式</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">05</span><span class="drill-time">30 min</span></header>
+          <h3>子弹池化</h3>
+          <p>把 <code>Instantiate</code> / <code>Destroy</code> 换成 <code>UnityEngine.Pool.ObjectPool&lt;Bullet&gt;</code>，用 Profiler 对比 GC Alloc 一栏。</p>
+          <p class="drill-out">产出：GC Alloc 从每帧 KB 级降到 0 B</p>
+          <p class="drill-link">对应：对象池</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">06</span><span class="drill-time">30 min</span></header>
+          <h3>别每帧都算</h3>
+          <p>给一个每帧重算的派生属性（比如攻击力 = 基础 × 加成）加脏标记 + 缓存，在 <code>Update</code> 里读它。</p>
+          <p class="drill-out">产出：该函数调用次数从 60/s 降到 1~3/s</p>
+          <p class="drill-link">对应：脏标识</p>
+        </article>
+
+        <article class="drill">
+          <header><span class="drill-idx">07</span><span class="drill-time">60 min</span></header>
+          <h3>5 个武器 → 5 个资产</h3>
+          <p>把 5 个武器子类改成 1 个 <code>Weapon</code> 类 + 5 个 <code>ScriptableObject</code> 资产，策划改数值不再需要程序。</p>
+          <p class="drill-out">产出：新增武器的成本从「写一个类」变成「右键新建资产」</p>
+          <p class="drill-link">对应：类型对象 · 享元</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TRAPS ============ -->
+  <section class="section section-dark" id="traps">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">06 / 三个必须避开的坑</p>
+        <h2>读完之后，别变成那种人</h2>
+      </div>
+      <div class="traps">
+        <article>
+          <span class="trap-mark">×</span>
+          <h3>把 C++ 示例抄进 Unity</h3>
+          <p>书里的 <code>GameLoop</code>、<code>DoubleBuffer</code> 在 Unity 里已经有了。自己再写一个，只会和引擎的 <code>PlayerLoop</code> 打架。要抄的是<strong>结构</strong>，不是实现。</p>
+        </article>
+        <article>
+          <span class="trap-mark">×</span>
+          <h3>为了用模式而用模式</h3>
+          <p>每上一处间接层，都问：「如果我不这么做，最坏会怎样？」答不上来就别加。间接层是有利息的，而且通常是复利。</p>
+        </article>
+        <article>
+          <span class="trap-mark">×</span>
+          <h3>跳过「取舍」段</h3>
+          <p>只记模式名的人，最后会在项目里堆出一套「看起来很架构」的抽象，比原始代码更难改——这本书第一个反对的就是这种结果。</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESS ============ -->
+  <section class="section" id="progress">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="kicker">07 / 进度</p>
+        <h2>第 3 列填不满 = 这个模式可以忘掉</h2>
+        <p class="sub">第 4 列填不满 = 你只是「读过」。勾选与笔记都存在你自己的浏览器里。</p>
+      </div>
+
+      <div class="progress-panel">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120" class="big-ring" aria-hidden="true">
+            <circle cx="60" cy="60" r="50" class="ring-bg"></circle>
+            <circle cx="60" cy="60" r="50" class="ring-fg" id="bigRing"></circle>
+          </svg>
+          <div class="ring-center">
+            <strong id="pct">0%</strong>
+            <span id="count">0 / 19</span>
+          </div>
+        </div>
+        <div class="progress-side">
+          <p id="pitch">还没有开始。建议先读批次 1 的第一张卡。</p>
+          <button class="btn btn-ghost btn-sm" id="resetBtn" type="button">清空进度与笔记</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="tracker">
+          <thead>
+            <tr>
+              <th class="col-no">#</th>
+              <th class="col-name">模式</th>
+              <th class="col-unity">Unity 对应物</th>
+              <th class="col-note">我项目里的位置</th>
+              <th class="col-done">读完</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="wrap footer-in">
+      <div>
+        <p class="footer-title">《游戏编程模式》· Game Programming Patterns</p>
+        <p class="footer-sub">Bob Nystrom 著，tkchu 中译，免费在线阅读。</p>
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://gpp.tkchu.me/" target="_blank" rel="noopener">中文在线版 ↗</a></li>
+        <li><a href="https://gameprogrammingpatterns.com/" target="_blank" rel="noopener">英文原版 ↗</a></li>
+        <li><a href="https://github.com/tkchu/Game-Programming-Patterns-CN" target="_blank" rel="noopener">中文版源码 ↗</a></li>
+      </ul>
+    </div>
+    <p class="footer-note">本页是学习笔记，非官方出版物；图表为示意，用于建立直觉。</p>
+  </footer>
+
+</main>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>游戏循环 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="游戏不等人输入，它自己一直在跑。循环用哪种步长，决定了物理稳不稳、表现顺不顺。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/game-loop.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="game-loop" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 1 · 引擎主干</span><span>/</span>
+      <span class="crumb-cur">游戏循环</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">02</span> 第 2 章 · Game Loop</p>
+        <h1>游戏循环</h1>
+        <p class="p-essence">游戏不等人输入，它自己一直在跑。循环用哪种步长，决定了物理稳不稳、表现顺不顺。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 1 · 引擎主干</li>
+          <li>Update · FixedUpdate · Time.deltaTime · targetFrameRate</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>网页是「事件驱动」：没有点击就不做事。游戏相反，它必须每帧主动推进世界。<code>while (true)</code> 里做三件事：<strong>读输入 → 更新状态 → 渲染</strong>。</p>
+<p>关键分歧在「更新」的步长：</p>
+<ul class="p-list"><li><strong>可变步长</strong>：<code>dt</code> 随帧率变化。简单，但同一段物理在不同帧率下结果不同，高速物体会穿墙。</li><li><strong>固定步长</strong>：每次推进固定时间（如 1/60 s），帧率不够就一帧跑多次。物理稳定可复现，代价是表现可能「跳」。</li></ul>
+<h2>Unity 里它长什么样</h2>
+<p>引擎已经写好循环（<code>PlayerLoop</code>），你只挂上去。三个入口的分工必须记牢：</p>
+<pre class="code"><code>void FixedUpdate()  // 默认 50Hz 固定步长，物理、刚体、射线检测放这里
+void Update()       // 每帧一次，可变 dt。输入、动画、游戏逻辑
+void LateUpdate()   // 所有 Update 之后，相机跟随、IK 修正
+
+// 与帧率无关的移动
+void Update() =&gt; transform.Translate(Vector3.forward * speed * Time.deltaTime);</code></pre>
+<p><code>Time.fixedDeltaTime</code> 是物理步长（默认 0.02），<code>Time.deltaTime</code> 是上一帧耗时。改 <code>Time.timeScale = 0.2f</code> 会同时缩放两者，但物理步长不变，只是 FixedUpdate 被调用的次数变少——所以慢动作下物理精度会下降。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>别在 <code>FixedUpdate</code> 里读 <code>Input</code>：它一帧可能执行 0 次或多次，输入会丢。</li><li>别用 <code>Time.deltaTime</code> 驱动 <code>Rigidbody</code>：物理已经在固定步长里积分，再乘 dt 就重复了。</li><li><code>Application.targetFrameRate</code> 在移动端要和垂直同步一起考虑，别设成不存在的值。</li><li>需要「暂停」时改 <code>timeScale</code>，但注意用 <code>unscaledDeltaTime</code> 的 UI 动画不受影响。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>在 <code>Update</code> 里打印 <code>Time.deltaTime</code>，把帧率锁到 30 再放开，看数值怎么跳。</li><li>写一个匀速移动的方块：先用 <code>Update + deltaTime</code>，再用 <code>FixedUpdate + fixedDeltaTime</code>，把帧率压到 20 观察差异。</li><li>用 <code>Physics.Raycast</code> 在 <code>Update</code> 里检测一次，再挪到 <code>FixedUpdate</code>，体会「一帧多次检测」的后果。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="component.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 组件模式</span></a>
+        <a class="p-nav p-nav-next" href="update-method.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">更新方法 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/game-loop.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>组件模式 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="用「有什么」代替「是什么」：把能力拆成可插拔的小块，运行时拼装，而不是靠继承树叉乘。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/component.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="component" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 1 · 引擎主干</span><span>/</span>
+      <span class="crumb-cur">组件模式</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">01</span> 第 1 章 · Component</p>
+        <h1>组件模式</h1>
+        <p class="p-essence">用「有什么」代替「是什么」：把能力拆成可插拔的小块，运行时拼装，而不是靠继承树叉乘。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 1 · 引擎主干</li>
+          <li>GameObject · MonoBehaviour · RequireComponent · Prefab</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>如果按「类型」写继承，敌人一栏很快就会崩：<code>Enemy</code> 下面要分飞行 / 地面，再分近战 / 远程，再分有没有护盾——每加一个维度，类就翻一倍，最后出现 <code>FlyingShieldedRangedEnemy</code>。作者给的解法是<strong>分裂</strong>：<code>GameObject</code> 是空壳，<code>Component</code> 是能力切片，<code>GameObject</code> 只负责「持有」。</p>
+<p>于是「飞行 + 护盾 + 远程」不是三个父类，而是三个部件。要新组合就换零件，不改类型系统。</p>
+<h2>Unity 里它长什么样</h2>
+<p>Unity 就是这个模式的成品实现，<code>GameObject</code> 天生没有行为，<code>Transform</code> 是唯一强制组件，其余全靠加。</p>
+<pre class="code"><code>// 不是 class FlyingEnemy : Enemy —— 而是拼装
+[RequireComponent(typeof(Rigidbody2D))]
+public class Flyer : MonoBehaviour
+{
+    [SerializeField] float thrust = 6f;
+    Rigidbody2D rb;
+
+    void Awake() =&gt; rb = GetComponent&lt;Rigidbody2D&gt;();
+    void FixedUpdate() =&gt; rb.AddForce(Vector2.up * thrust);
+}
+
+// 敌人 = GameObject + Health + Flyer + Hitbox + Animator
+// 加个 Boss 装甲？再挂一个 Armor —— 一行继承都不用动</code></pre>
+<p><strong>拆分的边界</strong>是这章真正要学的东西，<code>Unity</code> 已经替你实现了模式，你得自己判断：</p>
+<ul class="p-list"><li><strong>能力</strong>拆成组件：移动、血量、攻击、掉落、视野。</li><li><strong>结构</strong>拆成子对象：模型、武器挂点、特效锚点、碰撞体。子对象跟着父级走，不该有独立逻辑。</li><li>一个组件如果只能被一个对象使用，它其实就是「字段」，别硬拆。</li></ul>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><code>GetComponent</code> 不是免费的，热路径（每帧几千次）必须缓存到字段。</li><li>组件之间互发消息别用 <code>SendMessage</code>（反射、无法跳转、改名即崩），用接口 + 事件。</li><li>拆得太碎会得到「二十个 20 行脚本，没人知道谁在驱动谁」——这时需要一个<strong>系统脚本</strong>（见更新方法）集中调度，而不是继续拆。</li><li>必须同时存在的组件，用 <code>[RequireComponent]</code> 和预制体校验表达，而不是靠注释。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>打开你项目里最大的那个 <code>PlayerController.cs</code>，数一下它现在的职责。</li><li>把「输入」「移动」「动画驱动」拆成三个组件，用事件或直接引用连起来。</li><li>删掉这个脚本，看 <code>Inspector</code> 里多出了多少引用——那就是你为解耦付出的可见成本。记下这个数字，下次判断「值不值得拆」时用它。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <span class="p-nav p-nav-empty"></span>
+        <a class="p-nav p-nav-next" href="game-loop.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">游戏循环 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/component.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

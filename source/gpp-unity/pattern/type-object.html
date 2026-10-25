@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>类型对象 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="把「类型」从代码里搬进数据：一个类型就是一个对象，策划改配置不用重新编译。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/type-object.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="type-object" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 2 · 架构升级</span><span>/</span>
+      <span class="crumb-cur">类型对象</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">06</span> 第 6 章 · Type Object</p>
+        <h1>类型对象</h1>
+        <p class="p-essence">把「类型」从代码里搬进数据：一个类型就是一个对象，策划改配置不用重新编译。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 2 · 架构升级</li>
+          <li>ScriptableObject · CreateAssetMenu · Addressables</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>当「类型」本身就是内容（怪物种类、武器、法术），用继承会让类数量随内容线性增长，而且策划每次调数值都要等程序员编译。类型对象把「类型」变成一个运行期对象：实例持有指向类型的引用，类型的属性存在这个对象里。</p>
+<p>对 <code>Unity</code> 来说，这一章几乎是全书的最高性价比——它直接对应 <code>ScriptableObject</code>。</p>
+<h2>Unity 里它长什么样</h2>
+<pre class="code"><code>[CreateAssetMenu(menuName = &quot;GPP/Enemy Type&quot;)]
+public class EnemyType : ScriptableObject
+{
+    public string displayName;
+    public Sprite icon;
+    public GameObject prefab;
+    public int maxHp = 10;
+    public float moveSpeed = 2f;
+    [Range(0f, 1f)] public float armor;
+}
+
+public class Enemy : MonoBehaviour
+{
+    [SerializeField] EnemyType type;
+
+    void Awake()
+    {
+        var h = gameObject.AddComponent&lt;Health&gt;();
+        h.Init(type.maxHp, type.armor);
+        GetComponent&lt;Mover&gt;().speed = type.moveSpeed;
+    }
+}</code></pre>
+<p>然后在 <code>Project</code> 里 <code>右键 → Create → GPP → Enemy Type</code>，拖进预制体。策划加第 4 种敌人 = 复制一个资产改数值，零代码。</p>
+<p><strong>三个必须知道的坑：</strong></p>
+<ol class="p-list p-list-num"><li><code>ScriptableObject</code> 是资产，<strong>运行时写它会污染磁盘文件</strong>（编辑器下尤其明显）。要运行时状态就 <code>Instantiate(so)</code> 一份副本，或只存只读配置。</li><li><code>SO</code> 之间互相引用会让 <code>Addressables</code> 把依赖图全量打进去。大项目用 <code>AssetReference</code> 延迟加载。</li><li><code>SO</code> 里放行为（虚方法）很香，但会让「数据」和「代码」耦合进资产，重构时资产失效。先只放数据，行为用 <code>Strategy</code> 接口注入。</li></ol>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>只有 2-3 个固定的、永不变化的类型，用 <code>enum</code> 或普通类字段更简单。</li><li>需要「每帧变化的数值」不要放 <code>SO</code>，那是运行时状态。</li><li>别把 <code>SO</code> 当单例用（见单例那章的「<code>SO</code> 服务」），只读配置才安全。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>找出项目里硬编码的 3 种敌人参数（写在 <code>switch</code> 或 <code>if</code> 里的那些）。</li><li>抽成 3 个 <code>SO</code> 资产，预制体上换成引用。</li><li>试着「不加一行代码」加出第 4 种——如果做到了，这一章你就真的学会了。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="state.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 状态模式</span></a>
+        <a class="p-nav p-nav-next" href="command.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">命令模式 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/type-object.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

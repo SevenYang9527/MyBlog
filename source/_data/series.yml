@@ -1,0 +1,18 @@
+# 系列专题：挂在知识站下的独立小站。加新系列只改这里。
+- tag: 教程系列 · 图形学
+  title: Unity × 图形学 · 5 章精华
+  intro: 把 LearnOpenGL 里真正会影响 Unity 开发的 5 章，用 Unity 的视角重讲：坐标系统、摄像机、基础光照、法线贴图、帧缓冲。
+  stats:
+    - 6 页
+    - ≈3 小时
+    - 手绘 SVG 图解
+  url: /unity-graphics/
+
+- tag: 教程系列 · 架构
+  title: 《游戏编程模式》读进 Unity 里
+  intro: 不是把书背完，而是按「痛点」跳读：19 个模式各自对应 Unity 里的什么机制，读一节、动一次手。
+  stats:
+    - 19 个模式
+    - ≈10 小时
+    - 5 天节奏
+  url: /gpp-unity/

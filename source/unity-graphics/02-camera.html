@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>摄像机 · Unity × 图形学</title>
+<meta name="description" content="摄像机不是眼睛，而是一个把世界反向搬到你面前的矩阵；顺带讲清 FOV、裁剪面与视锥体。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-chapter">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link" href="index.html"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link" href="01-coordinate-spaces.html"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link active" href="02-camera.html" aria-current="page"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link" href="03-basic-lighting.html"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link" href="04-normal-mapping.html"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link" href="05-framebuffer.html"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>02 · 摄像机</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="page-head">
+  <p class="eyebrow">第 02 章 · 摄像机</p>
+  <h1>摄像机不是眼睛，<em>是一道反向的数学</em></h1>
+  <p class="lede">很多人学完坐标系统，还是说不清「摄像机到底做了什么」。答案很反直觉：<strong>摄像机永远不会移动，移动的是整个世界</strong>。视图矩阵就是把世界反向搬运的那个矩阵。这一章拆开它，顺便讲清 FOV、近裁剪面和视锥体。</p>
+  <div class="tags">
+    <span class="tag-src">原教程</span>
+    <span class="tag">摄像机</span>
+    <span class="tag">视图矩阵</span>
+    <span class="tag">视锥体</span>
+    <span class="tag">FOV</span>
+  </div>
+</section>
+<nav class="chapter-toc"><p class="toc-label">本章目录</p><ol class="toc"><li><a href="#why"><span class="n">01</span><span>先破一个直觉</span></a></li><li><a href="#frustum"><span class="n">02</span><span>视锥体：相机能看见的那块空间</span></a></li><li><a href="#view"><span class="n">03</span><span>视图矩阵，就是从「相机的角度」重新描述世界</span></a></li><li><a href="#axes"><span class="n">04</span><span>三根轴：forward、right、up 是怎么来的</span></a></li><li><a href="#projection"><span class="n">05</span><span>投影的三个参数：FOV、Near、Far</span></a></li><li><a href="#unity"><span class="n">06</span><span>Unity 对照：Camera 组件与常用 API</span></a></li><li><a href="#pitfalls"><span class="n">07</span><span>五个坑</span></a></li><li><a href="#check"><span class="n">08</span><span>自测：三题</span></a></li></ol></nav>
+
+
+<div class="tldr">
+  <span class="tldr-label">一句话</span>
+  <p>视图矩阵 = 相机变换的<strong>逆</strong>。要得到「以相机为原点」的坐标，就乘它的逆矩阵。想通这一句，<code>worldToCameraMatrix</code>、LookAt、FOV、近裁剪面就全串起来了。</p>
+</div>
+
+<h2 id="why">先破一个直觉</h2>
+
+<p>你说「相机往前走了一步」，从渲染的角度看，这等价于「<strong>整个世界往后挪了一步</strong>」。两种说法得到的画面完全一样。</p>
+
+<p>为什么非要选后者？因为 GPU 光栅化时假定的坐标系是固定的：<strong>原点在相机、朝 −Z 看</strong>。它不会为你「移动眼睛」，它只会用固定的规则去投影一堆坐标。所以必须有人把世界搬到这个固定的位置上——那个人就是视图矩阵。</p>
+
+<div class="callout tip">
+  <p class="callout-title">一个很好用的检查</p>
+  <p>把相机自己的位置用视图矩阵变换一次，结果必然是 <code>(0, 0, 0)</code>。因为「相机在相机空间里的位置」当然是原点。这个检查能瞬间验证你的矩阵有没有写错。</p>
+</div>
+
+<h2 id="frustum">视锥体：相机能看见的那块空间</h2>
+
+<p>相机看到的不是一个无限空间，而是一个「四棱锥被切掉了尖」的形状——这就是<strong>视锥体</strong>（frustum）。它由四个参数决定：<strong>垂直视角 FOV</strong>、<strong>近裁剪面</strong>、<strong>远裁剪面</strong>、<strong>宽高比 Aspect</strong>。</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 360" role="img" aria-label="透视投影与正交投影的视锥体对比">
+    <defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+
+    <!-- ===== 左：透视 ===== -->
+    <text x="225" y="26" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">透视投影 Perspective</text>
+
+    <path d="M70,190 L380,50 L380,330 Z" fill="#eff6ff" stroke="#60a5fa" stroke-width="1.6" stroke-linejoin="round"/>
+    <line x1="170" y1="150" x2="170" y2="230" stroke="#f59e0b" stroke-width="2"/>
+    <line x1="380" y1="50" x2="380" y2="330" stroke="#94a3b8" stroke-width="2"/>
+    <line x1="170" y1="232" x2="170" y2="246" stroke="#cbd5e1" stroke-width="1.2"/>
+
+    <circle cx="70" cy="190" r="4.5" fill="#1f2937"/>
+    <text x="70" y="172" font-size="10.5" fill="#475569" text-anchor="middle">相机</text>
+
+    <text x="170" y="262" font-size="10.5" fill="#b45309" text-anchor="middle">近裁剪面 near</text>
+    <text x="388" y="194" font-size="10.5" fill="#475569">远裁剪面 far</text>
+
+    <path d="M106,170 A48,48 0 0 1 106,210" fill="none" stroke="#0d9488" stroke-width="1.6" stroke-dasharray="3 3"/>
+    <text x="122" y="196" font-size="10.5" font-weight="700" fill="#0d9488">FOV</text>
+
+    <text x="225" y="344" font-size="10.5" fill="#64748b" text-anchor="middle">近大远小：距离越远，投影后越靠近中心</text>
+
+    <!-- ===== 右：正交 ===== -->
+    <line x1="450" y1="18" x2="450" y2="316" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+    <text x="675" y="26" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">正交投影 Orthographic</text>
+
+    <rect x="560" y="94" width="240" height="196" fill="#f0fdf4" stroke="#4ade80" stroke-width="1.6"/>
+    <line x1="560" y1="94" x2="560" y2="290" stroke="#f59e0b" stroke-width="2"/>
+    <line x1="800" y1="94" x2="800" y2="290" stroke="#94a3b8" stroke-width="2"/>
+
+    <line x1="512" y1="192" x2="552" y2="192" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar2)"/>
+    <circle cx="506" cy="192" r="4.5" fill="#1f2937"/>
+    <text x="506" y="174" font-size="10.5" fill="#475569" text-anchor="middle">相机</text>
+
+    <text x="560" y="86" font-size="10.5" fill="#b45309" text-anchor="middle">near</text>
+    <text x="800" y="86" font-size="10.5" fill="#475569" text-anchor="middle">far</text>
+
+    <text x="675" y="344" font-size="10.5" fill="#64748b" text-anchor="middle">远近裁剪面一样大：物体大小不随距离变化</text>
+  </svg>
+  <figcaption>同一个场景，两种投影。透视用于 3D（有纵深），正交用于 2D、UI、影视（无纵深变形）。Unity 的 Camera 组件里就是这个下拉框。</figcaption>
+</figure>
+
+<div class="callout unity">
+  <p class="callout-title">什么时候不用透视</p>
+  <ul>
+    <li><strong>2D 游戏</strong>：正交投影，物体永远一样大，不做近大远小。</li>
+    <li><strong>等距视角（Isometric）</strong>：正交 + 固定角度旋转，就是《暗黑破坏神》《模拟城市》那种。</li>
+    <li><strong>UI / 小地图 / 后处理</strong>：正交，保证不出现透视畸变。</li>
+    <li><strong>阴影贴图</strong>：方向光的阴影通常用正交投影，因为「太阳的光线是平行的」（第 03 章会提到）。</li>
+  </ul>
+</div>
+
+<h2 id="view">视图矩阵，就是从「相机的角度」重新描述世界</h2>
+
+<p>相机的世界变换可以写成一个矩阵：先平移、再旋转，记作 <code>T × R</code>。视图矩阵就是它的逆：</p>
+
+<div class="callout">
+  <p class="callout-title">公式</p>
+  <p style="font-family:ui-monospace,monospace;font-size:15px;margin:0 0 8px">View = (T × R)<sup>−1</sup> = R<sup>−1</sup> × T<sup>−1</sup></p>
+  <p style="margin:0">而「逆矩阵」的几何含义，正好就是<strong>把所有东西反向搬一次</strong>：相机在世界里往右挪 3 米，等价于世界往左挪 3 米。所以视图矩阵不需要任何「减去相机位置」的魔法，就是求逆。</p>
+</div>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">验证：视图矩阵就是相机变换的逆</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>// 相机的世界变换矩阵
+Matrix4x4 camTR = Matrix4x4.TRS(
+    cam.transform.position,
+    cam.transform.rotation,
+    Vector3.one);
+
+// 视图矩阵 = 它的逆
+Matrix4x4 view = camTR.inverse;
+
+// 检查：相机自己在观察空间里应该是原点
+Vector3 camInView = view.MultiplyPoint3x4(cam.transform.position);
+Debug.Log(camInView);   // ≈ (0.00, 0.00, 0.00)
+
+// 检查：相机前方 5 米的点在观察空间里应该是 (0, 0, 5)？
+// 注意！Unity 的观察空间相机朝 -Z，所以结果是 (0, 0, -5)
+Vector3 ahead = cam.transform.position + cam.transform.forward * 5f;
+Debug.Log(view.MultiplyPoint3x4(ahead));   // ≈ (0.00, 0.00, -5.00)</code></pre>
+</div>
+
+<p>第二个检查特别值得注意：那个 <strong>−5</strong> 就是本章开头说的「观察空间是右手系」。如果你写 Shader 判断「物体在相机前面」，条件应该是 <code>viewZ &lt; 0</code>，不是 <code>&gt; 0</code>。</p>
+
+<h2 id="axes">三根轴：forward、right、up 是怎么来的</h2>
+
+<p>相机的朝向不需要「角度」，只需要两根向量就能确定——因为第三根可以叉乘出来。这就是 <code>LookAt</code> 的全部原理：</p>
+
+<ol>
+  <li><code>forward</code> = normalize(target − position)　<em>看向哪里</em></li>
+  <li><code>right</code> = normalize(cross(worldUp, forward))　<em>用「世界上方」当参考</em></li>
+  <li><code>up</code> = cross(forward, right)　<em>剩下那根自动补全</em></li>
+</ol>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 300" role="img" aria-label="LookAt 如何用三根向量构造相机的朝向">
+    <defs>
+      <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+      </marker>
+      <marker id="ar3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6366f1"/>
+      </marker>
+    </defs>
+
+    <!-- worldUp 参考 -->
+    <line x1="400" y1="210" x2="400" y2="52" stroke="#94a3b8" stroke-width="1.6" stroke-dasharray="5 5" marker-end="url(#ar3)"/>
+    <text x="412" y="54" font-size="11" fill="#64748b">worldUp（你给的上方向）</text>
+
+    <!-- forward -->
+    <line x1="400" y1="210" x2="700" y2="128" stroke="#6366f1" stroke-width="2.4" marker-end="url(#ar3b)"/>
+    <text x="650" y="100" font-size="11.5" font-weight="700" fill="#6366f1" text-anchor="middle">forward</text>
+
+    <!-- right -->
+    <line x1="400" y1="210" x2="520" y2="256" stroke="#ef4444" stroke-width="2" marker-end="url(#ar3)"/>
+    <text x="530" y="266" font-size="11.5" font-weight="700" fill="#ef4444">right</text>
+
+    <!-- up -->
+    <line x1="400" y1="210" x2="358" y2="92" stroke="#16a34a" stroke-width="2" marker-end="url(#ar3)"/>
+    <text x="348" y="86" font-size="11.5" font-weight="700" fill="#16a34a" text-anchor="end">up</text>
+
+    <!-- target -->
+    <circle cx="716" cy="124" r="5" fill="#6366f1"/>
+    <text x="716" y="108" font-size="10.5" fill="#475569" text-anchor="middle">target</text>
+
+    <!-- 相机 -->
+    <rect x="374" y="196" width="52" height="28" rx="5" fill="#e2e8f0" stroke="#94a3b8"/>
+    <circle cx="400" cy="210" r="3.5" fill="#1f2937"/>
+    <text x="400" y="252" font-size="10.5" fill="#475569" text-anchor="middle">相机</text>
+
+    <text x="120" y="40" font-size="12" font-weight="700" fill="#1f2937">LookAt 的三步</text>
+    <text x="120" y="66" font-size="11.5" fill="#475569">① forward = target − position</text>
+    <text x="120" y="90" font-size="11.5" fill="#475569">② right = cross(worldUp, forward)</text>
+    <text x="120" y="114" font-size="11.5" fill="#475569">③ up = cross(forward, right)</text>
+    <text x="120" y="144" font-size="11" fill="#94a3b8">三根轴两两垂直、长度归一 → 正交基</text>
+  </svg>
+  <figcaption>为什么需要 worldUp？因为「看向某点」只确定了一个方向，相机还能绕这条视线自转（roll）。worldUp 就是用来锁死这个自由度的参考。</figcaption>
+</figure>
+
+<div class="callout unity">
+  <p class="callout-title">Unity 里不用手算</p>
+  <p><code>transform.LookAt(target)</code> 一行就是上面三步。想连位置一起处理：<code>Quaternion.LookRotation(target - pos, Vector3.up)</code>。相机的三根轴可以直接读：<code>transform.forward</code> / <code>.right</code> / <code>.up</code>。</p>
+</div>
+
+<h2 id="projection">投影的三个参数：FOV、Near、Far</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>参数</th><th>它在数学里是什么</th><th>调大的后果</th><th>调小的后果</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>Field of View</strong></td>
+      <td>透视矩阵里的角度参数，<strong>垂直方向</strong>的视角</td>
+      <td>视野更广、边缘拉伸更严重、物体显小</td>
+      <td>画面像长焦镜头，纵深被压缩</td>
+    </tr>
+    <tr>
+      <td><strong>Near</strong></td>
+      <td>视锥体的前截面距离</td>
+      <td>深度精度变好，但贴脸的东西直接被裁掉</td>
+      <td>深度精度急剧变差 → <strong>z-fighting</strong></td>
+    </tr>
+    <tr>
+      <td><strong>Far</strong></td>
+      <td>视锥体的后截面距离</td>
+      <td>能画更远，但深度精度被摊薄</td>
+      <td>远处物体凭空消失</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">FOV 是垂直的，不是水平的</p>
+  <p>Unity 的 <code>Field of View</code> 默认指<strong>垂直视角</strong>。同样 60° 的垂直 FOV，在 16:9 屏幕上水平视角约 91°，在 21:9 上约 106°。<strong>所以「同一个 FOV 在不同分辨率的手机上看到的范围不一样」</strong>——这就是为什么手游常把 FOV 按屏幕宽高比动态换算，而不是写死。</p>
+</div>
+
+<div class="callout danger">
+  <p class="callout-title">Near 不要设 0.01</p>
+  <p>深度缓冲的精度分布是<strong>极度不均匀</strong>的：靠近近裁剪面的地方精度极高，远处几乎为零。把 Near 从 0.3 调到 0.01，等于把几乎所有精度都浪费在眼前 10 厘米内，于是 20 米外的地面开始闪烁、贴花开始抖动。经验值：第一人称 <code>0.05~0.1</code>，第三人称 <code>0.3</code>，大场景 <code>1</code> 起步。</p>
+</div>
+
+<h2 id="unity">Unity 对照：Camera 组件与常用 API</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Inspector 字段</th><th>本质</th><th>你什么时候会动它</th></tr></thead>
+  <tbody>
+    <tr><td>Projection</td><td>用哪个投影矩阵</td><td>2D 切 Orthographic</td></tr>
+    <tr><td>Field of View</td><td>垂直视角</td><td>做「广角眩晕」或「长焦压缩」</td></tr>
+    <tr><td>Clipping Planes</td><td>近 / 远裁剪面</td><td>出现 z-fighting 时第一个怀疑对象</td></tr>
+    <tr><td>Viewport Rect</td><td>NDC → 屏幕的映射范围</td><td>分屏、小地图、局部渲染</td></tr>
+    <tr><td>Depth</td><td><strong>多相机的绘制顺序</strong>（不是 Z 深度）</td><td>UI 相机要画在主相机之上时</td></tr>
+    <tr><td>Clear Flags</td><td>每帧开始前清成什么</td><td>UI 相机用 Depth Only，否则会盖住 3D</td></tr>
+    <tr><td>Culling Mask</td><td>只渲染哪些 Layer</td><td>小地图只画地形、不画角色</td></tr>
+    <tr><td>Target Texture</td><td>输出到一张 RenderTexture</td><td>监控画面、UI 里的 3D 预览（第 05 章）</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">第一人称相机：yaw 绕世界、pitch 绕自身</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>using UnityEngine;
+
+public class FPSCamera : MonoBehaviour
+{
+    public float sensitivity = 2.5f;
+    public float moveSpeed   = 6f;
+
+    float yaw, pitch;   // 分开存，避免从 eulerAngles 里读到 0~360 的怪值
+
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;   // 锁鼠标，FPS 必做
+        Cursor.visible   = false;
+        yaw   = transform.eulerAngles.y;
+        pitch = transform.eulerAngles.x;
+    }
+
+    void Update()
+    {
+        // 1) 看：yaw 绕世界 Y 轴，pitch 绕自身 X 轴
+        yaw   += Input.GetAxis("Mouse X") * sensitivity;
+        pitch -= Input.GetAxis("Mouse Y") * sensitivity;
+        pitch  = Mathf.Clamp(pitch, -89f, 89f);     // 夹住，否则会翻跟头
+        transform.rotation = Quaternion.Euler(pitch, yaw, 0f);
+
+        // 2) 走：永远用相机自己的方向，而不是世界的 +Z
+        float h = Input.GetAxis("Horizontal");
+        float v = Input.GetAxis("Vertical");
+        Vector3 dir = transform.right * h + transform.forward * v;
+        transform.position += dir.normalized * (moveSpeed * Time.deltaTime);
+    }
+}</code></pre>
+</div>
+
+<p>这里的第二段是关键：<strong>「前」是相机的 <code>transform.forward</code>，不是世界的 <code>Vector3.forward</code></strong>。这就是局部空间和世界空间的区别落到实际代码上的样子。</p>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">屏幕与世界互转（三个最常用的 API）</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>// ① 3D 世界 → 屏幕像素。注意原点在左下角，y 轴向上
+Vector3 screen = cam.WorldToScreenPoint(target.position);
+bool inFront  = screen.z > 0f;   // z 是「距相机多远」，负数表示在相机背后
+
+// ② 屏幕 → 射线（鼠标拾取、点击地面移动）
+Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+if (Physics.Raycast(ray, out RaycastHit hit, 100f))
+    Debug.Log("点到：" + hit.collider.name);
+
+// ③ 屏幕 → 世界点。第三个参数不是「世界坐标 z」，而是「离相机多远」！
+Vector3 world = cam.ScreenToWorldPoint(
+    new Vector3(Input.mousePosition.x, Input.mousePosition.y, 5f));</code></pre>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">第 ③ 条是全 Unity 最经典的误解</p>
+  <p><code>ScreenToWorldPoint</code> 接收三个值，但只有两个是「屏幕」，第三个是<strong>相机空间里的深度</strong>。传 0 会得到相机自己所在的位置，传错误的值会得到看起来对、但永远偏的结果。要让物体贴地，正确做法是反过来用 <code>ScreenPointToRay</code> 打射线。</p>
+</div>
+
+<div class="callout unity">
+  <p class="callout-title">Shader 里的相机</p>
+  <ul>
+    <li><code>_WorldSpaceCameraPos</code>：相机的世界坐标，做高光、菲涅尔、雾都靠它。</li>
+    <li><code>UnityWorldSpaceViewDir(worldPos)</code>：从某点指向相机的单位向量，就是 Blinn-Phong 里的 <strong>V</strong>。</li>
+    <li><code>UNITY_MATRIX_V</code>：视图矩阵本体，需要手动转到观察空间时用。</li>
+  </ul>
+  <p>Shader Graph 里对应 <strong>Camera</strong> 节点（Position / Direction / Near Plane / Far Plane）和一个现成的 <strong>View Direction</strong> 节点。</p>
+</div>
+
+<div class="callout tip">
+  <p class="callout-title">真实项目别自己写相机</p>
+  <p>Unity 官方的 <strong>Cinemachine</strong> 已经解决了跟随、阻尼、构图、多机位切换、屏幕震动这些事。手写第一人称相机只适合学习和原型；正式项目里，上面这 40 行代码会被 Cinemachine 的一个组件替代。</p>
+</div>
+
+<h2 id="pitfalls">五个坑</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>症状</th><th>原因</th><th>修法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>改过 aspect 后，切分辨率画面就被拉扁</td>
+      <td>脚本里手动改过 <code>camera.aspect</code>，之后没恢复</td>
+      <td>用完调 <code>cam.ResetAspect()</code>，或干脆别手动改</td>
+    </tr>
+    <tr>
+      <td>地面 / 贴花闪烁（z-fighting）</td>
+      <td>近裁剪面太小，深度精度被浪费</td>
+      <td>Near 从 0.01 调到 0.1~0.3</td>
+    </tr>
+    <tr>
+      <td>走进物体内部时画面一片黑</td>
+      <td>背面被剔除 + 内壁被近裁剪面切掉</td>
+      <td>墙壁做双面；或把 Near 调小一点</td>
+    </tr>
+    <tr>
+      <td>UI 相机把 3D 画面盖住了</td>
+      <td>UI 相机的 Clear Flags 是 Skybox/Solid Color</td>
+      <td>改成 <strong>Depth Only</strong>，并把 Depth 值设得更大</td>
+    </tr>
+    <tr>
+      <td>物体在相机背后时，屏幕坐标「跳」到画面里</td>
+      <td><code>WorldToScreenPoint</code> 在背后会返回镜像坐标</td>
+      <td>先判断 <code>screen.z &gt; 0</code>，再显示血条 / 名字</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="check">自测：三题</h2>
+
+<details class="quiz">
+  <summary>自测 · 3 个问题（先自己答，再展开）</summary>
+  <div class="quiz-body">
+    <ol>
+      <li>
+        <strong>相机往右移动 3 米，视图矩阵里的平移分量是 +3 还是 −3？</strong>
+        <span class="ans">−3（方向上是把世界往左搬）。严格地说，视图矩阵是相机变换的逆，所以它的平移分量是「相机位置的负值再经过相机旋转」，不是简单的 <code>−position</code>。</span>
+      </li>
+      <li>
+        <strong>把 FOV 从 60 调到 90，画面里同一个物体会变大还是变小？</strong>
+        <span class="ans">变小。FOV 越大，视锥体张得越开，同样的屏幕范围内塞进了更多东西，所以单个物体占比变小。这也是「广角让人显得小、长焦让人显得近」的原因。</span>
+      </li>
+      <li>
+        <strong>为什么说 <code>ScreenToWorldPoint</code> 的第三个参数不是「世界的 z」？</strong>
+        <span class="ans">它是相机空间里的深度（距离相机多远）。屏幕坐标只有两个维度，缺少的正是深度，所以这个参数是在补第三个维度，而不是指定世界坐标的 z。</span>
+      </li>
+    </ol>
+  </div>
+</details>
+
+<div class="callout tip">
+  <p class="callout-title">下一章</p>
+  <p>现在你有了相机、有了空间，但画面还是一坨平色。第 03 章开始，我们让光进来——只用一个点乘，就能让球体看起来是立体的。</p>
+</div>
+    </article>
+
+<nav class="pager"><a href="01-coordinate-spaces.html"><span class="dir">上一篇</span><span class="ttl">01 · 坐标系统</span></a><a class="next" href="03-basic-lighting.html"><span class="dir">下一篇</span><span class="ttl">03 · 基础光照</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

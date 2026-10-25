@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>对象池 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="池化省下来的不是创建时间，是 GC：不再反复分配，垃圾回收就不会在战斗中途卡一下。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/object-pool.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="object-pool" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">对象池</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">11</span> 第 11 章 · Object Pool</p>
+        <h1>对象池</h1>
+        <p class="p-essence">池化省下来的不是创建时间，是 GC：不再反复分配，垃圾回收就不会在战斗中途卡一下。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>UnityEngine.Pool · ListPool / HashSetPool · 自定义池</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>频繁 <code>new / delete</code>（或 <code>Instantiate / Destroy</code>）的代价有三层：分配本身、随之而来的垃圾回收、以及内存碎片导致的缓存失效。对象池让对象「回收再发」，复用同一批内存。</p>
+<p>关键认识：<strong>收益主要在避免 GC 尖峰</strong>，而不是省掉那点构造时间。所以判断要不要池化，看 <code>Profiler</code> 的 <code>GC Alloc</code>，别凭感觉。</p>
+<h2>Unity 里它长什么样</h2>
+<p><code>Unity</code> 内置了泛型池（<code>UnityEngine.Pool</code>，<code>2021.1+</code>）：</p>
+<pre class="code"><code>using UnityEngine.Pool;
+
+ObjectPool&lt;Bullet&gt; pool;
+
+void Awake()
+{
+    pool = new ObjectPool&lt;Bullet&gt;(
+        createFunc:      () =&gt; Instantiate(bulletPrefab).GetComponent&lt;Bullet&gt;(),
+        actionOnGet:     b  =&gt; b.gameObject.SetActive(true),
+        actionOnRelease: b  =&gt; b.gameObject.SetActive(false),
+        actionOnDestroy: b  =&gt; Destroy(b.gameObject),
+        collectionCheck: true,      // 编辑器下抓「重复 Release」
+        defaultCapacity: 32,
+        maxSize:         128);
+}
+
+void Fire(Vector3 dir)
+{
+    var b = pool.Get();
+    b.Launch(dir);
+    // 子弹超时或命中后：pool.Release(b);
+}</code></pre>
+<p>还有 <code>ListPool<T></code> / <code>HashSetPool<T></code> / <code>StringBuilderPool</code>，用来干掉每帧临时集合的分配，收益往往比子弹池更大。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><strong>状态残留</strong>是最常见的 bug：复用的对象带着上一轮的血量、粒子、协程。<code>OnRelease</code> 里必须彻底重置。</li><li>池化会掩盖真实的分配问题：先在 <code>Profiler</code> 里确认 <code>GC Alloc</code> 是瓶颈，再上池。</li><li><code>SetActive</code> 也有成本（层级重建、<code>OnEnable</code> 调用），超高频时改用「移出屏幕 / 关闭 <code>Renderer</code>」。</li><li>池化 <code>GameObject</code> 会让层级里塞满隐藏对象，记得放在专用父节点下。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>打开 <code>Profiler → CPU → Hierarchy</code>，勾 <code>GC Alloc</code> 列。</li><li>让角色连续射击 10 秒，记下每帧的 <code>GC Alloc</code>。</li><li>加子弹池和 <code>ListPool</code>，再测一次。数字变化就是这一章的分数。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="subclass-sandbox.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 子类沙箱</span></a>
+        <a class="p-nav p-nav-next" href="dirty-flag.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">脏标识 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/object-pool.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

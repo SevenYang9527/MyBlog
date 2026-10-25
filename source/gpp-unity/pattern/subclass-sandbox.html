@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>子类沙箱 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="基类提供一小盒「积木」，子类只准用这些积木搭东西，不许直接碰引擎全局 API。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/subclass-sandbox.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="subclass-sandbox" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 2 · 架构升级</span><span>/</span>
+      <span class="crumb-cur">子类沙箱</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">10</span> 第 10 章 · Subclass Sandbox</p>
+        <h1>子类沙箱</h1>
+        <p class="p-essence">基类提供一小盒「积木」，子类只准用这些积木搭东西，不许直接碰引擎全局 API。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 2 · 架构升级</li>
+          <li>基类 protected 辅助方法 · 模板方法 · 受控 API 面</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>当一堆子类都要做相似的事（播放特效、生成物体、加伤害），它们会各自去调引擎 API。结果是重复代码 + 全局依赖散落各处。沙箱的做法：基类暴露一组 <code>protected</code> 的语义化方法（<code>Spawn</code>、<code>PlayFx</code>、<code>DealDamage</code>），子类只组合这些方法。</p>
+<p>两个收益：子类变短；将来换实现（换特效系统、加埋点）只改基类。</p>
+<h2>Unity 里它长什么样</h2>
+<p>其实 <code>MonoBehaviour</code> 本身就是一个巨大的沙箱：生命周期方法 + <code>transform</code> + <code>GetComponent</code>，你从没直接碰过引擎内部。</p>
+<p>自己再包一层，通常长这样：</p>
+<pre class="code"><code>public abstract class AbilityBase : MonoBehaviour
+{
+    protected void Spawn(GameObject prefab, Vector3 at)
+        =&gt; Instantiate(prefab, at, Quaternion.identity);
+
+    protected void Damage(IDamageable target, int amount)
+    {
+        if (target == null) return;
+        target.TakeDamage(amount);
+        Analytics.Track(&quot;damage&quot;, amount);   // 统一埋点，子类不用管
+    }
+
+    protected void PlayFx(string key) =&gt; Fx.Play(key, transform.position);
+
+    public abstract void Cast();
+}
+
+public class Fireball : AbilityBase
+{
+    [SerializeField] GameObject ball;
+    public override void Cast()
+    {
+        Spawn(ball, transform.position + transform.forward);
+        PlayFx(&quot;cast_fire&quot;);
+    }
+}</code></pre>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><strong>沙箱会腐化</strong>：一开始 5 个方法，两个月后 40 个，最后变成一个没人敢改的上帝基类。约束是「只放这一类子类都会用的操作」，且方法要语义化（<code>DealDamage</code> 而不是 <code>GetComponent<Health>().Set(...)</code>）。</li><li>只有 2 个子类时，沙箱是过度设计。</li><li>如果子类需要的能力差异很大，说明它们不该共享这个基类——回到组件模式。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>找 3 个技能脚本，看它们重复了哪些 <code>Instantiate / GetComponent / PlayEffect</code>。</li><li>上移到基类，子类只留「数值 + 调用顺序」。</li><li>删掉一个子类，看基类是否需要跟着改——如果不用改，说明边界划对了。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="service-locator.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 服务定位器</span></a>
+        <a class="p-nav p-nav-next" href="object-pool.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">对象池 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/subclass-sandbox.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

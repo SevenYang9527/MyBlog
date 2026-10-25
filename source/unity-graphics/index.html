@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>导览与学习路线 · Unity × 图形学</title>
+<meta name="description" content="把 LearnOpenGL 里最有用的 5 章，用 Unity 的视角重讲：坐标系统、摄像机、基础光照、法线贴图、帧缓冲。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-home">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link active" href="index.html" aria-current="page"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link" href="01-coordinate-spaces.html"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link" href="02-camera.html"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link" href="03-basic-lighting.html"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link" href="04-normal-mapping.html"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link" href="05-framebuffer.html"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>00 · 开始</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="hero">
+  <p class="eyebrow">Unity 开发者的图形学补课</p>
+  <h1>把 LearnOpenGL 的 5 章，<br><em>翻译成 Unity 的语言</em></h1>
+  <p class="lede">你不需要手写渲染器。但要写自定义 Shader、看懂 URP 的设置、解释「为什么这里高光炸了」，你需要<strong>坐标系统、摄像机、光照、法线贴图、帧缓冲</strong>这五件事。这一站把它们从 C++/OpenGL 搬到 Unity 的语境里重讲一遍：少了 90% 的样板代码，只留下真正会用到的那部分。</p>
+  <div class="hero-stats">
+    <div class="stat"><b>5</b><span>章核心概念</span></div>
+    <div class="stat"><b>≈3h</b><span>通读全站</span></div>
+    <div class="stat"><b>0</b><span>行 C++ 要写</span></div>
+    <div class="stat"><b>12</b><span>张手绘图解</span></div>
+  </div>
+</section>
+
+<div class="tldr">
+  <span class="tldr-label">先看结论</span>
+  <p>这 5 章在 Unity 里的真实用途只有三件事：<strong>写 Shader 时知道自己在哪个空间里算</strong>、<strong>调光照时知道每个参数在对哪个数学项下手</strong>、<strong>做后处理时知道画面从哪来又要到哪去</strong>。除此之外的 OpenGL 细节，Unity 全包了。</p>
+</div>
+
+<h2 id="why">为什么只留 5 章</h2>
+
+<p>LearnOpenGL 是一套「从零手写渲染器」的教程：60 多节，其中一半在教你怎么创建窗口、怎么把顶点塞进 VBO、怎么用 Assimp 解析 fbx。这些在 Unity 里对应的是<strong>点一下 Play</strong> 和<strong>把模型拖进 Project</strong>。</p>
+
+<p>剩下的内容里，真正会反复影响你「能不能把画面调对」的，是下面这张表里的东西：</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>原教程章节</th><th>它其实在讲什么</th><th>Unity 里你会在什么时候撞上它</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>坐标系统</strong></td>
+      <td>顶点从模型空间一路变到屏幕像素的五个空间</td>
+      <td>Shader 里 <code>Space</code> 选 Object 还是 World；模型旋转后法线不对；UI 和 3D 坐标对不上</td>
+    </tr>
+    <tr>
+      <td><strong>摄像机</strong></td>
+      <td>观察矩阵、投影矩阵、视锥体</td>
+      <td>FOV 调完画面变形；物体贴脸就消失（近裁剪面）；<code>WorldToScreenPoint</code> 算出来偏了</td>
+    </tr>
+    <tr>
+      <td><strong>基础光照</strong></td>
+      <td>环境光 + 漫反射 + 高光的 Blinn-Phong 模型</td>
+      <td>想调「金属感」「塑料感」；写 Shader Graph 里那条 <code>Dot Product</code>；Light 的 Intensity 到底乘在哪</td>
+    </tr>
+    <tr>
+      <td><strong>法线贴图</strong></td>
+      <td>用 RGB 存每个像素的表面朝向；切线空间</td>
+      <td>导入法线贴图后表面发灰；贴图接缝一条亮线；移动端上「凹凸感全没了」</td>
+    </tr>
+    <tr>
+      <td><strong>帧缓冲</strong></td>
+      <td>离屏渲染 + 全屏后处理</td>
+      <td>做描边、模糊、Bloom、屏幕特效；URP 里写 Renderer Feature；<code>OnRenderImage</code> 突然不生效</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">被砍掉的部分</p>
+  <p>窗口创建、GLAD/GLEW、VBO/VAO/EBO、Assimp 模型加载、几何着色器、模板测试、实例化、PBR 的 IBL 细节——这些要么 Unity 做了，要么属于「做引擎」而不是「做游戏」的范畴。真需要时再回头查原教程即可，那时你已经有了本站建立的空间感。</p>
+</div>
+
+<h2 id="chapters">五章内容</h2>
+
+<div class="chapter-cards">
+  <a class="chapter-card" href="01-coordinate-spaces.html">
+    <span class="num">CHAPTER 01</span>
+    <h3>坐标系统</h3>
+    <p>局部 → 世界 → 观察 → 裁剪 → 屏幕。一个顶点要走五段路才上屏，Unity 只让你操心第一段。含完整空间对照表与手搓 MVP 的验证代码。</p>
+    <span class="go">开始阅读 →</span>
+  </a>
+  <a class="chapter-card" href="02-camera.html">
+    <span class="num">CHAPTER 02</span>
+    <h3>摄像机</h3>
+    <p>摄像机不是眼睛，是一个把世界<em>反向</em>搬到你面前的矩阵。顺带讲清 FOV 是垂直还是水平、近裁剪面为什么不能设 0.01、视锥体怎么算。</p>
+    <span class="go">开始阅读 →</span>
+  </a>
+  <a class="chapter-card" href="03-basic-lighting.html">
+    <span class="num">CHAPTER 03</span>
+    <h3>基础光照</h3>
+    <p>N、L、V、H 四个向量决定一切。把 Blinn-Phong 的三项拆开，逐项对应到 Unity 的 Light 组件、URP 的 Lit 材质和 Shader Graph 节点。</p>
+    <span class="go">开始阅读 →</span>
+  </a>
+  <a class="chapter-card" href="04-normal-mapping.html">
+    <span class="num">CHAPTER 04</span>
+    <h3>法线贴图</h3>
+    <p>法线贴图不是「凹凸」，是「每个像素的朝向」。RGB 怎么编码向量、切线空间为什么必须存在、绿通道为什么会被翻转。</p>
+    <span class="go">开始阅读 →</span>
+  </a>
+  <a class="chapter-card" href="05-framebuffer.html">
+    <span class="num">CHAPTER 05</span>
+    <h3>帧缓冲</h3>
+    <p>把场景画到一张能当纹理用的画布上，再贴回屏幕——这就是后处理。从 RenderTexture 到 URP 的 Renderer Feature，附一个可跑的边缘检测。</p>
+    <span class="go">开始阅读 →</span>
+  </a>
+  <a class="chapter-card" href="01-coordinate-spaces.html" style="border-style:dashed;background:transparent;box-shadow:none">
+    <span class="num">路线建议</span>
+    <h3>如果你只有 3 小时</h3>
+    <p>按 01 → 03 → 04 读，跳过 02 和 05。这三章覆盖了 80% 的「画面不对」场景。第二天再补 02，做后处理时再补 05。</p>
+    <span class="go">从 01 开始 →</span>
+  </a>
+</div>
+
+<h2 id="plan">怎么用这个站</h2>
+
+<div class="grid-3">
+  <div class="card">
+    <h4><span class="idx">01</span> 先看「一句话」</h4>
+    <p>每章开头都有一张蓝色卡片，用一句话把该章的全部价值说完。如果你只想快速建立直觉，读完五张卡片就够了。</p>
+  </div>
+  <div class="card">
+    <h4><span class="idx">02</span> 再看图</h4>
+    <p>所有图都是手绘 SVG，可以在深色模式下看清。图的目的是让你在脑子里建立「空间/向量/管线」的画面感，比公式管用。</p>
+  </div>
+  <div class="card">
+    <h4><span class="idx">03</span> 最后做对照</h4>
+    <p>每章都有一个蓝色的「Unity 对照」块：同一个概念在 Unity 里叫什么、在哪个面板、用哪个 API。这是本站和原教程最大的区别。</p>
+  </div>
+</div>
+
+<h3>三种读法</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>读法</th><th>耗时</th><th>适合</th></tr></thead>
+  <tbody>
+    <tr><td><strong>速通</strong>：只看「一句话」+ 图 + 「坑」</td><td>40 分钟</td><td>只想有个整体印象，先知道有哪些概念存在</td></tr>
+    <tr><td><strong>标准</strong>：全站通读，代码只看不敲</td><td>约 3 小时</td><td>准备写第一个自定义 Shader，需要知道每个参数的含义</td></tr>
+    <tr><td><strong>动手</strong>：每章的代码块都跑一遍，自测全做</td><td>1–2 天</td><td>正在做后处理或自定义光照，需要能改能用</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <p class="callout-title">阅读前提</p>
+  <p>会打开 Unity、知道 <code>GameObject</code> 和 <code>Component</code> 的关系、能看懂 C# 的类和字段，就够开始了。数学只需要「向量点乘」这一条：<code>a·b = |a||b|cosθ</code>，其余章节遇到会现场解释。</p>
+</div>
+
+<h2 id="map">一张总对照表</h2>
+
+<p>把原教程的术语和 Unity 的术语并排放，是消除陌生感最快的方法。下面这张表建议截图存下来：</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>原教程（OpenGL）</th><th>Unity 里的名字</th><th>在哪里看到它</th></tr></thead>
+  <tbody>
+    <tr><td>模型矩阵 / Model Matrix</td><td><code>transform.localToWorldMatrix</code></td><td>Transform 组件的 Position / Rotation / Scale</td></tr>
+    <tr><td>视图矩阵 / View Matrix</td><td><code>camera.worldToCameraMatrix</code></td><td>Camera 组件的 Transform</td></tr>
+    <tr><td>投影矩阵 / Projection</td><td><code>camera.projectionMatrix</code></td><td>Camera 的 Field of View / Clipping Planes</td></tr>
+    <tr><td>视口 / Viewport</td><td>Viewport Rect、<code>Screen.width</code></td><td>Camera 组件的 Viewport Rect</td></tr>
+    <tr><td>Phong / Blinn-Phong</td><td>URP Lit 材质、Standard 材质</td><td>Material 面板的 Smoothness / Metallic</td></tr>
+    <tr><td>法线贴图 / Normal Map</td><td>Normal Map 贴图槽 + <code>UnpackNormal</code></td><td>导入设置里的 Texture Type</td></tr>
+    <tr><td>帧缓冲 / FBO</td><td><code>RenderTexture</code> / Renderer Feature</td><td>Project 里右键 Create → Render Texture</td></tr>
+    <tr><td>全屏四边形 + 后处理</td><td>Full Screen Pass / <code>OnRenderImage</code></td><td>URP Renderer 资产的 Add Renderer Feature</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout unity">
+  <p class="callout-title">一个心态上的建议</p>
+  <p>读的时候不要试图「记住公式」。你要建立的是<strong>判断力</strong>：看到画面偏暗，知道该怀疑环境光还是法线；看到边缘有锯齿状的亮线，知道那是法线贴图接缝。判断力来自对照表 + 踩坑，不来自推导。</p>
+</div>
+
+<p style="margin-top:44px;color:var(--muted);font-size:14px">准备好了就从 <a href="01-coordinate-spaces.html"><strong>第 01 章 · 坐标系统</strong></a> 开始。</p>
+    </article>
+
+<nav class="pager"><a class="empty" href="index.html"><span class="dir">回到</span><span class="ttl">首页导览</span></a><a class="next" href="01-coordinate-spaces.html"><span class="dir">下一篇</span><span class="ttl">01 · 坐标系统</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

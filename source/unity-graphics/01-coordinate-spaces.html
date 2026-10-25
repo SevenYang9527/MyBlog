@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>坐标系统 · Unity × 图形学</title>
+<meta name="description" content="局部→世界→观察→裁剪→NDC→屏幕：一个顶点上屏前要走的五段路，以及 Unity 替你算了哪几段。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-chapter">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link" href="index.html"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link active" href="01-coordinate-spaces.html" aria-current="page"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link" href="02-camera.html"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link" href="03-basic-lighting.html"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link" href="04-normal-mapping.html"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link" href="05-framebuffer.html"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>01 · 坐标系统</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="page-head">
+  <p class="eyebrow">第 01 章 · 坐标系统</p>
+  <h1>一个顶点，<em>要走五段路</em>才上屏幕</h1>
+  <p class="lede">原教程用了整整一章、几百行代码来讲空间变换。但在 Unity 里，你几乎只会碰到其中一段：<strong>Local → World</strong>，也就是 Transform。剩下的 Camera 和投影，Unity 已经算好了。这一章只讲你真正需要的那部分，以及「什么时候会算错」。</p>
+  <div class="tags">
+    <span class="tag-src">原教程</span>
+    <span class="tag">坐标系统</span>
+    <span class="tag">5 个空间</span>
+    <span class="tag">MVP 矩阵</span>
+    <span class="tag">深度</span>
+  </div>
+</section>
+<nav class="chapter-toc"><p class="toc-label">本章目录</p><ol class="toc"><li><a href="#why"><span class="n">01</span><span>为什么需要这么多空间</span></a></li><li><a href="#spaces"><span class="n">02</span><span>六个空间，一张表看清</span></a></li><li><a href="#matrix"><span class="n">03</span><span>三个矩阵，各干一件事</span></a></li><li><a href="#unity"><span class="n">04</span><span>Unity 里，你其实只关心其中一段</span></a></li><li><a href="#depth"><span class="n">05</span><span>顺带一个必须知道的东西：深度</span></a></li><li><a href="#pitfalls"><span class="n">06</span><span>五个坑</span></a></li><li><a href="#check"><span class="n">07</span><span>自测：三题</span></a></li></ol></nav>
+
+
+<div class="tldr">
+  <span class="tldr-label">一句话</span>
+  <p>顶点从「模型自己」出发，被一组矩阵一路搬到屏幕上。Unity 替你算完了后面三段，<strong>但它不会替你判断你此刻在哪个空间里做运算</strong>——而 90% 的 Shader bug 就是空间搞错了。</p>
+</div>
+
+<h2 id="why">为什么需要这么多空间</h2>
+
+<p>想象一把椅子。它有三个完全不同的「位置」：</p>
+
+<ul>
+  <li>在建模软件里，它站在自己文件的原点旁边 —— 这是<strong>局部空间</strong>（Local）</li>
+  <li>在场景里，你把它拖到 (5, 0, 3) —— 这是<strong>世界空间</strong>（World）</li>
+  <li>在玩家眼睛里，它可能偏左 30 厘米 —— 这是<strong>观察空间</strong>（View）</li>
+  <li>在屏幕上，它占据第 640 到 800 个像素 —— 这是<strong>屏幕空间</strong>（Screen）</li>
+</ul>
+
+<p>这几个「位置」都是对的，只是参考系不同。<strong>坐标系统这一章，本质上就是在讲「怎么在参考系之间换算」，以及「GPU 只认识哪一种」。</strong></p>
+
+<p>GPU 最后只认识屏幕上的像素，所以每个顶点都得被搬运过去。搬运的过程是固定的五步，这也是图形管线最核心的一条主线：</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 300" role="img" aria-label="顶点从局部空间到屏幕空间的五个变换阶段">
+    <defs>
+      <marker id="ar1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+
+    <!-- 节点 1：局部 -->
+    <rect x="25" y="104" width="100" height="60" rx="10" fill="#eef2ff" stroke="#a5b4fc" stroke-width="1.5"/>
+    <text x="75" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">局部空间</text>
+    <text x="75" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">Local</text>
+    <text x="75" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">transform</text>
+    <text x="75" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">.localPosition</text>
+
+    <!-- 节点 2：世界 -->
+    <rect x="175" y="104" width="100" height="60" rx="10" fill="#e0f2fe" stroke="#7dd3fc" stroke-width="1.5"/>
+    <text x="225" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">世界空间</text>
+    <text x="225" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">World</text>
+    <text x="225" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">transform</text>
+    <text x="225" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">.position</text>
+
+    <!-- 节点 3：观察 -->
+    <rect x="325" y="104" width="100" height="60" rx="10" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+    <text x="375" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">观察空间</text>
+    <text x="375" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">View</text>
+    <text x="375" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">worldToCamera</text>
+    <text x="375" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">Matrix</text>
+
+    <!-- 节点 4：裁剪 -->
+    <rect x="475" y="104" width="100" height="60" rx="10" fill="#fef3c7" stroke="#fbbf24" stroke-width="1.5"/>
+    <text x="525" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">裁剪空间</text>
+    <text x="525" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">Clip</text>
+    <text x="525" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">UnityObject</text>
+    <text x="525" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">ToClipPos()</text>
+
+    <!-- 节点 5：NDC -->
+    <rect x="625" y="104" width="100" height="60" rx="10" fill="#fee2e2" stroke="#f87171" stroke-width="1.5"/>
+    <text x="675" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">NDC</text>
+    <text x="675" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">标准化设备坐标</text>
+    <text x="675" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">GPU 自动</text>
+    <text x="675" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">（除以 w）</text>
+
+    <!-- 节点 6：屏幕 -->
+    <rect x="775" y="104" width="100" height="60" rx="10" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="825" y="130" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">屏幕空间</text>
+    <text x="825" y="149" font-size="10.5" fill="#4b5563" text-anchor="middle">Screen</text>
+    <text x="825" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">_ScreenParams</text>
+    <text x="825" y="210" font-size="9.5" fill="#64748b" text-anchor="middle">像素坐标</text>
+
+    <!-- 箭头与矩阵标签 -->
+    <line x1="127" y1="134" x2="171" y2="134" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar1)"/>
+    <text x="150" y="96" font-size="11" font-weight="700" fill="#2f6bff" text-anchor="middle">× M</text>
+
+    <line x1="277" y1="134" x2="321" y2="134" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar1)"/>
+    <text x="300" y="96" font-size="11" font-weight="700" fill="#0d9488" text-anchor="middle">× V</text>
+
+    <line x1="427" y1="134" x2="471" y2="134" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar1)"/>
+    <text x="450" y="96" font-size="11" font-weight="700" fill="#b45309" text-anchor="middle">× P</text>
+
+    <line x1="577" y1="134" x2="621" y2="134" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar1)"/>
+    <text x="600" y="96" font-size="11" font-weight="700" fill="#be123c" text-anchor="middle">÷ w</text>
+
+    <line x1="727" y1="134" x2="771" y2="134" stroke="#94a3b8" stroke-width="1.6" marker-end="url(#ar1)"/>
+    <text x="750" y="96" font-size="11" font-weight="700" fill="#7c3aed" text-anchor="middle">视口</text>
+
+    <!-- 阶段括号 -->
+    <path d="M25,238 L25,246 L575,246 L575,238" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="300" y="266" font-size="11" fill="#475569" text-anchor="middle">顶点着色器（你写的 vert 函数）</text>
+
+    <path d="M625,238 L625,246 L875,246 L875,238" fill="none" stroke="#cbd5e1" stroke-width="1.4"/>
+    <text x="750" y="266" font-size="11" fill="#475569" text-anchor="middle">光栅化 + 视口变换（GPU 固定功能）</text>
+  </svg>
+  <figcaption>M = 模型矩阵，V = 视图矩阵，P = 投影矩阵。四段变换 + 一次除法，就是一个顶点上屏的全部旅程。</figcaption>
+</figure>
+
+<h2 id="spaces">六个空间，一张表看清</h2>
+
+<p>不要被「六个」吓到。你真正要记住的只有两件事：<strong>每个空间的原点在哪</strong>，以及<strong>Unity 里用哪个 API 拿到它</strong>。</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>空间</th><th>原点 / 单位</th><th>Unity 里怎么拿</th><th>什么时候你会关心</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>局部空间</strong><br><small>Local / Object</small></td>
+      <td>模型自身原点；单位任意</td>
+      <td><code>transform.localPosition</code><br><code>transform.localToWorldMatrix</code></td>
+      <td>顶点数据本身就在这个空间；<code>Mesh.vertices</code> 也是</td>
+    </tr>
+    <tr>
+      <td><strong>世界空间</strong><br><small>World</small></td>
+      <td>场景原点；1 单位 = 1 米</td>
+      <td><code>transform.position</code><br><code>transform.forward</code></td>
+      <td>算物体间距、朝向、光照方向；大部分 Shader 计算都在这里</td>
+    </tr>
+    <tr>
+      <td><strong>观察空间</strong><br><small>View / Eye</small></td>
+      <td>摄像机位置；相机朝 <strong>−Z</strong></td>
+      <td><code>camera.worldToCameraMatrix</code><br><code>UnityWorldSpaceViewDir()</code></td>
+      <td>需要「相对相机」的量：距离衰减、屏幕对齐、雾</td>
+    </tr>
+    <tr>
+      <td><strong>裁剪空间</strong><br><small>Clip</small></td>
+      <td>齐次坐标，第 4 个分量 <code>w</code> 存深度</td>
+      <td><code>UnityObjectToClipPos()</code> 的返回值</td>
+      <td>在顶点着色器里直接改 <code>o.pos</code>（做顶点动画、屏幕抖动）</td>
+    </tr>
+    <tr>
+      <td><strong>NDC</strong><br><small>标准化设备坐标</small></td>
+      <td>裁剪空间 ÷ w，范围 −1..1</td>
+      <td>GPU 自动完成</td>
+      <td>算屏幕 UV、做屏幕空间效果时，本质上是在 NDC 上玩</td>
+    </tr>
+    <tr>
+      <td><strong>屏幕空间</strong><br><small>Screen</small></td>
+      <td>像素，左下角为 (0,0)</td>
+      <td><code>Camera.WorldToScreenPoint()</code><br><code>ComputeScreenPos()</code></td>
+      <td>UI 跟随 3D 物体、鼠标拾取、后处理采样</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 262" role="img" aria-label="世界坐标系与物体局部坐标系的对比">
+    <line x1="450" y1="18" x2="450" y2="244" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+    <!-- 左：世界坐标 -->
+    <text x="225" y="30" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">世界空间：轴永远不动</text>
+    <line x1="150" y1="200" x2="360" y2="200" stroke="#ef4444" stroke-width="2" marker-end="url(#ar1)"/>
+    <line x1="150" y1="200" x2="150" y2="72" stroke="#22c55e" stroke-width="2" marker-end="url(#ar1)"/>
+    <line x1="150" y1="200" x2="268" y2="110" stroke="#3b82f6" stroke-width="2" marker-end="url(#ar1)"/>
+    <circle cx="150" cy="200" r="3.5" fill="#1f2937"/>
+    <text x="372" y="204" font-size="11.5" font-weight="700" fill="#ef4444">X 右</text>
+    <text x="150" y="62" font-size="11.5" font-weight="700" fill="#16a34a" text-anchor="middle">Y 上</text>
+    <text x="278" y="106" font-size="11.5" font-weight="700" fill="#3b82f6">Z 前</text>
+    <text x="225" y="238" font-size="10.5" fill="#64748b" text-anchor="middle">左手系：X 右、Y 上、Z 指向屏幕里</text>
+
+    <!-- 右：局部坐标 -->
+    <text x="675" y="30" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">局部空间：轴跟着物体转</text>
+    <path d="M560,200 L760,150 L820,190 L620,240 Z" fill="#dbeafe" stroke="#60a5fa" stroke-width="1.6" stroke-linejoin="round"/>
+    <line x1="690" y1="195" x2="790" y2="167" stroke="#ef4444" stroke-width="2" marker-end="url(#ar1)"/>
+    <line x1="690" y1="195" x2="690" y2="118" stroke="#22c55e" stroke-width="2" marker-end="url(#ar1)"/>
+    <line x1="690" y1="195" x2="748" y2="215" stroke="#3b82f6" stroke-width="2" marker-end="url(#ar1)"/>
+    <circle cx="690" cy="195" r="3.5" fill="#1f2937"/>
+    <text x="800" y="163" font-size="11.5" font-weight="700" fill="#ef4444">局部 X</text>
+    <text x="690" y="108" font-size="11.5" font-weight="700" fill="#16a34a" text-anchor="middle">局部 Y</text>
+    <text x="756" y="232" font-size="11.5" font-weight="700" fill="#3b82f6">局部 Z</text>
+    <text x="675" y="256" font-size="10.5" fill="#64748b" text-anchor="middle">物体一旋转，这三根轴跟着一起转</text>
+  </svg>
+  <figcaption>同一个物体，「它的前方」和「世界的北方」是两回事。搞混这两者，是一切方向类 bug 的源头。</figcaption>
+</figure>
+
+<h2 id="matrix">三个矩阵，各干一件事</h2>
+
+<h3>M：模型矩阵 —— 把物体摆进世界</h3>
+
+<p>模型矩阵就是把 <code>Position</code>、<code>Rotation</code>、<code>Scale</code> 打包成一个 4×4 矩阵。Unity 里你改 Transform 面板，改的就是这个矩阵的参数。</p>
+
+<p>注意它<strong>同时包含缩放</strong>。这带来一个隐患：如果缩放是非均匀的（比如 X 拉两倍、Y 不变），法线就不能直接用这个矩阵变换了——必须用它的<strong>逆转置</strong>。Unity 帮你处理了这件事，提供 <code>UnityObjectToWorldNormal()</code>；但如果你自己手搓，很容易踩到。</p>
+
+<h3>V：视图矩阵 —— 把世界搬到相机面前</h3>
+
+<p>关键认知：<strong>相机不动，是整个世界在动</strong>。视图矩阵是相机变换的「逆」：相机往前 1 米，等价于世界整体往后 1 米。下一章会用一整节讲这件事。</p>
+
+<div class="callout warn">
+  <p class="callout-title">Unity 的观察空间是右手系</p>
+  <p>Unity 的世界空间是左手系（Z 向前），但 <code>worldToCameraMatrix</code> 会把 Z 轴翻转一次，让观察空间变成<strong>右手系、相机朝 −Z</strong>，以兼容 OpenGL 的老习惯。所以：<strong>世界空间里相机前方是 +Z，观察空间里同一个方向变成 −Z</strong>。算「物体在相机前面还是后面」时，这一步特别容易搞反。</p>
+</div>
+
+<h3>P：投影矩阵 —— 把视锥体压成一个方块</h3>
+
+<p>投影矩阵做了两件看起来毫不相干的事：</p>
+
+<ol>
+  <li><strong>形状</strong>：把「远处大、近处小」的视锥体，压成一个标准的立方体（−1..1），这样 GPU 才能做裁剪和光栅化。</li>
+  <li><strong>深度</strong>：把「距离」编码进 <code>z</code> 分量，<strong>顺便写进 <code>w</code></strong>。这就是为什么后面的「透视除法」能产生近大远小的效果——离得越远，<code>w</code> 越大，除完之后坐标越靠近中心。</li>
+</ol>
+
+<p>它不是均匀压缩：<strong>近处的深度占了很多精度，远处很少</strong>。这也是「近裁剪面设得太小会导致 z-fighting」的原因。</p>
+
+<h3>乘法顺序：为什么是 P × V × M</h3>
+
+<p>图形学里的向量是<strong>列向量</strong>，矩阵在左边相乘：<code>结果 = P × V × M × 顶点</code>。因为是从右往左依次作用，所以写代码时顺序不能反——写成 <code>M × V × P</code> 得到的是垃圾数据，画面直接空白或镜像。</p>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">手动走一遍 MVP，验证 Unity 背后做了什么</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>using UnityEngine;
+
+public class ManualMVP : MonoBehaviour
+{
+    public Camera cam;
+
+    void Start()
+    {
+        // 1. 三个矩阵
+        Matrix4x4 M = transform.localToWorldMatrix;                            // 局部 → 世界
+        Matrix4x4 V = cam.worldToCameraMatrix;                                 // 世界 → 观察
+        Matrix4x4 P = GL.GetGPUProjectionMatrix(cam.projectionMatrix, false);  // 观察 → 裁剪
+
+        // 2. 列向量左乘，从右往左依次作用，所以必须写成 P * V * M
+        Matrix4x4 MVP = P * V * M;
+
+        // 3. 用模型原点试一下（齐次坐标，w = 1）
+        Vector4 local = new Vector4(0f, 0f, 0f, 1f);
+        Vector4 clip  = MVP * local;          // 得到裁剪空间坐标，w 里存着深度信息
+
+        // 4. 透视除法：GPU 在裁剪之后自动做这一步
+        Vector3 ndc = new Vector3(clip.x / clip.w, clip.y / clip.w, clip.z / clip.w);
+
+        // 5. NDC（-1..1）→ 像素（0..宽）
+        Vector3 pixel = new Vector3((ndc.x * 0.5f + 0.5f) * Screen.width,
+                                    (ndc.y * 0.5f + 0.5f) * Screen.height,
+                                    0f);
+
+        // 6. 和 Unity 自己算的结果对比，应该几乎一致
+        Debug.Log($"手算 {pixel} / Unity {cam.WorldToScreenPoint(transform.position)}");
+    }
+}</code></pre>
+</div>
+
+<p>把这段挂到任意物体上、拖一个相机进去、点 Play，看 Console 里两个值是否对得上。这是建立空间感最有效的一次练习——<strong>比读十遍「MVP 变换」都有用</strong>。</p>
+
+<h2 id="unity">Unity 里，你其实只关心其中一段</h2>
+
+<p>因为剩下四段 Unity 都封装好了。你在 Shader 里最常见的写法是：</p>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · 内置管线</span>
+    <span class="code-title">最小顶点/片元着色器：空间变换只有一行</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>Shader "Custom/SpaceDemo"
+{
+    SubShader
+    {
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; };
+            struct v2f { float4 pos : SV_POSITION; };
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+                // 这一行 = P * V * M * 顶点，内部自动处理了平台差异
+                o.pos = UnityObjectToClipPos(v.vertex);
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                return fixed4(1, 1, 1, 1);   // 纯白
+            }
+            ENDCG
+        }
+    }
+}</code></pre>
+</div>
+
+<p><code>UnityObjectToClipPos</code> 这七个字母，就是原教程里那一大段矩阵乘法的全部。想拿中间结果，Unity 还提供了这些：</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>你想要的值</th><th>Unity 内置管线写法</th><th>URP 写法</th></tr></thead>
+  <tbody>
+    <tr><td>局部 → 裁剪（最常用）</td><td><code>UnityObjectToClipPos(pos)</code></td><td><code>TransformObjectToHClip(pos)</code></td></tr>
+    <tr><td>局部 → 世界</td><td><code>mul(unity_ObjectToWorld, pos)</code></td><td><code>TransformObjectToWorld(pos)</code></td></tr>
+    <tr><td>局部 → 观察</td><td><code>UnityObjectToViewPos(pos)</code></td><td><code>mul(UNITY_MATRIX_V, ...)</code></td></tr>
+    <tr><td>法线 → 世界（含法线矩阵）</td><td><code>UnityObjectToWorldNormal(n)</code></td><td><code>TransformObjectToWorldNormal(n)</code></td></tr>
+    <tr><td>世界点 → 指向相机的方向</td><td><code>UnityWorldSpaceViewDir(wpos)</code></td><td><code>GetWorldSpaceViewDir(wpos)</code></td></tr>
+    <tr><td>屏幕坐标</td><td><code>ComputeScreenPos(pos)</code></td><td><code>ComputeScreenPos(pos)</code></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout unity">
+  <p class="callout-title">Shader Graph 里的「空间」下拉框</p>
+  <p>Shader Graph 的 <strong>Position</strong> 节点上有一个 <em>Space</em> 下拉框：<code>Object</code>、<code>World</code>、<code>View</code>、<code>Clip</code>、<code>Screen</code>。这五个选项和本章的五个空间<strong>一一对应</strong>。当你发现「把 Position 节点从 Object 切到 World，效果就对了」，那不是玄学，就是这一章讲的东西。</p>
+</div>
+
+<h2 id="depth">顺带一个必须知道的东西：深度</h2>
+
+<p>投影矩阵把深度压进了 <code>z</code>（并且写进 <code>w</code>），而 GPU 靠这个值判断「谁在前面」。这里有两个反直觉的事实：</p>
+
+<ol>
+  <li><strong>深度不是线性的</strong>。经过透视除法之后，靠近近裁剪面的深度变化非常剧烈，远处的挤压在一起。所以「近裁剪面越小，远处越没有精度」。</li>
+  <li><strong>深度值范围因平台而异</strong>。OpenGL 是 −1..1，Direct3D / Metal / Vulkan 是 0..1，而且 y 轴方向还可能翻转。这就是 <code>GL.GetGPUProjectionMatrix()</code> 存在的原因——它会把 Unity 的「通用投影矩阵」翻译成当前图形 API 真正想要的格式。</li>
+</ol>
+
+<div class="callout danger">
+  <p class="callout-title">两个经典翻车现场</p>
+  <ul>
+    <li><strong>z-fighting</strong>：把近裁剪面设成 <code>0.01</code>，于是 10 米外的墙开始闪烁。改成 <code>0.1</code> 或 <code>0.3</code>，问题消失。远处的东西不需要那么高的深度精度。</li>
+    <li><strong>自己拼投影矩阵</strong>：直接 <code>camera.projectionMatrix</code> 传给 Shader，在 Windows 上正常、打包到 Android 就上下颠倒或深度全黑。正确做法是用 <code>GL.GetGPUProjectionMatrix(proj, 是否渲染到纹理)</code>。<em>第 05 章讲帧缓冲时，这个参数会再次出现。</em></li>
+  </ul>
+</div>
+
+<h2 id="pitfalls">五个坑</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>症状</th><th>原因</th><th>修法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>模型绕着自己以外的地方转</td>
+      <td>围绕世界原点（0,0,0）旋转，而不是模型自身原点</td>
+      <td>把模型顶点挪到原点附近；或用「父节点当枢轴」</td>
+    </tr>
+    <tr>
+      <td>物体缩放后法线全错、光照发黑</td>
+      <td>直接用法线乘了模型矩阵，没处理非均匀缩放</td>
+      <td>用 <code>UnityObjectToWorldNormal()</code>；或先 <code>normalize</code></td>
+    </tr>
+    <tr>
+      <td>手搓 MVP 后画面全黑 / 镜像</td>
+      <td>矩阵乘法顺序写反（<code>M*V*P</code>），或忘了转置</td>
+      <td>永远是 <code>P * V * M</code>；Unity 用列主序</td>
+    </tr>
+    <tr>
+      <td>屏幕 UV 上下颠倒，只在打包后出现</td>
+      <td>用 <code>Screen.width / height</code> 硬算，没考虑渲染到纹理时的 y 翻转</td>
+      <td>用 <code>ComputeScreenPos()</code>，它已经处理了平台差异</td>
+    </tr>
+    <tr>
+      <td>物体贴脸就消失</td>
+      <td>被近裁剪面裁掉了</td>
+      <td>近裁剪面从 0.01 调到 0.1/0.3（见第 02 章）</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="check">自测：三题</h2>
+
+<p>能答上来，这章就过关了。</p>
+
+<details class="quiz">
+  <summary>自测 · 3 个问题（先自己答，再展开）</summary>
+  <div class="quiz-body">
+    <ol>
+      <li>
+        <strong><code>transform.position</code> 和 <code>transform.localPosition</code> 分别属于哪个空间？</strong>
+        <span class="ans"><code>position</code> 是世界空间；<code>localPosition</code> 是相对父物体的局部空间。物体没有父物体时两者数值相同，但不代表它们是同一个概念。</span>
+      </li>
+      <li>
+        <strong>为什么 Unity 的观察空间里相机朝 −Z，而世界空间里相机朝 +Z？</strong>
+        <span class="ans">因为 <code>worldToCameraMatrix</code> 在求逆时把 Z 轴翻转了一次，让观察空间符合 OpenGL 的右手系习惯（相机看向 −Z）。这是历史兼容，不是设计选择。</span>
+      </li>
+      <li>
+        <strong>「物体在屏幕边缘被切掉一半」这件事，发生在哪个空间？</strong>
+        <span class="ans">裁剪空间。GPU 在透视除法之前、拿到齐次坐标时就做裁剪（判断 <code>−w ≤ x,y,z ≤ w</code>）。投影之后才做的就是光栅化了。</span>
+      </li>
+    </ol>
+  </div>
+</details>
+
+<div class="callout tip">
+  <p class="callout-title">下一章</p>
+  <p>视图矩阵 V 就是「把世界搬到你面前」的那个矩阵。第 02 章会拆开它，顺便讲清 FOV、近裁剪面和视锥体——那些你在 Camera Inspector 里天天见、但从没细想过的参数。</p>
+</div>
+    </article>
+
+<nav class="pager"><a href="index.html"><span class="dir">上一篇</span><span class="ttl">00 · 开始</span></a><a class="next" href="02-camera.html"><span class="dir">下一篇</span><span class="ttl">02 · 摄像机</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

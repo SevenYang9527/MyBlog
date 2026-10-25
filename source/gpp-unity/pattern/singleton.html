@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>单例 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="一个类只允许一个实例，还给它开个全局入口。全书唯一一章劝你别用——而 Unity 新手最爱用。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/singleton.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="singleton" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">单例</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">19</span> 第 19 章 · Singleton</p>
+        <h1>单例</h1>
+        <p class="p-essence">一个类只允许一个实例，还给它开个全局入口。全书唯一一章劝你别用——而 Unity 新手最爱用。</p>
+        <ul class="p-meta">
+          <li>15 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>static Instance · DontDestroyOnLoad · RuntimeInitializeOnLoadMethod</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>有些东西客观上只该有一个：文件系统、日志、音频设备、配置。单例保证「唯一」，并提供全局访问点。</p>
+<p>作者的结论是全书最直白的一句：<strong>这是最不推荐的模式</strong>，因为全局可变状态会让依赖不可见、测试变难、初始化顺序难以推理。他用了一整节讲「什么时候不要用」——那才是这章的价值。</p>
+<h2>Unity 里它长什么样</h2>
+<p><code>Unity</code> 里最常见的写法（也是坑最多的）：</p>
+<pre class="code"><code>public class GameManager : MonoBehaviour
+{
+    public static GameManager Instance { get; private set; }
+
+    void Awake()
+    {
+        if (Instance != null &amp;&amp; Instance != this)
+        {
+            Destroy(gameObject);       // 场景里挂了两个
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;   // 别漏，否则退出播放模式后残留引用
+    }
+}</code></pre>
+<p><code>Unity</code> 特有的三个坑：</p>
+<ul class="p-list"><li><strong>编辑器域重载</strong>：不写 <code>OnDestroy</code> 里的置空，停止播放后 <code>Instance</code> 仍指向已销毁对象。</li><li><strong>场景叠加</strong>：<code>DontDestroyOnLoad</code> + 每个场景都放一份 = 两份共存，靠上面的 <code>Destroy</code> 救场。</li><li><strong>静态状态</strong>：静态字段在编辑器里跨播放会话残留（<code>Domain Reload</code> 被关闭时尤其明显）。</li></ul>
+<h2>什么时候别用</h2>
+<p>按优先级选替代方案：</p>
+<ol class="p-list p-list-num"><li><strong>只读配置</strong> → <code>ScriptableObject</code> 资产（数据不需要「管理」）。</li><li><strong>每个场景一个的自然单例</strong> → 场景内 <code>[SerializeField]</code> 引用，谁需要谁拖。</li><li><strong>纯函数工具</strong> → <code>static class</code>（无状态，没有「唯一实例」问题）。</li><li><strong>真的全局服务</strong> → <code>DI</code> 容器（<code>VContainer</code>）管理生命周期。</li><li>最后才是单例，并且只读、无状态、可重置。</li></ol>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>全局搜 <code>Instance</code>，数一下有多少个 <code>Manager.Instance</code>。</li><li>挑一个，问三个问题：它需要「唯一」吗？它需要「全局访问」吗？它是只读的吗？</li><li>三个都「是」→ 留着。有一个「否」→ 按上面的顺序换掉一个。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="prototype.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 原型</span></a>
+        <span class="p-nav p-nav-empty"></span>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/singleton.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

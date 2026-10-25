@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字节码 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="用数据描述行为，让一个小解释器去执行。灵活到能热更，但也把调试难度一起买了回来。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/bytecode.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="bytecode" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">字节码</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">17</span> 第 17 章 · Bytecode</p>
+        <h1>字节码</h1>
+        <p class="p-essence">用数据描述行为，让一个小解释器去执行。灵活到能热更，但也把调试难度一起买了回来。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>SO 技能配置 · Visual Scripting · Lua 热更</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>硬编码的行为改一次要编译一次；如果行为本身是内容（技能、关卡逻辑、对话），就希望它变成数据。字节码是这条路线的标准答案：定义一组指令 + 一个栈/寄存器解释器，行为写成指令序列。</p>
+<p>作者的态度很谨慎：只有当<strong>内容复杂度超过代码复杂度</strong>时才值得，而且必须配套工具与调试手段。</p>
+<h2>Unity 里它长什么样</h2>
+<p>三个层级，从轻到重：</p>
+<ol class="p-list p-list-num"><li><strong><code>ScriptableObject</code> + 指令列表</strong>（最轻，多数项目够用）：</li></ol>
+<pre class="code"><code>public enum Op { Damage, Heal, SpawnFx, Delay, Repeat }
+
+[System.Serializable]
+public struct Instr
+{
+    public Op op;
+    public int amount;
+    public float wait;
+}
+
+[CreateAssetMenu(menuName = &quot;GPP/Skill&quot;)]
+public class Skill : ScriptableObject
+{
+    public string displayName;
+    public List&lt;Instr&gt; instructions = new();
+}
+
+// 解释器：几十行就能跑
+public IEnumerator Run(Skill skill, IDamageable target)
+{
+    foreach (var i in skill.instructions)
+    {
+        switch (i.op)
+        {
+            case Op.Damage: target.TakeDamage(i.amount); break;
+            case Op.Heal:   /* ... */ break;
+            case Op.Delay:  yield return new WaitForSeconds(i.wait); break;
+        }
+    }
+}</code></pre>
+<ol class="p-list p-list-num"><li><strong>可视化脚本</strong>（<code>Visual Scripting</code> / <code>Playmaker</code>）：本质也是字节码，只是编辑器更好用。</li><li><strong>脚本语言热更</strong>（<code>Lua</code> / <code>HybridCLR</code>）：需要热更能力时才上，运维成本真实。</li></ol>
+<p><code>Unity</code> 内部也在用：<code>Animator</code> 的状态机运行时就是字节码，<code>Timeline</code> 的轨道也是数据驱动执行。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>只为了「策划能改技能」就上字节码 → 先试试把参数抽成 <code>SO</code>（组合优于解释）。</li><li>解释器没有栈信息，报错只会告诉你「第 37 条指令崩了」，排查成本远高于普通代码。</li><li>性能敏感的逻辑别走解释执行，尤其每帧调用的。</li><li>一定要配可视化编辑器或至少文本格式（可 <code>diff</code>、可代码评审），否则维护会失控。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>用 6 条指令实现「火球术：立即伤害 → 等 0.3s → 生成特效 → 再伤害一次」。</li><li>在 <code>Inspector</code> 里改数值，不重编译。</li><li>给解释器加一行「当前执行到第几条」的日志——这就是它的断点。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="double-buffer.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 双缓冲</span></a>
+        <a class="p-nav p-nav-next" href="prototype.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">原型 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/bytecode.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

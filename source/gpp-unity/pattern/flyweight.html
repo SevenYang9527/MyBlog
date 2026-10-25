@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>享元 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="一千棵树只需要一份「树的样子」，各自只存位置和大小。共享的部分越多，内存越省。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/flyweight.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="flyweight" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">享元</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">15</span> 第 15 章 · Flyweight</p>
+        <h1>享元</h1>
+        <p class="p-essence">一千棵树只需要一份「树的样子」，各自只存位置和大小。共享的部分越多，内存越省。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>共享 Mesh / Material · GPU Instancing · SO 共享数据</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>场景里成千上万个相似对象，如果每个都带一份完整的网格、贴图、动画数据，内存立刻爆掉。享元把状态分成两类：</p>
+<ul class="p-list"><li><strong>内禀状态</strong>：所有实例共享、永不改变（网格、材质、贴图、动画曲线）。</li><li><strong>外禀状态</strong>：每个实例独有（位置、旋转、血量、颜色）。</li></ul>
+<p>共享内禀，只存外禀。作者还提醒：这不是免费午餐——一旦共享数据被改，所有实例一起变。</p>
+<h2>Unity 里它长什么样</h2>
+<p><code>Unity</code> 的资源系统天生就是享元：一个 <code>Material</code> 资产被一千个 <code>Renderer</code> 引用，内存里只有一份。</p>
+<pre class="code"><code>// 灾难写法：每次访问 .material 都会实例化一份材质（克隆）
+renderer.material.color = Color.red;
+
+// 正确写法一：确实要改，用 sharedMaterial 并接受「全体一起变」
+renderer.sharedMaterial.color = Color.red;
+
+// 正确写法二：只想改这一个实例，用 MaterialPropertyBlock（不产生材质实例）
+static readonly int ColorId = Shader.PropertyToID(&quot;_Color&quot;);
+var mpb = new MaterialPropertyBlock();
+renderer.GetPropertyBlock(mpb);
+mpb.SetColor(ColorId, tint);
+renderer.SetPropertyBlock(mpb);</code></pre>
+<p>其它常见落点：<code>GPU Instancing</code>（同网格同材质一次画完）、<code>Terrain</code> 的树与草、<code>Prefab</code> 变体、<code>ScriptableObject</code> 共享配置（见类型对象）、<code>Sprite Atlas</code>（合图减少切换）。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>共享 = 「一改全变」。如果每个实例都要独立外观，它就是错的方案。</li><li>每实例一个材质实例（<code>renderer.material</code>）是 <code>Unity</code> 项目里最常见的内存与 <code>Draw Call</code> 杀手。</li><li>别共享「会变的运行时数据」，那会导致一个对象受伤、全场一起掉血。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>全局搜 <code>.material</code>（不是 <code>.sharedMaterial</code>），看有多少处。</li><li>挑一处改成 <code>MaterialPropertyBlock</code>。</li><li>在 <code>Frame Debugger</code> 里看 <code>Draw Call</code> 与 <code>SetPass</code> 的变化。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="data-locality.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 数据局部性</span></a>
+        <a class="p-nav p-nav-next" href="double-buffer.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">双缓冲 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/flyweight.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

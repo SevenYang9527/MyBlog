@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>数据局部性 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="CPU 等的不是算力，是内存。把要一起用的数据排在一起，速度能差一个数量级。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/data-locality.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="data-locality" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">数据局部性</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">14</span> 第 14 章 · Data Locality</p>
+        <h1>数据局部性</h1>
+        <p class="p-essence">CPU 等的不是算力，是内存。把要一起用的数据排在一起，速度能差一个数量级。</p>
+        <ul class="p-meta">
+          <li>30 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>DOTS / ECS · Jobs + Burst · NativeArray · SoA 布局</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>现代 <code>CPU</code> 一次读一整条缓存行（64 字节）。如果遍历时跳到内存各处去找对象，绝大部分带宽都浪费在这个「跳」上。</p>
+<p>作者给的方案：<strong>按需拆分数据</strong>（<code>SoA</code>，把同类字段排成数组）、<strong>热/冷分离</strong>（常用的字段单独放）、<strong>批处理</strong>（一次处理一批同类数据）、<strong>减少指针</strong>（少一次间接跳转）。</p>
+<p>这是全书唯一讲「硬件」的一章，也是 <code>DOTS</code> 的理论基础。</p>
+<h2>Unity 里它长什么样</h2>
+<p><code>Unity</code> 的经典写法是 <code>AoS</code>（每个 <code>MonoBehaviour</code> 是一个托管对象，遍历就是跳内存）。三层优化，从便宜到贵：</p>
+<pre class="code"><code>// 1) 最便宜：缓存组件引用，别在循环里 GetComponent
+readonly List&lt;Enemy&gt; enemies = new();
+void Awake() { /* 一次性收集 */ }
+void Update() { for (int i = 0; i &lt; enemies.Count; i++) enemies[i].Tick(); }
+
+// 2) 中等：数据与行为分离，热数据放数组（SoA）
+struct Unit { public Vector3 pos; public float speed; }
+Unit[] units = new Unit[10000];
+
+// 3) 最贵但最强：Jobs + Burst + NativeArray
+[BurstCompile]
+struct MoveJob : IJobParallelFor
+{
+    public NativeArray&lt;Vector3&gt; pos;
+    public float dt;
+    public void Execute(int i) =&gt; pos[i] += Vector3.forward * dt;
+}</code></pre>
+<p><code>Burst</code> 要求代码里没有托管引用（不能用 <code>class</code>、<code>string</code>、<code>List</code>），这是它快的根本原因，也是迁移的主要障碍。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><code>DOTS</code> 学习曲线陡、生态限制多（很多插件不兼容），小项目上它就是纯亏。</li><li>普通项目里<strong>先做这两件事</strong>收益已经很大：去掉每帧 <code>GC Alloc</code>、把 <code>GetComponent</code> 缓存成数组。</li><li>别为了「数据局部性」把所有逻辑改成 <code>struct</code>：值类型拷贝、装箱、调试困难会反过来咬你。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>写一段循环，对 10000 个对象各调用一次 <code>GetComponent<Renderer>()</code>，计时。</li><li>改成 <code>Awake</code> 里缓存成 <code>Renderer[]</code>，再计时。</li><li>把倍数写下来。这一章的核心不是 <code>DOTS</code>，是「别在热路径里跳内存」。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="spatial-partition.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 空间分区</span></a>
+        <a class="p-nav p-nav-next" href="flyweight.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">享元 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/data-locality.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

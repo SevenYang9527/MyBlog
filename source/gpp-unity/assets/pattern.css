@@ -1,0 +1,271 @@
+/* ============================================================
+   模式详情页（Unity 视角解读）
+   ============================================================ */
+
+.pattern-page { background: var(--paper); }
+
+.p-main { padding: 34px 0 70px; }
+.p-wrap { max-width: 900px; }
+
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  color: var(--muted);
+  margin-bottom: 26px;
+}
+.crumb a { color: var(--muted); text-decoration: none; border-bottom: 1px dotted var(--line); }
+.crumb a:hover { color: var(--accent); border-color: var(--accent); }
+.crumb-cur { color: var(--ink-soft); }
+
+.p-article { max-width: 730px; }
+
+.p-head { border-bottom: 2px solid var(--ink); padding-bottom: 22px; margin-bottom: 8px; }
+
+.p-kicker {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.p-no {
+  display: inline-grid;
+  place-items: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  letter-spacing: 0;
+}
+
+.p-head h1 {
+  margin: 0 0 16px;
+  font-family: var(--serif);
+  font-size: clamp(30px, 5vw, 42px);
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1.2;
+}
+
+.p-essence {
+  margin: 0 0 18px;
+  padding-left: 15px;
+  border-left: 3px solid var(--accent);
+  font-family: var(--serif);
+  font-size: 17.5px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.p-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.p-meta li {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: .02em;
+  color: var(--ink-soft);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 4px 11px;
+}
+
+/* ---------------- 正文 ---------------- */
+
+.p-body { padding-top: 26px; }
+
+.p-body h2 {
+  margin: 46px 0 16px;
+  padding-left: 13px;
+  border-left: 3px solid var(--navy);
+  font-family: var(--serif);
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+.p-body h3 {
+  margin: 30px 0 10px;
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: var(--navy);
+}
+
+.p-body p {
+  margin: 0 0 16px;
+  font-size: 15.5px;
+  line-height: 1.92;
+  color: #2b2822;
+}
+.p-body strong { color: var(--ink); font-weight: 700; }
+
+.p-body p code,
+.p-body li code {
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: var(--accent-soft);
+  color: #8f3720;
+  font-family: var(--mono);
+  font-size: .9em;
+}
+
+.p-body a { color: var(--accent); text-decoration: none; border-bottom: 1px solid rgba(193, 74, 43, .35); }
+.p-body a:hover { border-color: var(--accent); }
+
+.p-list {
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+}
+.p-list li {
+  position: relative;
+  padding-left: 20px;
+  margin-bottom: 9px;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #2b2822;
+}
+.p-list li::before {
+  content: "";
+  position: absolute;
+  left: 3px; top: .78em;
+  width: 7px; height: 1.5px;
+  background: var(--accent);
+}
+
+pre.code {
+  margin: 0 0 22px;
+  padding: 16px 18px;
+  background: #f1ead9;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--navy);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: var(--mono);
+  font-size: 12.8px;
+  line-height: 1.72;
+  color: #23211c;
+  tab-size: 2;
+}
+pre.code code { background: none; padding: 0; color: inherit; font-size: inherit; }
+
+.callout {
+  margin: 0 0 22px;
+  padding: 15px 18px;
+  background: var(--accent-soft);
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+}
+.callout p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.85;
+  color: #7a3520;
+}
+.callout p code { background: rgba(255, 255, 255, .55); color: #7a3520; }
+
+/* ---------------- 上下章 ---------------- */
+
+.p-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 54px;
+  padding-top: 26px;
+  border-top: 1px solid var(--line);
+}
+.p-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: border-color .18s, transform .18s;
+}
+.p-nav:hover { border-color: var(--accent); transform: translateY(-1px); }
+.p-nav-next { text-align: right; }
+.p-nav-tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.p-nav-name { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); }
+.p-nav-empty { background: none; border: 1px dashed var(--line); }
+
+.p-pagefoot {
+  padding: 0 0 50px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: var(--muted);
+}
+.p-pagefoot p { max-width: 730px; }
+.p-pagefoot a { color: var(--muted); border-bottom: 1px dotted var(--muted); }
+
+/* ---------------- 已读按钮 ---------------- */
+
+.readbtn {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+  background: var(--paper-2);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.readbtn:hover { border-color: var(--accent); color: var(--accent); }
+.readbtn[aria-pressed="true"] {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .p-main { padding: 22px 0 50px; }
+  .topbar .nav { display: none; }
+  .p-foot { grid-template-columns: 1fr; }
+  .p-nav-next { text-align: left; }
+  .p-body h2 { font-size: 20px; margin-top: 36px; }
+  pre.code { font-size: 12px; padding: 13px 14px; }
+}
+
+@media print {
+  .topbar, .p-foot, .readbtn, .crumb { display: none !important; }
+  .pattern-page { background: #fff; }
+  pre.code { border: 1px solid #ccc; background: #f7f7f7; }
+  .p-body h2 { page-break-after: avoid; }
+  pre.code, .callout { page-break-inside: avoid; }
+}
+
+/* 有序列表（动手步骤） */
+ol.p-list { padding-left: 22px; list-style: decimal; }
+ol.p-list li { padding-left: 4px; margin-bottom: 8px; }
+ol.p-list li::before { display: none; }
+ol.p-list li::marker { color: var(--accent); font-family: var(--mono); font-size: 12.5px; }
+
+/* 顶栏在详情页的排布：品牌 + 导航在左，已读按钮靠右 */
+.pattern-page .topbar .nav { margin-left: 20px; }
+.pattern-page .topbar .readbtn { margin-left: auto; }

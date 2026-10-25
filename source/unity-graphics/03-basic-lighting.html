@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>基础光照 · Unity × 图形学</title>
+<meta name="description" content="环境光 + 漫反射 + 高光：Blinn-Phong 的三个向量，对应到 Unity 的 Light 组件与 Shader Graph 节点。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-chapter">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link" href="index.html"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link" href="01-coordinate-spaces.html"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link" href="02-camera.html"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link active" href="03-basic-lighting.html" aria-current="page"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link" href="04-normal-mapping.html"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link" href="05-framebuffer.html"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>03 · 基础光照</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="page-head">
+  <p class="eyebrow">第 03 章 · 基础光照</p>
+  <h1>光照的全部秘密，<em>藏在一个点乘里</em></h1>
+  <p class="lede">如果表面正对光源，它最亮；侧过来，就变暗；背过去，全黑。这三个状态可以用<strong>一个点乘</strong>精确描述。整章 Blinn-Phong 模型就是这句话的数学化：环境光负责「不死黑」，漫反射负责「有立体感」，高光负责「有材质感」。</p>
+  <div class="tags">
+    <span class="tag-src">原教程</span>
+    <span class="tag">基础光照</span>
+    <span class="tag">Blinn-Phong</span>
+    <span class="tag">点乘</span>
+    <span class="tag">Light 组件</span>
+  </div>
+</section>
+<nav class="chapter-toc"><p class="toc-label">本章目录</p><ol class="toc"><li><a href="#why"><span class="n">01</span><span>为什么是点乘，而不是别的</span></a></li><li><a href="#three"><span class="n">02</span><span>三项分解：一张图看全</span></a></li><li><a href="#formula"><span class="n">03</span><span>三项的公式</span></a></li><li><a href="#blinn"><span class="n">04</span><span>Blinn 和 Phong 的差别，就一个向量</span></a></li><li><a href="#lights"><span class="n">05</span><span>三种光源</span></a></li><li><a href="#unity"><span class="n">06</span><span>Unity 对照：从组件到 Shader</span></a></li><li><a href="#pitfalls"><span class="n">07</span><span>六个坑</span></a></li><li><a href="#check"><span class="n">08</span><span>自测：三题</span></a></li></ol></nav>
+
+
+<div class="tldr">
+  <span class="tldr-label">一句话</span>
+  <p>一个像素的颜色 ≈ <strong>环境光</strong>（哪儿都有的底光）+ <strong>漫反射</strong>（<code>max(N·L, 0)</code> × 光色 × 物体色）+ <strong>高光</strong>（<code>pow(max(N·H, 0), 光泽度)</code>）。记住 <strong>N、L、V、H</strong> 四个向量，就够调所有材质的观感了。</p>
+</div>
+
+<h2 id="why">为什么是点乘，而不是别的</h2>
+
+<p>点乘的几何定义是 <code>a·b = |a||b|cosθ</code>。两根都归一化的向量点乘，结果就是夹角的余弦：</p>
+
+<ul>
+  <li>夹角 0°（正对）→ <code>cos 0 = 1</code> → 最亮</li>
+  <li>夹角 60° → <code>cos 60 = 0.5</code> → 一半亮度</li>
+  <li>夹角 90°（侧对）→ <code>cos 90 = 0</code> → 全黑</li>
+  <li>夹角 &gt; 90°（背对）→ 余弦为负 → 需要 <code>saturate</code> 夹到 0</li>
+</ul>
+
+<p>而「亮度」的物理本质就是<strong>单位面积接收到多少光</strong>。光斜着照过来时，同样的光被摊在更大的面积上，单位面积自然更少——这个「摊薄」的比例，正好就是余弦。所以点乘不是凑出来的，它就是这件事本身。</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 220" role="img" aria-label="N 点乘 L 随夹角变化的余弦曲线">
+    <line x1="80" y1="80" x2="80" y2="180" stroke="#94a3b8" stroke-width="1.4"/>
+    <line x1="80" y1="180" x2="832" y2="180" stroke="#94a3b8" stroke-width="1.4"/>
+
+    <!-- 参考线 45° -->
+    <line x1="440" y1="109" x2="440" y2="180" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+    <line x1="80" y1="109" x2="440" y2="109" stroke="#cbd5e1" stroke-width="1.2" stroke-dasharray="4 4"/>
+
+    <polyline points="800,80 740,80.9 680,83.4 620,87.6 560,93.4 500,100.7 440,109.3 380,119.1 320,130 260,141.7 200,154.1 140,166.9 80,180"
+              fill="none" stroke="#2f6bff" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+
+    <circle cx="800" cy="80" r="3.5" fill="#2f6bff"/>
+    <circle cx="440" cy="109.3" r="3.5" fill="#2f6bff"/>
+    <circle cx="80" cy="180" r="3.5" fill="#2f6bff"/>
+
+    <text x="792" y="70" font-size="11" fill="#1f2937" font-weight="700" text-anchor="end">1.0 全亮</text>
+    <text x="452" y="104" font-size="11" fill="#475569">0.707</text>
+    <text x="92" y="174" font-size="11" fill="#475569">0 全黑</text>
+
+    <text x="800" y="198" font-size="11" fill="#64748b" text-anchor="middle">0°</text>
+    <text x="440" y="198" font-size="11" fill="#64748b" text-anchor="middle">45°</text>
+    <text x="80" y="198" font-size="11" fill="#64748b" text-anchor="middle">90°</text>
+    <text x="456" y="214" font-size="10.5" fill="#94a3b8" text-anchor="middle">N 与 L 的夹角 θ</text>
+
+    <text x="66" y="120" font-size="11" fill="#64748b" text-anchor="end">亮度</text>
+    <text x="200" y="40" font-size="11.5" fill="#475569">N·L 只在 0°~90° 之间有意义，超过 90° 要夹到 0</text>
+  </svg>
+  <figcaption>整条曲线就是「为什么球体看起来是圆的」。只要法线在每个像素上都不一样，亮度就会沿这个余弦自然过渡。</figcaption>
+</figure>
+
+<h2 id="three">三项分解：一张图看全</h2>
+
+<p>先认人。下面这根从球面射出的箭头，是后面所有公式的原料：</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 320" role="img" aria-label="Blinn-Phong 的四个向量，以及环境光、漫反射、高光三项叠加的效果">
+    <defs>
+      <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+      </marker>
+      <marker id="ar4r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#ef4444"/>
+      </marker>
+      <marker id="ar4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#16a34a"/>
+      </marker>
+      <marker id="ar4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+      </marker>
+      <radialGradient id="sg1" cx="64%" cy="26%" r="80%">
+        <stop offset="0%" stop-color="#b6bfcc"/>
+        <stop offset="55%" stop-color="#6b7684"/>
+        <stop offset="100%" stop-color="#232b38"/>
+      </radialGradient>
+      <radialGradient id="sg2" cx="64%" cy="26%" r="80%">
+        <stop offset="0%" stop-color="#cfd6e0"/>
+        <stop offset="55%" stop-color="#7d8899"/>
+        <stop offset="100%" stop-color="#1b2230"/>
+      </radialGradient>
+      <radialGradient id="hl" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98"/>
+        <stop offset="45%" stop-color="#ffffff" stop-opacity="0.75"/>
+        <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- 球 -->
+    <circle cx="200" cy="190" r="100" fill="url(#sg1)" stroke="#5b6675" stroke-width="1"/>
+
+    <!-- 表面点 P -->
+    <circle cx="200" cy="90" r="4" fill="#111827"/>
+
+    <!-- N -->
+    <line x1="200" y1="90" x2="200" y2="42" stroke="#16a34a" stroke-width="2.2" marker-end="url(#ar4g)"/>
+    <text x="210" y="40" font-size="12" font-weight="700" fill="#16a34a">N 法线</text>
+
+    <!-- L -->
+    <line x1="200" y1="90" x2="263" y2="48" stroke="#eab308" stroke-width="2.2" marker-end="url(#ar4)"/>
+    <text x="272" y="46" font-size="12" font-weight="700" fill="#b45309">L 指向光源</text>
+
+    <!-- V -->
+    <line x1="200" y1="90" x2="105" y2="44" stroke="#2563eb" stroke-width="2.2" marker-end="url(#ar4b)"/>
+    <text x="96" y="38" font-size="12" font-weight="700" fill="#2563eb" text-anchor="end">V 指向摄像机</text>
+
+    <!-- R -->
+    <line x1="200" y1="90" x2="137" y2="42" stroke="#ef4444" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#ar4r)"/>
+    <text x="108" y="88" font-size="11" font-weight="700" fill="#ef4444" text-anchor="end">R 反射</text>
+
+    <!-- H -->
+    <line x1="200" y1="90" x2="182" y2="38" stroke="#7c3aed" stroke-width="1.8" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+    <text x="174" y="26" font-size="12" font-weight="700" fill="#7c3aed">H</text>
+
+    <text x="200" y="308" font-size="10.5" fill="#64748b" text-anchor="middle">H = normalize(L + V)</text>
+
+    <!-- ===== 三个球 ===== -->
+    <line x1="420" y1="20" x2="420" y2="300" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+    <!-- ① 环境光 -->
+    <circle cx="500" cy="150" r="46" fill="#7c8798" stroke="#5b6675" stroke-width="1"/>
+    <text x="500" y="228" font-size="11.5" font-weight="700" fill="#1f2937" text-anchor="middle">① 只加环境光</text>
+    <text x="500" y="246" font-size="10.5" fill="#64748b" text-anchor="middle">一片死平，没有体积感</text>
+
+    <!-- ② 加漫反射 -->
+    <circle cx="650" cy="150" r="46" fill="url(#sg2)" stroke="#5b6675" stroke-width="1"/>
+    <text x="650" y="228" font-size="11.5" font-weight="700" fill="#1f2937" text-anchor="middle">② 加漫反射</text>
+    <text x="650" y="246" font-size="10.5" fill="#64748b" text-anchor="middle">立刻变成一颗球</text>
+
+    <!-- ③ 加高光 -->
+    <circle cx="800" cy="150" r="46" fill="url(#sg2)" stroke="#5b6675" stroke-width="1"/>
+    <ellipse cx="818" cy="130" rx="17" ry="13" fill="url(#hl)"/>
+    <text x="800" y="228" font-size="11.5" font-weight="700" fill="#1f2937" text-anchor="middle">③ 加高光</text>
+    <text x="800" y="246" font-size="10.5" fill="#64748b" text-anchor="middle">有了「塑料 / 金属」的质感</text>
+  </svg>
+  <figcaption>左：四个向量的含义。右：三项逐层叠加。游戏里 90% 的材质调参，都是在三项之间找平衡。</figcaption>
+</figure>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>向量</th><th>全称</th><th>从哪来</th><th>方向</th></tr></thead>
+  <tbody>
+    <tr><td><strong>N</strong></td><td>Normal 法线</td><td>顶点数据（第 04 章会换成贴图）</td><td>垂直朝外，表示表面「面向哪」</td></tr>
+    <tr><td><strong>L</strong></td><td>Light Direction</td><td>Light 的位置 / 方向</td><td>从表面指向光源</td></tr>
+    <tr><td><strong>V</strong></td><td>View Direction</td><td>相机位置</td><td>从表面指向摄像机（眼睛）</td></tr>
+    <tr><td><strong>H</strong></td><td>Half Vector</td><td><code>normalize(L + V)</code></td><td>L 和 V 的角平分线</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="formula">三项的公式</h2>
+
+<div class="callout">
+  <p class="callout-title">Blinn-Phong</p>
+  <p style="font-family:ui-monospace,SFMono-Regular,monospace;font-size:13.5px;line-height:2.1;margin:0;white-space:pre-wrap">环境光 = 环境强度 × 光颜色 × 物体颜色
+漫反射 = max(N·L, 0) × 光颜色 × 物体颜色
+高光   = pow( max(N·H, 0), 光泽度 ) × 光颜色 × 高光颜色
+
+最终颜色 = 环境光 + 漫反射 + 高光</p>
+</div>
+
+<h3>环境光：负责「不死黑」</h3>
+
+<p>物理上它不存在（光总得有来源），但完全按物理算，背光面会纯黑，看起来像剪影、很假。环境光就是一个作弊项：<strong>假装整个世界都在微微发光</strong>，把所有表面提亮一点点。Unity 里它是 Camera 的 <code>Ambient</code> 设置（内置管线是 Skybox / Gradient / Color 三选一）。</p>
+
+<h3>漫反射：负责「立体感」</h3>
+
+<p>就是 <code>N·L</code> 本身。<strong>它和相机无关</strong>——你从哪个角度看，亮度都一样。这一点很关键：转相机时如果漫反射变了，说明你算错了。</p>
+
+<h3>高光：负责「材质感」</h3>
+
+<p><code>pow(N·H, 光泽度)</code> 里的指数越大，高光斑越小越锐利：</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>光泽度指数</th><th>观感</th><th>Unity 里对应</th></tr></thead>
+  <tbody>
+    <tr><td>4 ~ 8</td><td>大面积柔光，像橡胶、粉笔</td><td>Smoothness ≈ 0.1</td></tr>
+    <tr><td>32 左右</td><td>明显的圆形高光，像塑料</td><td>Smoothness ≈ 0.5</td></tr>
+    <tr><td>128 以上</td><td>小而亮的高光点，像金属、玻璃</td><td>Smoothness ≈ 0.9</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="blinn">Blinn 和 Phong 的差别，就一个向量</h2>
+
+<p>原始的 Phong 模型算的是<strong>反射向量和视线的夹角</strong>：<code>pow(max(R·V, 0), gloss)</code>。Blinn 把它换成了<strong>半程向量和法线的夹角</strong>：<code>pow(max(N·H, 0), gloss)</code>。</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>Phong：算 R·V</h4>
+    <p>需要先算出反射向量 R = <code>reflect(-L, N)</code>，再做点乘。物理上更「正」，但反射在掠射角容易估错，高光边缘会发脏。</p>
+  </div>
+  <div class="card">
+    <h4>Blinn：算 N·H</h4>
+    <p>只需要一次加法 + 一次归一化，就得到 H。更快，而且在掠射角下高光形状更自然。<strong>几乎所有引擎（包括 Unity）默认用这个。</strong></p>
+  </div>
+</div>
+
+<p>代价是：Blinn 的高光在极端角度下会比 Phong 稍大一点。为了对齐观感，通常要把 Blinn 的指数乘个 4 左右（<code>gloss_blinn ≈ 4 × gloss_phong</code>），这也正是 Unity 里 <code>Smoothness → exponent</code> 映射时隐式做的事。</p>
+
+<h2 id="lights">三种光源</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>类型</th><th>光线方向</th><th>有衰减吗</th><th>典型用途</th><th>Unity 参数</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><strong>平行光</strong><br><small>Directional</small></td>
+      <td>所有位置都一样（太阳在无限远）</td>
+      <td>无</td>
+      <td>太阳、月光、主光</td>
+      <td>Rotation 决定方向；无 Range</td>
+    </tr>
+    <tr>
+      <td><strong>点光</strong><br><small>Point</small></td>
+      <td>从一个点向四周发散</td>
+      <td>1/d²</td>
+      <td>灯泡、火把、爆炸</td>
+      <td>Range（超出范围不计算）</td>
+    </tr>
+    <tr>
+      <td><strong>聚光</strong><br><small>Spot</small></td>
+      <td>锥形，有内外边界</td>
+      <td>距离 + 锥角</td>
+      <td>手电筒、舞台灯、车灯</td>
+      <td>Range、Spot Angle、Inner Spot Angle</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">性能直觉</p>
+  <p>平行光无论多少个物体都只算一次方向，最便宜。点光和聚光要按每个物体的距离逐个计算，而且是<strong>前向渲染下每个片元都要乘一遍</strong>。手机上「多打几盏点光就掉帧」，原因就在这里。URP 里可以让额外的灯走 <code>Additional Lights</code> 并用 Forward+ / Deferred 缓解。</p>
+</div>
+
+<h2 id="unity">Unity 对照：从组件到 Shader</h2>
+
+<h3>Light 组件</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>字段</th><th>影响哪一项</th></tr></thead>
+  <tbody>
+    <tr><td>Type</td><td>方向光 / 点光 / 聚光</td></tr>
+    <tr><td>Color</td><td>公式里的「光颜色」</td></tr>
+    <tr><td>Intensity</td><td>整体乘在颜色上（URP 里单位是 lux，数值可以很大）</td></tr>
+    <tr><td>Range</td><td>点光 / 聚光的衰减半径</td></tr>
+    <tr><td>Spot Angle</td><td>聚光的外锥角</td></tr>
+    <tr><td>Shadow Type</td><td>是否投射阴影，以及软硬（软阴影要做多次采样）</td></tr>
+    <tr><td>Mode</td><td>Realtime / Baked / Mixed——<strong>决定这盏灯是每帧算还是烘进贴图</strong></td></tr>
+    <tr><td>Culling Mask</td><td>这盏灯照亮哪些 Layer</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · 内置管线</span>
+    <span class="code-title">自己写一遍 Blinn-Phong</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>// 都在世界空间里算，避免空间混用
+float3 N = normalize(UnityObjectToWorldNormal(v.normal));   // 法线 → 世界
+float3 V = normalize(UnityWorldSpaceViewDir(i.worldPos));   // 指向相机
+
+// _WorldSpaceLightPos0：平行光时 xyz 就是「光的方向」
+float3 L = normalize(_WorldSpaceLightPos0.xyz);
+
+float3 H = normalize(L + V);                         // 半程向量
+float  NdotL = saturate(dot(N, L));                  // 记得 saturate！
+float  NdotH = saturate(dot(N, H));
+
+float3 albedo   = tex2D(_MainTex, i.uv).rgb;
+float3 lightCol = _LightColor0.rgb;
+
+float3 ambient  = UNITY_LIGHTMODEL_AMBIENT.rgb * albedo;
+float3 diffuse  = NdotL * lightCol * albedo;
+float3 specular = pow(NdotH, _Gloss) * lightCol * _SpecColor.rgb;
+
+float3 color = ambient + diffuse + specular;
+return fixed4(color, 1.0);</code></pre>
+</div>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · URP 17</span>
+    <span class="code-title">URP 里同样的事，用 Light 结构体</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+Light mainLight = GetMainLight();            // 拿场景里最重要的那盏方向光
+float3 N = normalize(i.normalWS);
+float3 V = normalize(i.viewDirWS);
+
+float  NdotL = saturate(dot(N, mainLight.direction));
+float3 H     = normalize(mainLight.direction + V);
+float  NdotH = saturate(dot(N, H));
+
+float3 diffuse  = NdotL * mainLight.color * _BaseColor.rgb;
+float3 specular = pow(NdotH, _Smoothness * 100.0) * mainLight.color;
+
+float3 color = diffuse + specular + SampleSH(N);   // SampleSH 提供环境光</code></pre>
+</div>
+
+<div class="callout unity">
+  <p class="callout-title">Shader Graph 里怎么连</p>
+  <ol>
+    <li><strong>Normal Vector</strong> 节点，Space 选 <em>World</em>。</li>
+    <li><strong>Dot Product</strong>：A = 法线，B = 光方向（用 <strong>Light Direction</strong> 节点，或自己填一个 Vector3）。</li>
+    <li>接 <strong>Saturate</strong>，再 <strong>Multiply</strong> 两次：乘 Base Color、乘光颜色。</li>
+    <li>高光：<strong>Normalize(L + V)</strong> → 再和法线 <strong>Dot Product</strong> → <strong>Power</strong>（指数 = Smoothness × 100）。</li>
+    <li>三项 <strong>Add</strong> 到一起，接到 Base Color 或 Emission。</li>
+  </ol>
+  <p>这五步和上面的 HLSL 是<strong>同一件事的两种写法</strong>。看懂一种，另一种自然通。</p>
+</div>
+
+<h2 id="pitfalls">六个坑</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>症状</th><th>原因</th><th>修法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>背光面出现奇怪的花纹 / 反而变亮</td>
+      <td>没做 <code>saturate</code>，负值参与了颜色计算</td>
+      <td>所有点乘结果都夹到 0..1</td>
+    </tr>
+    <tr>
+      <td>物体转向时亮度忽明忽暗，甚至闪烁</td>
+      <td>法线在模型空间，光方向在世界空间</td>
+      <td>统一到世界空间：<code>UnityObjectToWorldNormal()</code></td>
+    </tr>
+    <tr>
+      <td>缩放变形后光照全黑 / 一块一块</td>
+      <td>非均匀缩放，法线没走「逆转置」</td>
+      <td>用 <code>UnityObjectToWorldNormal()</code>，并对插值后的法线 <code>normalize</code></td>
+    </tr>
+    <tr>
+      <td>开了阴影，但自己写的光照没有阴影</td>
+      <td>阴影是额外的一趟 Shadow Map，需要宏和采样</td>
+      <td>内置管线加 <code>SHADOW_COORDS</code> / <code>SHADOW_ATTENUATION</code>；URP 用 <code>GetMainLight(shadowCoord)</code></td>
+    </tr>
+    <tr>
+      <td>高光是一整片糊的，没有亮点</td>
+      <td>指数太小（比如写死 8）</td>
+      <td>指数跟 Smoothness 绑定，金属/玻璃给到 128 以上</td>
+    </tr>
+    <tr>
+      <td>低模上光照「一块一块」的色阶</td>
+      <td>在顶点着色器里算光照（Gouraud）</td>
+      <td>移到片元着色器（Per-Pixel）</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="check">自测：三题</h2>
+
+<details class="quiz">
+  <summary>自测 · 3 个问题（先自己答，再展开）</summary>
+  <div class="quiz-body">
+    <ol>
+      <li>
+        <strong>转动相机，镜面高光会跟着移动吗？漫反射会吗？</strong>
+        <span class="ans">高光会（因为 H 依赖 V），漫反射不会（只看 N 和 L）。这正是区分两者的最快办法：如果一个「高光」不随视角变化，它其实是被画进贴图的假高光。</span>
+      </li>
+      <li>
+        <strong>为什么高光要用 <code>pow</code>，而漫反射不用？</strong>
+        <span class="ans">漫反射的能量分布在很大角度范围内，余弦本身就够；高光集中在很小的角度内，需要一条「陡峭」的曲线把 0.9 和 0.99 拉开差距，幂函数就是这个陡峭化工具。</span>
+      </li>
+      <li>
+        <strong><code>_WorldSpaceLightPos0</code> 对点光和对平行光的含义一样吗？</strong>
+        <span class="ans">不一样。平行光时它是<strong>方向</strong>（w = 0），点光时它是<strong>位置</strong>（w = 1）。所以点光要自己算 <code>normalize(lightPos - worldPos)</code>——少了这一步，点光会像平行光一样「没有远近」。</span>
+      </li>
+    </ol>
+  </div>
+</details>
+
+<div class="callout tip">
+  <p class="callout-title">下一章</p>
+  <p>现在光照只认「顶点法线」，所以模型再精细，表面也是光滑的一块。第 04 章用一张贴图给每个像素单独指定朝向——这就是法线贴图，它让 8 个面的箱子看起来有 8000 个面。</p>
+</div>
+    </article>
+
+<nav class="pager"><a href="02-camera.html"><span class="dir">上一篇</span><span class="ttl">02 · 摄像机</span></a><a class="next" href="04-normal-mapping.html"><span class="dir">下一篇</span><span class="ttl">04 · 法线贴图</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

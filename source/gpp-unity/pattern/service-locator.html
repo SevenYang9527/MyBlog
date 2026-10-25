@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>服务定位器 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="一个全局的「找服务」入口。比单例灵活，但依赖仍是隐式的——所以它只是「较不坏」。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/service-locator.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="service-locator" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 2 · 架构升级</span><span>/</span>
+      <span class="crumb-cur">服务定位器</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">09</span> 第 9 章 · Service Locator</p>
+        <h1>服务定位器</h1>
+        <p class="p-essence">一个全局的「找服务」入口。比单例灵活，但依赖仍是隐式的——所以它只是「较不坏」。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 2 · 架构升级</li>
+          <li>静态注册表 · VContainer / Zenject · SerializeField 注入</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>有些服务（音频、存档、对象池、网络）被到处用，靠构造函数一路传下去太啰嗦。服务定位器提供一个全局查表：谁需要谁自己去取。</p>
+<p>它和单例的区别：单例是「这个类只有一个」，服务定位器是「这类服务有一个实现」，实现可以换（真机 / 编辑器 / 测试）。</p>
+<p>作者的态度很明确：<strong>它比单例好，但仍然不如显式依赖</strong>，因为看一个类的构造函数，你不知道它到底依赖了什么。</p>
+<h2>Unity 里它长什么样</h2>
+<pre class="code"><code>public static class Services
+{
+    static readonly Dictionary&lt;Type, object&gt; map = new();
+
+    public static void Register&lt;T&gt;(T impl) =&gt; map[typeof(T)] = impl;
+    public static T Get&lt;T&gt;() =&gt; (T)map[typeof(T)];
+    public static bool TryGet&lt;T&gt;(out T impl)
+    {
+        if (map.TryGetValue(typeof(T), out var o)) { impl = (T)o; return true; }
+        impl = default; return false;
+    }
+}
+
+// 启动时注册
+Services.Register&lt;IAudio&gt;(new AudioService());
+// 任意位置取用
+Services.Get&lt;IAudio&gt;().Play(&quot;hit&quot;);</code></pre>
+<p><code>Unity</code> 生态里更常见的两条路：</p>
+<ul class="p-list"><li><strong><code>SerializeField</code> 注入</strong>：最土，但依赖在 <code>Inspector</code> 里看得见，适合中小项目。</li><li><strong><code>DI</code> 容器</strong>（<code>VContainer</code> / <code>Zenject</code>）：构造注入 + 生命周期管理，大项目值得，学习成本真实存在。</li></ul>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>依赖不可见 = 测试要预置一堆注册，新人接手不知道从哪开始。</li><li>注册顺序会变成隐式依赖：<code>Get<IAudio>()</code> 在 <code>Awake</code> 里调用，但注册在 <code>Start</code> 里——空引用。</li><li>优先顺序：<strong>序列化引用 > 构造函数/<code>DI</code> 注入 > 服务定位器 > 单例 > 静态类</strong>。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>全局搜 <code>FindObjectOfType</code>，找出 3 处。</li><li>其中两处改成 <code>[SerializeField]</code> 显式引用，一处保留并加注释说明为什么。</li><li>体会差别：显式引用在场景里一眼能看出依赖，<code>Find</code> 不能。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="event-queue.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 事件队列</span></a>
+        <a class="p-nav p-nav-next" href="subclass-sandbox.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">子类沙箱 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/service-locator.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

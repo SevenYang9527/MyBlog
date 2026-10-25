@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>双缓冲 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="读写同一份数据，读者会看到「改到一半」的中间态。两份数据 + 交换，让读者永远看到完整的一帧。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/double-buffer.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="double-buffer" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">双缓冲</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">16</span> 第 16 章 · Double Buffer</p>
+        <h1>双缓冲</h1>
+        <p class="p-essence">读写同一份数据，读者会看到「改到一半」的中间态。两份数据 + 交换，让读者永远看到完整的一帧。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>输入快照 · 回滚网络 · 录像回放</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>渲染时，如果直接在正在显示的那块显存上画，观众会看到画了一半的画面（撕裂）。经典解法：画在另一块内存上，画完整帧再交换指针。</p>
+<p>推广开来：<strong>任何「写者持续修改、读者需要一致快照」的场景</strong>都用得上。交换之所以几乎免费，是因为换的是指针，不是数据。</p>
+<h2>Unity 里它长什么样</h2>
+<p>帧缓冲与渲染管线由引擎负责，你碰不到。你能用到它的地方是「逻辑层」：</p>
+<pre class="code"><code>public struct InputFrame
+{
+    public float moveX, moveY;
+    public bool jump;
+    public int tick;
+}
+
+InputFrame[] buffers = { new InputFrame(), new InputFrame() };
+int cur;                              // 当前「已确认」的那一份
+
+void RecordTick(InputFrame input)
+{
+    int next = 1 - cur;
+    buffers[next] = input;            // 只写不读的那一份
+    cur = next;                       // 交换
+}</code></pre>
+<p>三个真实场景：</p>
+<ul class="p-list"><li><strong>输入快照</strong>：网络同步里「上一帧输入」用于插值/外推，必须保留完整一份。</li><li><strong>回滚网络（<code>GGPO</code> 式锁步）</strong>：保存最近 N 帧状态，收到旧输入就回滚重算——这其实是「多缓冲」。</li><li><strong>录像 / 回放</strong>：录制时写缓冲，播放时读缓冲，互不干扰。</li></ul>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>只在「读者与写者跨帧」时才需要。同一帧内的读写，用队列或脏标记更简单。</li><li>双缓冲会<strong>延迟一帧</strong>：<code>1 - cur</code> 意味着读者看到的永远是上一帧。对输入响应敏感的逻辑要意识到这个延迟。</li><li>三缓冲 / 环形缓冲才是录制的正解：双缓冲只能存一帧，回滚需要历史。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>写一个「录制 60 帧输入 + 完整回放」的小程序，用两个 <code>InputFrame</code> 数组交替写。</li><li>把回放时的位置和录制时对比，确认逐帧一致。</li><li>额外思考：如果要回滚 5 帧，你的结构要怎么改？（提示：环形缓冲）</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="flyweight.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 享元</span></a>
+        <a class="p-nav p-nav-next" href="bytecode.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">字节码 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/double-buffer.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

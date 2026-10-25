@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>脏标识 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="算一次很贵、但数据很少变——那就别每帧算，用一个小布尔记住「该重算了」。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/dirty-flag.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="dirty-flag" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 3 · 按需查</span><span>/</span>
+      <span class="crumb-cur">脏标识</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">12</span> 第 12 章 · Dirty Flag</p>
+        <h1>脏标识</h1>
+        <p class="p-essence">算一次很贵、但数据很少变——那就别每帧算，用一个小布尔记住「该重算了」。</p>
+        <ul class="p-meta">
+          <li>20 分钟</li>
+          <li>批次 3 · 按需查</li>
+          <li>属性缓存 · UI 刷新节流 · Animator 参数</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>有些计算很贵（排序、布局、合并网格、算属性总加成），但输入很少变。做法：数据改动时把一个 <code>dirty</code> 标记置 <code>true</code>，真正需要结果时才重算，算完清标记。</p>
+<p>它把「每次读都算」变成「每次写后只算一次」，代价是一个标记和一段容易漏更新的代码。</p>
+<h2>Unity 里它长什么样</h2>
+<p>引擎内部到处是脏标记：<code>Canvas</code> 的 <code>SetVerticesDirty / SetLayoutDirty</code>、<code>Animator</code> 的参数哈希、<code>Transform.hasChanged</code>。</p>
+<p>自己写一个最小版本，最常见的是「装备加成后的属性」：</p>
+<pre class="code"><code>public class StatBlock
+{
+    int baseAtk = 5;
+    readonly List&lt;int&gt; bonuses = new();
+
+    int cached;
+    bool dirty = true;
+
+    public void AddBonus(int v) { bonuses.Add(v); dirty = true; }
+    public void ClearBonuses()  { bonuses.Clear(); dirty = true; }
+
+    public int TotalAtk
+    {
+        get
+        {
+            if (dirty)
+            {
+                cached = baseAtk;
+                foreach (var b in bonuses) cached += b;
+                dirty = false;
+            }
+            return cached;
+        }
+    }
+}</code></pre>
+<p><code>UI</code> 里更常见的用法是<strong>节流</strong>：数据变了只置标记，在 <code>LateUpdate</code> 里统一刷新一次，而不是每次赋值都 <code>text = ...</code>（<code>Text</code> 重建网格很贵）。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li><strong>读多写少</strong>才有收益。写多读少时，标记的开销比直接算还大。</li><li>多级依赖的脏传播是复杂度来源：A 依赖 B 依赖 C，C 变了要能把 A 也标脏。链一长就容易漏更新，出现「数值不刷新」的诡异 bug。</li><li>别对「每帧都在变的量」用脏标记，那是纯开销。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>找一个每帧刷新的 <code>UI Text</code>（比如血量、金币、倒计时）。</li><li>改成「赋值时只置脏 + <code>LateUpdate</code> 里检查脏再刷新」。</li><li>在 <code>Profiler</code> 里比较 <code>Canvas.SendWillRenderCanvases</code> 的耗时。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="object-pool.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 对象池</span></a>
+        <a class="p-nav p-nav-next" href="spatial-partition.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">空间分区 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/dirty-flag.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>

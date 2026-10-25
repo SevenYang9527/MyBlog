@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>帧缓冲 · Unity × 图形学</title>
+<meta name="description" content="把场景画到一张可以当纹理用的画布上，再贴回全屏：后处理、RenderTexture 与 URP Renderer Feature。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-chapter">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link" href="index.html"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link" href="01-coordinate-spaces.html"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link" href="02-camera.html"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link" href="03-basic-lighting.html"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link" href="04-normal-mapping.html"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link active" href="05-framebuffer.html" aria-current="page"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>05 · 帧缓冲</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="page-head">
+  <p class="eyebrow">第 05 章 · 帧缓冲</p>
+  <h1>把画面，<em>画到一张画布上</em></h1>
+  <p class="lede">前面四章都在讲「怎么把像素画对」。这一章讲一个完全不同的事：<strong>画到哪儿</strong>。默认情况下画面直接进屏幕，你碰不到它；但只要改成一个离屏缓冲，这张画面就变成了一张普通纹理——于是可以模糊、描边、调色、再贴回去。</p>
+  <div class="tags">
+    <span class="tag-src">原教程</span>
+    <span class="tag">帧缓冲</span>
+    <span class="tag">RenderTexture</span>
+    <span class="tag">后处理</span>
+    <span class="tag">Renderer Feature</span>
+  </div>
+</section>
+<nav class="chapter-toc"><p class="toc-label">本章目录</p><ol class="toc"><li><a href="#why"><span class="n">01</span><span>为什么不能直接在屏幕上做处理</span></a></li><li><a href="#attachments"><span class="n">02</span><span>帧缓冲里有什么</span></a></li><li><a href="#post"><span class="n">03</span><span>后处理 = 全屏方块 + 采样 + 数学</span></a></li><li><a href="#unity"><span class="n">04</span><span>Unity 对照：三条路线</span></a></li><li><a href="#pitfalls"><span class="n">05</span><span>五个坑</span></a></li><li><a href="#check"><span class="n">06</span><span>自测：三题</span></a></li><li><a href="#end"><span class="n">07</span><span>读完之后</span></a></li></ol></nav>
+
+
+<div class="tldr">
+  <span class="tldr-label">一句话</span>
+  <p>帧缓冲就是<strong>一块能当纹理用的画布</strong>。把场景画到它上面，再把这块画布贴到一个铺满屏幕的方块上，在贴的过程中对每个像素做点数学——这就是后处理的全部原理，Bloom、描边、色差、故障风，无一例外。</p>
+</div>
+
+<h2 id="why">为什么不能直接在屏幕上做处理</h2>
+
+<p>默认情况下，GPU 画完一帧就直接把它送进显示器的缓冲区。这个过程是「输出」，不是「输入」——你没法在同一个 Pass 里既画又读。</p>
+
+<p>要做二次处理，只能换个思路：</p>
+
+<ol>
+  <li>先把场景画到一块<strong>不在屏幕上</strong>的缓冲区（离屏渲染）</li>
+  <li>这块缓冲区的内容可以被当成普通纹理来采样</li>
+  <li>最后画一个铺满屏幕的方块，用自定义 Shader 采样它、加工它、输出到屏幕</li>
+</ol>
+
+<p>这就是原始教程里 <strong>帧缓冲（FBO）</strong>做的事，也是所有后处理框架的地基。</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 300" role="img" aria-label="离屏渲染与后处理的完整链路">
+    <defs>
+      <marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/>
+      </marker>
+    </defs>
+
+    <!-- 1 -->
+    <rect x="20" y="100" width="136" height="64" rx="10" fill="#eef2ff" stroke="#a5b4fc" stroke-width="1.5"/>
+    <text x="88" y="126" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">场景几何</text>
+    <text x="88" y="146" font-size="10.5" fill="#4b5563" text-anchor="middle">三角形 + 光照</text>
+
+    <!-- 2 -->
+    <rect x="192" y="100" width="136" height="64" rx="10" fill="#fef3c7" stroke="#fbbf24" stroke-width="2"/>
+    <text x="260" y="124" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">RenderTexture</text>
+    <text x="260" y="144" font-size="10.5" fill="#4b5563" text-anchor="middle">颜色 + 深度</text>
+
+    <!-- 3 -->
+    <rect x="364" y="100" width="136" height="64" rx="10" fill="#ecfdf5" stroke="#6ee7b7" stroke-width="1.5"/>
+    <text x="432" y="126" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">全屏方块</text>
+    <text x="432" y="146" font-size="10.5" fill="#4b5563" text-anchor="middle">覆盖整个屏幕</text>
+
+    <!-- 4 -->
+    <rect x="536" y="100" width="136" height="64" rx="10" fill="#f3e8ff" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="604" y="126" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">后处理 Shader</text>
+    <text x="604" y="146" font-size="10.5" fill="#4b5563" text-anchor="middle">逐像素数学</text>
+
+    <!-- 5 -->
+    <rect x="708" y="100" width="136" height="64" rx="10" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+    <text x="776" y="126" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">屏幕</text>
+    <text x="776" y="146" font-size="10.5" fill="#4b5563" text-anchor="middle">Back Buffer</text>
+
+    <!-- 箭头 -->
+    <line x1="158" y1="132" x2="188" y2="132" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+    <line x1="330" y1="132" x2="360" y2="132" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+    <line x1="502" y1="132" x2="532" y2="132" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+    <line x1="674" y1="132" x2="704" y2="132" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+
+    <text x="173" y="88" font-size="10.5" fill="#64748b" text-anchor="middle">渲染</text>
+    <text x="345" y="88" font-size="10.5" fill="#64748b" text-anchor="middle">取用</text>
+    <text x="517" y="88" font-size="10.5" fill="#64748b" text-anchor="middle">采样</text>
+    <text x="689" y="88" font-size="10.5" fill="#64748b" text-anchor="middle">输出</text>
+
+    <!-- 下方注解 -->
+    <text x="88" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">Camera 正常渲染</text>
+    <text x="260" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">Camera.targetTexture</text>
+    <text x="260" y="212" font-size="9.5" fill="#64748b" text-anchor="middle">new RenderTexture()</text>
+    <text x="432" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">Graphics.Blit()</text>
+    <text x="604" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">OnRenderImage</text>
+    <text x="604" y="212" font-size="9.5" fill="#64748b" text-anchor="middle">Renderer Feature</text>
+    <text x="776" y="196" font-size="9.5" fill="#64748b" text-anchor="middle">SV_Target</text>
+
+    <text x="450" y="264" font-size="11" fill="#475569" text-anchor="middle">关键一步：第 3 步那个方块的 Shader 里，采样的是「刚画好的整幅画面」</text>
+  </svg>
+  <figcaption>黄色那格是唯一的新东西。一旦画面进了纹理，剩下的就是普通的纹理采样问题。</figcaption>
+</figure>
+
+<h2 id="attachments">帧缓冲里有什么</h2>
+
+<p>一个帧缓冲不只有颜色，它是一组<strong>附件</strong>（attachment）：</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>附件</th><th>存什么</th><th>Unity 里</th><th>有什么用</th></tr></thead>
+  <tbody>
+    <tr><td><strong>颜色</strong> Color</td><td>每个像素的 RGBA</td><td><code>RenderTexture</code> 本体</td><td>图像本身</td></tr>
+    <tr><td><strong>深度</strong> Depth</td><td>每个像素离相机多远</td><td><code>new RenderTexture(w, h, 24)</code> 里的 24</td><td>深度测试、雾、深度后处理（景深、边缘光）</td></tr>
+    <tr><td><strong>模板</strong> Stencil</td><td>一个 8 位标记</td><td>通常在 depth 里一起分配</td><td>遮罩、描边、UI 裁剪</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">深度位数是个开关</p>
+  <p><code>new RenderTexture(w, h, 24)</code> 的第三个参数是<strong>深度位数</strong>。写成 <code>0</code> 表示不要深度——此时物体不分前后，会按绘制顺序互相覆盖。做纯 2D 后处理可以省掉它（省显存和带宽），但只要场景里有 3D 遮挡，就必须给。</p>
+</div>
+
+<h2 id="post">后处理 = 全屏方块 + 采样 + 数学</h2>
+
+<p>所谓「全屏后处理」，抽象到最简单就是：</p>
+
+<ol>
+  <li>画一个刚好挡住整个屏幕的方块（Unity 的 <code>Graphics.Blit</code> 帮你做了）</li>
+  <li>它的每个像素用 UV 去采样源纹理</li>
+  <li>把采样到的颜色做点运算</li>
+</ol>
+
+<p>复杂的效果只是「运算」更花哨。比如模糊，就是对周围一圈像素做加权平均——这个权重的形状叫<strong>卷积核</strong>：</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 250" role="img" aria-label="高斯卷积核与两趟一维模糊">
+    <!-- 3x3 核 -->
+    <g font-size="13" font-weight="600" fill="#1f2937" text-anchor="middle">
+      <rect x="60" y="50" width="40" height="40" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="80" y="76">1</text>
+      <rect x="102" y="50" width="40" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="122" y="76">2</text>
+      <rect x="144" y="50" width="40" height="40" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="164" y="76">1</text>
+      <rect x="60" y="92" width="40" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="80" y="118">2</text>
+      <rect x="102" y="92" width="40" height="40" rx="5" fill="#60a5fa" stroke="#3b82f6"/><text x="122" y="118" fill="#fff">4</text>
+      <rect x="144" y="92" width="40" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="164" y="118">2</text>
+      <rect x="60" y="134" width="40" height="40" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="80" y="160">1</text>
+      <rect x="102" y="134" width="40" height="40" rx="5" fill="#dbeafe" stroke="#93c5fd"/><text x="122" y="160">2</text>
+      <rect x="144" y="134" width="40" height="40" rx="5" fill="#eff6ff" stroke="#93c5fd"/><text x="164" y="160">1</text>
+    </g>
+    <text x="122" y="34" font-size="12" font-weight="700" fill="#1f2937" text-anchor="middle">高斯核 3×3（总和 16）</text>
+    <text x="122" y="204" font-size="10.5" fill="#64748b" text-anchor="middle">每个像素 = 周围 9 个像素的加权平均</text>
+    <text x="122" y="222" font-size="10.5" fill="#64748b" text-anchor="middle">权重越靠中心越大 → 越模糊</text>
+
+    <!-- 分隔 -->
+    <line x1="270" y1="20" x2="270" y2="228" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+    <!-- 两趟 -->
+    <text x="590" y="34" font-size="12" font-weight="700" fill="#1f2937" text-anchor="middle">工程上的做法：拆成两趟一维模糊</text>
+
+    <rect x="300" y="70" width="110" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+    <text x="355" y="108" font-size="12" fill="#1f2937" text-anchor="middle">原图</text>
+
+    <line x1="414" y1="103" x2="444" y2="103" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+
+    <rect x="448" y="70" width="110" height="66" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="503" y="100" font-size="12" fill="#1f2937" text-anchor="middle">横向模糊</text>
+    <text x="503" y="118" font-size="10" fill="#64748b" text-anchor="middle">采 3 个点</text>
+
+    <line x1="562" y1="103" x2="592" y2="103" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+
+    <rect x="596" y="70" width="110" height="66" rx="8" fill="#ecfdf5" stroke="#6ee7b7"/>
+    <text x="651" y="100" font-size="12" fill="#1f2937" text-anchor="middle">纵向模糊</text>
+    <text x="651" y="118" font-size="10" fill="#64748b" text-anchor="middle">采 3 个点</text>
+
+    <line x1="710" y1="103" x2="740" y2="103" stroke="#94a3b8" stroke-width="1.8" marker-end="url(#ar7)"/>
+
+    <rect x="744" y="70" width="110" height="66" rx="8" fill="#f1f5f9" stroke="#94a3b8"/>
+    <text x="799" y="108" font-size="12" fill="#1f2937" text-anchor="middle">结果</text>
+
+    <text x="590" y="176" font-size="10.5" fill="#64748b" text-anchor="middle">效果≈一次 3×3，但采样数从 9 次降到 6 次</text>
+    <text x="590" y="194" font-size="10.5" fill="#64748b" text-anchor="middle">核越大差距越夸张：15×15 的 2D 要 225 次，两趟只要 30 次</text>
+    <text x="590" y="220" font-size="10.5" fill="#94a3b8" text-anchor="middle">这也是 Bloom、景深都拆「水平 + 垂直」两趟的原因</text>
+  </svg>
+  <figcaption>左边是数学定义，右边是工程实现。图里那个「总和 16」很关键——核的权重必须归一化，否则整体亮度会变。</figcaption>
+</figure>
+
+<h2 id="unity">Unity 对照：三条路线</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>路线</th><th>适用管线</th><th>难度</th><th>什么时候用</th></tr></thead>
+  <tbody>
+    <tr><td><code>RenderTexture</code> + <code>Graphics.Blit</code></td><td>全都行</td><td>低</td><td>监控画面、UI 里的 3D 预览、手动接管渲染</td></tr>
+    <tr><td><code>OnRenderImage</code></td><td><strong>仅内置管线</strong></td><td>低</td><td>老项目、快速原型（URP 里不生效！）</td></tr>
+    <tr><td><code>Renderer Feature</code></td><td>URP</td><td>中</td><td>新项目、要跟 URP 的渲染流程协作</td></tr>
+    <tr><td>Full Screen Pass Renderer Feature</td><td>URP 14+</td><td><strong>最低</strong></td><td>只想写个 Shader Graph 做全屏效果</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>路线一：RenderTexture（最通用）</h3>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">把相机画面渲染到一张纹理，再当贴图用</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>using UnityEngine;
+
+public class CameraToTexture : MonoBehaviour
+{
+    public Camera cam;
+    public Renderer screenQuad;   // 场景里一个铺开的 Quad
+    public int width = 512;
+    public int height = 512;
+
+    RenderTexture rt;
+
+    void Start()
+    {
+        // 参数：宽、高、深度位数（0 = 不要深度）
+        rt = new RenderTexture(width, height, 24);
+        rt.name = "MonitorRT";
+        rt.Create();                       // 显式创建，避免延迟分配
+
+        cam.targetTexture = rt;            // 相机不再画到屏幕，画进这张纹理
+        screenQuad.material.mainTexture = rt;   // 这块 Quad 显示它
+    }
+
+    void OnDestroy()
+    {
+        if (rt != null)
+        {
+            rt.Release();                  // 必须释放，否则显存泄漏
+            Destroy(rt);
+        }
+    }
+}</code></pre>
+</div>
+
+<h3>路线二：OnRenderImage（内置管线）</h3>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C#</span>
+    <span class="code-title">挂在相机上，一行完成「贴一块材质」</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>using UnityEngine;
+
+[RequireComponent(typeof(Camera))]
+public class SimplePostFX : MonoBehaviour
+{
+    public Material effectMaterial;
+
+    // src = Unity 已经画好的画面，dst = 要输出的地方
+    void OnRenderImage(RenderTexture src, RenderTexture dst)
+    {
+        // 不带材质时就是拷过去
+        Graphics.Blit(src, dst, effectMaterial);
+    }
+}</code></pre>
+</div>
+
+<div class="callout danger">
+  <p class="callout-title">URP 里这个方法是空的</p>
+  <p><code>OnRenderImage</code> 是<strong>内置管线</strong>的专属回调。在 URP / HDRP 项目里它<strong>不会报错，也不会执行</strong>——表现就是「代码明明写了，画面一点变化都没有」。新手排查后处理失效时，先确认项目用的是哪个管线。</p>
+</div>
+
+<h3>路线三：URP Renderer Feature</h3>
+
+<p>URP 把渲染切成了一个个 Pass，你需要注册自己的 Pass 进流程。整体形状固定为三步：</p>
+
+<ol>
+  <li>写一个 <code>ScriptableRenderPass</code>，在 <code>Execute()</code> 里做 Blit</li>
+  <li>写一个 <code>ScriptableRendererFeature</code>，在 <code>AddRenderPasses()</code> 里把 Pass 塞进去</li>
+  <li>在 URP Renderer 资产上点 <strong>Add Renderer Feature</strong>，挂上你的 Feature</li>
+</ol>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">C# · URP 17 骨架</span>
+    <span class="code-title">结构是稳定的，具体 API 名各版本略有差异</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
+public class MyPostFeature : ScriptableRendererFeature
+{
+    public Material material;
+    MyPass pass;
+
+    public override void Create()
+    {
+        pass = new MyPass(material)
+        {
+            renderPassEvent = RenderPassEvent.AfterRenderingPostProcessing
+        };
+    }
+
+    public override void AddRenderPasses(ScriptableRenderer renderer, ref RenderingData data)
+    {
+        if (material == null) return;
+        renderer.EnqueuePass(pass);       // 把 Pass 排进本帧流程
+    }
+
+    class MyPass : ScriptableRenderPass
+    {
+        readonly Material mat;
+        public MyPass(Material m) { mat = m; }
+
+        // URP 17：从 RTHandle 取当前的相机颜色目标
+        public override void Execute(ScriptableRenderContext context, ref RenderingData data)
+        {
+            var cmd = CommandBufferPool.Get("MyPost");
+            var src = data.cameraData.renderer.cameraColorTargetHandle;
+
+            // 申请一张临时纹理（URP 会帮你回收）
+            var desc = data.cameraTargetDescriptor;
+            cmd.GetTemporaryRT(Shader.PropertyToID("_MyTemp"), desc);
+
+            // 画面 → 临时纹理（应用材质做处理）→ 回到相机目标
+            Blitter.BlitCameraTexture(cmd, src, _MyTempHandle, mat, 0);
+
+            context.ExecuteCommandBuffer(cmd);
+            CommandBufferPool.Release(cmd);
+        }
+    }
+}</code></pre>
+</div>
+
+<div class="callout warn">
+  <p class="callout-title">这段是骨架，不是能直接跑的文件</p>
+  <p>URP 的 <code>RTHandle</code> 分配、<code>Blitter</code> 的重载签名在不同版本（12 / 14 / 17）之间改过好几次。这里的价值在于<strong>流程顺序</strong>：取源 → 申请临时 RT → 用材质 Blit → 写回 → 释放命令缓冲。真正写的时候，照着你项目版本里的官方示例补细节即可。</p>
+</div>
+
+<h3>路线四：只想写 Shader Graph？</h3>
+
+<div class="callout unity">
+  <p class="callout-title">Full Screen Pass + Shader Graph（URP 14+）</p>
+  <ol>
+    <li>URP Renderer 资产 → Add Renderer Feature → <strong>Full Screen Pass Renderer Feature</strong></li>
+    <li>新建一个 <strong>Fullscreen Shader Graph</strong>（不是普通的 Unlit）</li>
+    <li>用 <strong>Screen Position</strong> / <strong>Scene Color</strong> 节点采样画面，算完接到 Fullscreen Master Stack 的 Color</li>
+    <li>把 Graph 拖到 Feature 的 Pass Material 上，选择注入点（Before/After Post Processing）</li>
+  </ol>
+  <p>这条路完全不需要写 C#，也不碰 <code>RenderTexture</code>，是现在做全屏特效最省事的方式。</p>
+</div>
+
+<h3>一个能跑的后处理 Shader</h3>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · 内置管线</span>
+    <span class="code-title">灰度效果：后处理 Shader 的标准模板</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>Shader "Hidden/MyGrayscale"
+{
+    Properties
+    {
+        _MainTex ("Source", 2D) = "white" {}
+        _Amount  ("Amount", Range(0,1)) = 1
+    }
+    SubShader
+    {
+        // 后处理的固定套路：不剔除、不写深度、永远通过深度测试
+        Cull Off
+        ZWrite Off
+        ZTest Always
+
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert_img          // Unity 自带的全屏方块顶点函数
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            sampler2D _MainTex;
+            float4 _MainTex_TexelSize;       // (1/宽, 1/高, 宽, 高)，做模糊要用
+            float _Amount;
+
+            fixed4 frag (v2f_img i) : SV_Target
+            {
+                fixed4 c = tex2D(_MainTex, i.uv);
+
+                // 感知亮度权重，比简单的 (r+g+b)/3 更符合人眼
+                float gray = dot(c.rgb, float3(0.299, 0.587, 0.114));
+
+                return fixed4(lerp(c.rgb, gray.xxx, _Amount), 1.0);
+            }
+            ENDCG
+        }
+    }
+}</code></pre>
+</div>
+
+<p>想改成<strong>边缘检测</strong>，只需要把「取当前像素」改成「取周围一圈像素」：用 <code>_MainTex_TexelSize.xy</code> 当步长，采样上下左右四个邻居，算它们和中心像素的差值，差值大的地方就是边缘。这就是 Sobel 算子，也是描边的雏形。</p>
+
+<div class="callout unity">
+  <p class="callout-title">URP 里想「读到场景颜色」有更省事的办法</p>
+  <ul>
+    <li><code>_CameraOpaqueTexture</code>：URP 自动生成的不透明场景截图，直接采样即可（要开 Opaque Texture）。</li>
+    <li><code>_CameraDepthTexture</code>：深度图，做景深、雾、轮廓光、水面都用它。</li>
+    <li>Shader Graph 里对应 <strong>Scene Color</strong> 和 <strong>Scene Depth</strong> 节点。</li>
+  </ul>
+</div>
+
+<h2 id="pitfalls">五个坑</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>症状</th><th>原因</th><th>修法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>运行几秒后显存爆掉</td>
+      <td><code>RenderTexture</code> 没 <code>Release()</code>，每帧 new 一张</td>
+      <td>在 <code>OnDestroy</code> / <code>OnDisable</code> 里释放；或复用同一张</td>
+    </tr>
+    <tr>
+      <td>换分辨率后画面被拉伸 / 模糊</td>
+      <td>RT 尺寸还是旧的</td>
+      <td>监听分辨率变化，<code>rt.Release()</code> 后重建</td>
+    </tr>
+    <tr>
+      <td>后处理代码写了但毫无效果</td>
+      <td>URP 项目里用了 <code>OnRenderImage</code></td>
+      <td>改用 Renderer Feature / Full Screen Pass</td>
+    </tr>
+    <tr>
+      <td>颜色发灰、发白，和编辑器里不一样</td>
+      <td>RT 的 sRGB 设置不对（Linear 空间项目里尤其明显）</td>
+      <td>用 <code>RenderTextureFormat.Default</code>，别手动指定 sRGB 标志</td>
+    </tr>
+    <tr>
+      <td>后处理之后 UI 也变灰了 / UI 没变灰</td>
+      <td>后处理作用在哪个相机上</td>
+      <td>把 UI 相机和主相机分开，只在主相机上挂后处理</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="check">自测：三题</h2>
+
+<details class="quiz">
+  <summary>自测 · 3 个问题（先自己答，再展开）</summary>
+  <div class="quiz-body">
+    <ol>
+      <li>
+        <strong>为什么后处理 Shader 要写 <code>ZTest Always</code> 和 <code>Cull Off</code>？</strong>
+        <span class="ans">因为那个全屏方块是硬塞在相机前面的，它不应该被深度测试挡住，也不该有背面剔除的问题。后处理的原则是：<strong>无条件盖住整个屏幕</strong>。</span>
+      </li>
+      <li>
+        <strong>为什么模糊要拆成横向和纵向两趟？</strong>
+        <span class="ans">采样数从 N² 降到 2N。3×3 是 9 次变 6 次，看起来差别不大；但 15×15 是 225 次变 30 次，性能差 7 倍以上。两趟的结果在数学上非常接近真正的二维高斯。</span>
+      </li>
+      <li>
+        <strong>一个后处理同时作用于场景和 UI，会有什么问题？</strong>
+        <span class="ans">UI 通常需要保持清晰锐利（文字模糊会很难看），而且 UI 往往在单独的 Canvas / 相机上。正确做法是把后处理限制在 3D 相机上，UI 相机叠加在上层。</span>
+      </li>
+    </ol>
+  </div>
+</details>
+
+<h2 id="end">读完之后</h2>
+
+<p>五章到这里就闭环了：<strong>坐标系统</strong>决定了「你在哪个空间算」，<strong>摄像机</strong>决定了「什么被看到」，<strong>光照</strong>决定了「表面多亮」，<strong>法线贴图</strong>决定了「细节多细」，<strong>帧缓冲</strong>决定了「画完之后还能做什么」。</p>
+
+<p>接下来最有效的练习，不是继续读，而是<strong>挑一个你喜欢的游戏画面，试着用这五章的语言描述它是怎么来的</strong>：这个高光是 Blinn 还是 PBR？这个描边是后处理还是法线外扩？这个水面是反射贴图还是屏幕空间？能描述清楚，你就已经具备「看懂」的能力了。</p>
+
+<div class="callout tip">
+  <p class="callout-title">如果还要继续深入</p>
+  <ul>
+    <li><strong>PBR</strong>：把 Blinn-Phong 换成「微表面 + 能量守恒」，Unity 的 URP Lit 就是这个。看原教程的 PBR 章节，但重点看图。</li>
+    <li><strong>阴影</strong>：Shadow Map 就是「从光源的视角渲染一张深度图」，本质还是本章的帧缓冲。</li>
+    <li><strong>后处理进阶</strong>：Bloom（多级降采样 + 模糊 + 叠加）、SSAO、景深，都是本章套路的组合。</li>
+  </ul>
+</div>
+    </article>
+
+<nav class="pager"><a href="04-normal-mapping.html"><span class="dir">上一篇</span><span class="ttl">04 · 法线贴图</span></a><a class="next empty" href="index.html"><span class="dir">读完了</span><span class="ttl">回首页</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

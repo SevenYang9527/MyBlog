@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>法线贴图 · Unity × 图形学</title>
+<meta name="description" content="法线贴图不是凹凸，是每个像素的朝向；RGB 编码、切线空间 TBN、绿通道翻转与 Unity 导入设置。">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232f6bff'/%3E%3Ctext x='16' y='22' font-family='system-ui' font-size='17' font-weight='700' fill='white' text-anchor='middle'%3EU%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="is-chapter">
+<a href="../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+<div class="progress" id="progress"></div>
+<div class="layout">
+<aside class="sidebar" id="sidebar">
+  <a class="brand" href="index.html">
+    <span class="brand-mark">U</span>
+    <span>
+      <b>Unity × 图形学</b>
+      <small>5 章精华 · 重讲版</small>
+    </span>
+  </a>
+  <nav class="side-nav" aria-label="章节目录">
+    <p class="side-label">目录</p>
+      <a class="side-link" href="index.html"><span class="n">00</span><span>开始</span></a>
+      <a class="side-link" href="01-coordinate-spaces.html"><span class="n">01</span><span>坐标系统</span></a>
+      <a class="side-link" href="02-camera.html"><span class="n">02</span><span>摄像机</span></a>
+      <a class="side-link" href="03-basic-lighting.html"><span class="n">03</span><span>基础光照</span></a>
+      <a class="side-link active" href="04-normal-mapping.html" aria-current="page"><span class="n">04</span><span>法线贴图</span></a>
+      <a class="side-link" href="05-framebuffer.html"><span class="n">05</span><span>帧缓冲</span></a>
+  </nav>
+  <div class="side-foot">
+    <p>对应原教程<br><a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> · 仅取 5 章重讲</p>
+    <button class="theme-btn" id="themeBtn" type="button">☾&nbsp; 深色模式</button>
+  </div>
+</aside>
+<div class="scrim" id="scrim"></div>
+  <main class="main">
+    <div class="topbar">
+      <button class="menu-btn" id="menuBtn" type="button" aria-label="打开目录">☰ 目录</button>
+      <div class="crumb"><b>04 · 法线贴图</b></div>
+      <span class="pct" id="pct">0%</span>
+    </div>
+
+    <article class="article">
+<section class="page-head">
+  <p class="eyebrow">第 04 章 · 法线贴图</p>
+  <h1>让 8 个面，<em>看起来像 8000 个面</em></h1>
+  <p class="lede">上一章的光照只认「顶点法线」，所以哪怕贴图再精细，表面也是光滑的一块。法线贴图做的事很朴素：<strong>给每个像素单独指定一个「朝哪边」</strong>。几何没变，轮廓没变，只是光照以为自己摸到了凹凸。</p>
+  <div class="tags">
+    <span class="tag-src">原教程</span>
+    <span class="tag">法线贴图</span>
+    <span class="tag">切线空间</span>
+    <span class="tag">TBN</span>
+    <span class="tag">sRGB</span>
+  </div>
+</section>
+<nav class="chapter-toc"><p class="toc-label">本章目录</p><ol class="toc"><li><a href="#why"><span class="n">01</span><span>先纠正一个普遍误解</span></a></li><li><a href="#encode"><span class="n">02</span><span>一个向量，怎么塞进一张图</span></a></li><li><a href="#tbn"><span class="n">03</span><span>为什么非要「切线空间」</span></a></li><li><a href="#unity"><span class="n">04</span><span>Unity 对照：导入、材质、Shader</span></a></li><li><a href="#green"><span class="n">05</span><span>绿通道：DirectX 和 OpenGL 的历史遗留问题</span></a></li><li><a href="#pitfalls"><span class="n">06</span><span>六个坑</span></a></li><li><a href="#check"><span class="n">07</span><span>自测：三题</span></a></li></ol></nav>
+
+
+<div class="tldr">
+  <span class="tldr-label">一句话</span>
+  <p>法线贴图<strong>不是凹凸，是朝向</strong>。它用 RGB 三个通道存一个单位向量的三个分量（<code>颜色 = 法线 × 0.5 + 0.5</code>），所以「完全平坦」的编码是 <code>(0.5, 0.5, 1)</code> —— 也就是法线贴图那种<strong>标志性的淡紫蓝色</strong>。</p>
+</div>
+
+<h2 id="why">先纠正一个普遍误解</h2>
+
+<p>很多人以为法线贴图是「把模型的凹凸信息画上去」。不是的。它<strong>完全不改变几何</strong>：</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h4>它会变的</h4>
+    <ul style="margin:0">
+      <li>光照的计算结果（因为法线变了）</li>
+      <li>高光的位置和形状</li>
+      <li>物体看起来的「粗糙 / 平滑」</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h4>它不会变的</h4>
+    <ul style="margin:0">
+      <li>轮廓（silhouette）——侧着看还是平的</li>
+      <li>遮挡关系——不会真的挡到别的东西</li>
+      <li>阴影的形状</li>
+    </ul>
+  </div>
+</div>
+
+<p>所以法线贴图最适合「细节密集、但轮廓简单」的东西：砖墙、金属板、皮革、地面。一旦你需要「侧着看也有起伏」，就得上<strong>视差贴图</strong>（Parallax）、<strong>置换贴图</strong>（Displacement）或者干脆加模型面数。</p>
+
+<h2 id="encode">一个向量，怎么塞进一张图</h2>
+
+<p>法线的三个分量范围是 <code>−1 ~ 1</code>，而颜色通道只有 <code>0 ~ 1</code>。所以标准做法是先做一次「压缩映射」：</p>
+
+<div class="callout">
+  <p class="callout-title">编码与解码</p>
+  <p style="font-family:ui-monospace,monospace;font-size:14px;line-height:2;margin:0">编码：颜色 = 法线 × 0.5 + 0.5<br>解码：法线 = 颜色 × 2 − 1</p>
+</div>
+
+<p>于是「完全平坦、朝外」的法线 <code>(0, 0, 1)</code> 会变成 <code>(0.5, 0.5, 1)</code>，也就是 RGB <code>(128, 128, 255)</code> —— 打开一张法线贴图看到的那片淡紫蓝色，本质上是「这里没有凹凸」。</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 340" role="img" aria-label="切线空间的 TBN 三根轴，以及法线如何编码成颜色">
+    <defs>
+      <marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+      </marker>
+    </defs>
+
+    <!-- 平面 -->
+    <path d="M60,250 L300,250 L390,190 L150,190 Z" fill="#eef2f7" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <!-- 扰动法线示意 -->
+    <line x1="150" y1="238" x2="128" y2="212" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar5)"/>
+    <line x1="212" y1="232" x2="212" y2="202" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar5)"/>
+    <line x1="274" y1="226" x2="296" y2="200" stroke="#94a3b8" stroke-width="1.4" marker-end="url(#ar5)"/>
+
+    <!-- TBN -->
+    <line x1="212" y1="228" x2="322" y2="228" stroke="#ef4444" stroke-width="2.4" marker-end="url(#ar5)"/>
+    <line x1="212" y1="228" x2="292" y2="174" stroke="#16a34a" stroke-width="2.4" marker-end="url(#ar5)"/>
+    <line x1="212" y1="228" x2="212" y2="120" stroke="#2563eb" stroke-width="2.4" marker-end="url(#ar5)"/>
+    <circle cx="212" cy="228" r="3.5" fill="#111827"/>
+
+    <text x="334" y="252" font-size="12" font-weight="700" fill="#ef4444">T 切线（沿 U）</text>
+    <text x="302" y="170" font-size="12" font-weight="700" fill="#16a34a">B 副切线（沿 V）</text>
+    <text x="222" y="118" font-size="12" font-weight="700" fill="#2563eb">N 法线（垂直朝外）</text>
+
+    <text x="212" y="40" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">① 切线空间：贴着表面的局部坐标系</text>
+    <text x="212" y="300" font-size="10.5" fill="#64748b" text-anchor="middle">T、B 躺在表面里，N 垂直朝外 —— 三根轴构成 TBN 基</text>
+
+    <!-- 分隔 -->
+    <line x1="430" y1="20" x2="430" y2="320" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+
+    <!-- 编码 -->
+    <text x="665" y="40" font-size="13" font-weight="700" fill="#1f2937" text-anchor="middle">② 法线 → 颜色</text>
+
+    <rect x="520" y="120" width="140" height="100" rx="8" fill="#8080ff" stroke="#5b5bd6" stroke-width="1.5"/>
+    <rect x="690" y="120" width="140" height="100" rx="8" fill="#cc80e5" stroke="#a35bc4" stroke-width="1.5"/>
+
+    <text x="590" y="248" font-size="11.5" font-weight="700" fill="#1f2937" text-anchor="middle">(0, 0, 1) 平坦</text>
+    <text x="590" y="266" font-size="10.5" fill="#64748b" text-anchor="middle" font-family="ui-monospace,monospace">RGB(128,128,255)</text>
+    <text x="760" y="248" font-size="11.5" font-weight="700" fill="#1f2937" text-anchor="middle">(0.6, 0, 0.8) 倾斜</text>
+    <text x="760" y="266" font-size="10.5" fill="#64748b" text-anchor="middle" font-family="ui-monospace,monospace">RGB(204,128,229)</text>
+
+    <text x="665" y="308" font-size="11" fill="#475569" text-anchor="middle" font-family="ui-monospace,monospace">color = normal * 0.5 + 0.5</text>
+  </svg>
+  <figcaption>左：一个表面点的三根轴。图上那些小箭头就是「每个像素各自不同的法线」。右：同一个法线在贴图里长什么样。</figcaption>
+</figure>
+
+<div class="callout warn">
+  <p class="callout-title">所以法线贴图必须存成 Linear</p>
+  <p>法线不是颜色，是数据。如果导入时勾了 <strong>sRGB</strong>，引擎会自动做一次 gamma 解码，把 <code>128</code> 变成 <code>55</code> 左右——法线就全错了。表现是：表面发灰、发亮、光照永远偏一个方向。Unity 的 <code>Texture Type = Normal map</code> 会自动关掉 sRGB，<strong>但如果你手动建 RenderTexture 或者从代码里 LoadImage，就得自己记得设 Linear。</strong></p>
+</div>
+
+<h2 id="tbn">为什么非要「切线空间」</h2>
+
+<p>法线贴图里存的是<strong>切线空间</strong>下的法线，不是世界空间。这是一个非常聪明的偷懒：</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>如果存世界空间</th><th>如果存切线空间（实际做法）</th></tr></thead>
+  <tbody>
+    <tr><td>墙转了 90°，贴图就废了，得重做一张</td><td>同一张砖墙贴图能贴在任何朝向的面上</td></tr>
+    <tr><td>角色动画一弯腰，法线全错，因为表面转了</td><td>切线跟着表面一起变形，始终正确</td></tr>
+    <tr><td>UV 平铺 4×4 后，法线方向对不上</td><td>平铺不影响切线空间，直接重复采样即可</td></tr>
+    <tr><td>大部分法线值分布在整个球面上，压缩率差</td><td>绝大部分法线接近 <code>(0,0,1)</code>，压缩友好</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>代价是：使用时必须把切线空间法线<strong>转回世界空间</strong>，才能和世界空间的光方向做点乘。这个转换就是 <strong>TBN 矩阵</strong>：</p>
+
+<div class="callout">
+  <p class="callout-title">TBN 矩阵</p>
+  <p style="font-family:ui-monospace,monospace;font-size:13.5px;line-height:2;margin:0">世界法线 = T × n.x + B × n.y + N × n.z</p>
+  <p style="margin:8px 0 0">其中 <strong>n</strong> 是从贴图解码出来的切线空间法线。T、B、N 这三根轴由模型数据提供。</p>
+</div>
+
+<h3>TBN 从哪来</h3>
+
+<p>顶点数据里本来只有法线（NORMAL）。<strong>T（切线）和 B（副切线）不是模型文件自带的</strong>，而是导入时根据 UV 算出来的——因为「沿 U 方向」这个方向只有在有了 UV 之后才有意义。B 则可以直接由 <code>cross(N, T) × T.w</code> 得到（那个 <code>w</code> 分量存的是手性符号，用来兼容镜像 UV）。</p>
+
+<div class="callout unity">
+  <p class="callout-title">Unity 的导入设置</p>
+  <p>模型文件（FBX/OBJ）的 Import Settings → <strong>Normals</strong> 设为 Import 或 Calculate 时，<strong>Tangents</strong> 也要一起设。如果显示 <em>Missing</em>，法线贴图就会退化成「直接用顶点法线」，看起来完全没有凹凸。<strong>这是「法线贴图不生效」的第一大原因。</strong></p>
+</div>
+
+<h2 id="unity">Unity 对照：导入、材质、Shader</h2>
+
+<h3>贴图导入设置</h3>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>设置项</th><th>应该选什么</th><th>为什么</th></tr></thead>
+  <tbody>
+    <tr><td>Texture Type</td><td><strong>Normal map</strong></td><td>自动关掉 sRGB，并按法线方式压缩</td></tr>
+    <tr><td>Create from Grayscale</td><td>普通法线图关掉；从高度图生成时打开</td><td>它是把灰度图当高度来求导生成法线</td></tr>
+    <tr><td>Bumpiness</td><td>0.5 ~ 1</td><td>只在生成模式下有效，控制强度</td></tr>
+    <tr><td>Flip Green Channel</td><td>贴图发暗 / 发亮时试试</td><td>兼容 DirectX 与 OpenGL 的 Y 轴约定差异</td></tr>
+    <tr><td>sRGB (Color Texture)</td><td><strong>必须关</strong></td><td>法线是数据不是颜色</td></tr>
+    <tr><td>Compression</td><td>移动端 ASTC / ETC2；PC 用 BC5（双通道）</td><td>BC5 只存两个通道、第三个重建，质量最好</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Shader 里怎么用</h3>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · 内置管线</span>
+    <span class="code-title">采样、解码、转到世界空间</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>struct v2f
+{
+    float4 pos      : SV_POSITION;
+    float2 uv       : TEXCOORD0;
+    float3 normalWS : TEXCOORD1;
+    float4 tangentWS: TEXCOORD2;   // xyz = 切线，w = 手性符号
+};
+
+// 顶点着色器里：把法线和切线都转到世界空间
+o.normalWS  = UnityObjectToWorldNormal(v.normal);
+o.tangentWS = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+
+// 片元着色器里：
+// 1. 采样并解码：(0..1) → (0,0,1) 附近的单位向量
+float3 nTS = UnpackNormal(tex2D(_BumpMap, i.uv));
+nTS.xy *= _BumpScale;                       // 强度，1 是原始强度
+
+// 2. 构造 TBN 并转世界空间
+float3 N = normalize(i.normalWS);
+float3 T = normalize(i.tangentWS.xyz - N * dot(N, i.tangentWS.xyz));  // 正交化
+float3 B = cross(N, T) * i.tangentWS.w;
+float3x3 TBN = float3x3(T, B, N);
+float3 normalWS = normalize(mul(nTS, TBN));</code></pre>
+</div>
+
+<div class="code-block">
+  <div class="code-head">
+    <span class="code-lang">HLSL · URP 17</span>
+    <span class="code-title">URP 里更省事：NormalWS 在顶点阶段就准备好了</span>
+    <button class="copy-btn" type="button">复制</button>
+  </div>
+<pre><code>// 顶点输入结构用 Attributes，输出用 Varyings
+// Varyings 里带 normalWS 和 tangentWS（URP 的 ShaderVariablesFunctions 会自动填充）
+float3 nTS = UnpackNormalScale(
+    SAMPLE_TEXTURE2D(_BumpMap, sampler_BumpMap, uv), _BumpScale);
+
+float3 N = normalize(input.normalWS);
+float3 T = normalize(input.tangentWS.xyz - N * dot(N, input.tangentWS.xyz));
+float3 B = cross(N, T) * input.tangentWS.w;
+
+float3 normalWS = TransformTangentToWorld(nTS, half3x3(T, B, N));</code></pre>
+</div>
+
+<div class="callout unity">
+  <p class="callout-title">不想写代码？Shader Graph 有现成的</p>
+  <ul>
+    <li><strong>Normal Map</strong> 节点：输入一张 Normal 贴图和 Strength，直接输出切线空间法线（它内部就是 Unpack + 缩放）。</li>
+    <li><strong>Normal From Texture</strong> 节点：从<strong>高度图</strong>（灰度）现场求出法线，适合程序化材质。</li>
+    <li><strong>Normal Blend</strong> 节点：把两张法线叠在一起（做细节叠加时用）。</li>
+    <li>最后接 <strong>Normal (World)</strong> 或 <strong>Normal (Tangent)</strong> 到光照节点，注意别接错空间。</li>
+  </ul>
+</div>
+
+<h2 id="green">绿通道：DirectX 和 OpenGL 的历史遗留问题</h2>
+
+<p>切线空间里，绿通道（G）代表「沿 V 方向的倾斜」。但两家图形 API 对 V 轴朝上还是朝下<strong>没有统一约定</strong>：</p>
+
+<figure class="fig">
+  <svg viewBox="0 0 900 210" role="img" aria-label="绿通道翻转导致凸起变成凹陷">
+    <defs>
+      <marker id="ar6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4.5" markerHeight="4.5" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#475569"/>
+      </marker>
+    </defs>
+
+    <!-- 左：凸起 -->
+    <text x="250" y="34" font-size="12.5" font-weight="700" fill="#1f2937" text-anchor="middle">法线朝外散开 = 凸起</text>
+    <line x1="140" y1="160" x2="360" y2="160" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 4"/>
+    <path d="M190,160 A60,60 0 0 1 310,160" fill="#eef2f7" stroke="#60a5fa" stroke-width="2"/>
+    <line x1="198" y1="130" x2="172" y2="112" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <line x1="250" y1="100" x2="250" y2="74" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <line x1="302" y1="130" x2="328" y2="112" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <text x="250" y="192" font-size="10.5" fill="#64748b" text-anchor="middle">光照看起来：鼓起来</text>
+
+    <!-- 右：凹陷 -->
+    <line x1="450" y1="18" x2="450" y2="196" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 5"/>
+    <text x="650" y="34" font-size="12.5" font-weight="700" fill="#1f2937" text-anchor="middle">法线朝里收拢 = 凹陷</text>
+    <line x1="540" y1="160" x2="760" y2="160" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="4 4"/>
+    <path d="M590,160 A60,60 0 0 1 710,160" fill="#eef2f7" stroke="#f87171" stroke-width="2"/>
+    <line x1="598" y1="130" x2="624" y2="145" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <line x1="650" y1="100" x2="650" y2="126" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <line x1="702" y1="130" x2="676" y2="145" stroke="#475569" stroke-width="1.8" marker-end="url(#ar6)"/>
+    <text x="650" y="192" font-size="10.5" fill="#64748b" text-anchor="middle">光照看起来：凹下去（绿通道反了）</text>
+  </svg>
+  <figcaption>同一张法线贴图、同一个模型，只是绿色通道的方向约定相反。表现就是「明明该凸的地方是凹的」。修法只有一键：导入设置里勾 Flip Green Channel。</figcaption>
+</figure>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>来源</th><th>绿通道约定</th><th>Unity 里怎么办</th></tr></thead>
+  <tbody>
+    <tr><td>DirectX（3ds Max、Marmoset、Substance 默认）</td><td>Y 轴向下</td><td>直接导入通常就对</td></tr>
+    <tr><td>OpenGL（Blender 默认、老教程）</td><td>Y 轴向上</td><td>导入设置勾 <strong>Flip Green Channel</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="callout tip">
+  <p class="callout-title">怎么一眼判断反没反</p>
+  <p>在场景里放一盏<strong>斜上方的方向光</strong>，看砖墙：本该被照亮的上半边如果反而更暗，就是反了。翻转绿通道后立刻正常。</p>
+</div>
+
+<h2 id="pitfalls">六个坑</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>症状</th><th>原因</th><th>修法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>法线贴图完全没效果</td>
+      <td>模型没有切线数据</td>
+      <td>模型导入设置里把 Tangents 设为 Calculate / Import</td>
+    </tr>
+    <tr>
+      <td>表面发灰、整体偏亮，光照方向怪</td>
+      <td>贴图被当成 sRGB 颜色</td>
+      <td>Texture Type 设为 Normal map；代码加载时用 Linear</td>
+    </tr>
+    <tr>
+      <td>凸起变凹陷</td>
+      <td>绿通道约定不一致</td>
+      <td>导入设置勾 Flip Green Channel</td>
+    </tr>
+    <tr>
+      <td>UV 接缝处一条亮线 / 黑缝</td>
+      <td>模型在该处 UV 断开，切线不连续</td>
+      <td>接缝处做切线平滑（建模端），或接受轻微瑕疵</td>
+    </tr>
+    <tr>
+      <td>高光碎成一片噪点</td>
+      <td>强度（Bumpiness / _BumpScale）过大</td>
+      <td>降到 1 附近，或者用更平缓的法线图</td>
+    </tr>
+    <tr>
+      <td>Albedo 和法线的平铺不一致</td>
+      <td>两张贴图的 Tiling 不同</td>
+      <td>统一 Tiling；或写两套 UV</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h2 id="check">自测：三题</h2>
+
+<details class="quiz">
+  <summary>自测 · 3 个问题（先自己答，再展开）</summary>
+  <div class="quiz-body">
+    <ol>
+      <li>
+        <strong>一张纯淡紫色 <code>RGB(128,128,255)</code> 的贴图贴上去，会有什么效果？</strong>
+        <span class="ans">没有任何凹凸效果——这正好是「完全平坦」的编码。它等价于告诉引擎「每个像素的法线都朝外」，也就是什么也没改。</span>
+      </li>
+      <li>
+        <strong>为什么法线贴图里几乎看不到纯黑或纯白？</strong>
+        <span class="ans">因为存的是单位向量的一半区间，绝大多数法线接近 <code>(0,0,1)</code>，编码后落在 (128,128,255) 附近。纯黑 <code>(0,0,0)</code> 解出来是 <code>(−1,−1,−1)</code>，不是合法的单位向量。</span>
+      </li>
+      <li>
+        <strong>物体缩放成 2 倍后，法线贴图的凹凸感会变吗？</strong>
+        <span class="ans">几何会被拉伸，但法线贴图的凹凸强度不变（因为它按 UV 采样）。所以非均匀缩放会让细节「变扁」而光照仍然按原强度计算，观感会不匹配——一般会给材质加个按缩放补偿的 BumpScale。</span>
+      </li>
+    </ol>
+  </div>
+</details>
+
+<div class="callout tip">
+  <p class="callout-title">下一章</p>
+  <p>到这儿，你已经能把一个场景画得很好看了。但画面还是「一次性画在屏幕上」，没法再做二次加工。第 05 章把画面搬进一张可以当纹理用的画布——后处理、模糊、描边、Bloom 全都从这里开始。</p>
+</div>
+    </article>
+
+<nav class="pager"><a href="03-basic-lighting.html"><span class="dir">上一篇</span><span class="ttl">03 · 基础光照</span></a><a class="next" href="05-framebuffer.html"><span class="dir">下一篇</span><span class="ttl">05 · 帧缓冲</span></a></nav>
+
+    <footer class="site-foot">
+      <p>本站是把 <a href="https://learnopengl-cn.github.io/" target="_blank" rel="noopener">LearnOpenGL CN</a> 的 5 个章节重新组织、改用 Unity 的视角讲解的笔记站。概念与数学来自原教程，Unity 对照部分按 Unity 6 / URP 17 编写。</p>
+      <p>代码片段可直接粘贴使用；标「内置管线」的写法在 URP 里不生效，反之亦然。</p>
+    </footer>
+  </main>
+</div>
+<script src="assets/app.js" defer></script>
+</body>
+</html>

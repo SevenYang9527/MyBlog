@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>事件队列 · Unity 视角 —《游戏编程模式》速学图谱</title>
+<meta name="description" content="别在事件发生的瞬间处理它：先入队，在安全的时机统一消费，顺序与重入都可控。">
+<link rel="stylesheet" href="../assets/styles.css">
+<link rel="stylesheet" href="../assets/pattern.css">
+</head>
+<body class="pattern-page">
+<a href="../../series/" data-hub-link style="display:block;padding:7px 16px;font:500 12px/1.5 system-ui,-apple-system,'Segoe UI',sans-serif;color:inherit;opacity:.72;text-decoration:none;box-shadow:inset 0 -1px 0 rgba(128,128,128,.28)">← 回到知识站</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../index.html">
+      <span class="brand-mark">GPP</span>
+      <span class="brand-text">Unity 速学图谱</span>
+    </a>
+    <nav class="nav" aria-label="页面导航">
+      <a href="../index.html#route">← 返回跳读路线</a>
+      <a href="https://gpp.tkchu.me/event-queue.html" target="_blank" rel="noopener">原书这一章 ↗</a>
+    </nav>
+    <button class="readbtn" id="readBtn" type="button" data-id="event-queue" aria-pressed="false">标记已读</button>
+  </div>
+</header>
+
+<main class="p-main">
+  <div class="wrap p-wrap">
+    <nav class="crumb" aria-label="路径">
+      <a href="../index.html#route">跳读路线</a><span>/</span>
+      <span>批次 2 · 架构升级</span><span>/</span>
+      <span class="crumb-cur">事件队列</span>
+    </nav>
+
+    <article class="p-article">
+      <header class="p-head">
+        <p class="p-kicker"><span class="p-no">08</span> 第 8 章 · Event Queue</p>
+        <h1>事件队列</h1>
+        <p class="p-essence">别在事件发生的瞬间处理它：先入队，在安全的时机统一消费，顺序与重入都可控。</p>
+        <ul class="p-meta">
+          <li>25 分钟</li>
+          <li>批次 2 · 架构升级</li>
+          <li>消息队列 · 单帧延迟 · CommandBuffer</li>
+        </ul>
+      </header>
+
+      <div class="p-body">
+<h2>原文在解决什么</h2>
+<p>直接回调有两个麻烦：<strong>重入</strong>（A 触发 B，B 又改 A 的列表，正在遍历的集合被修改）和<strong>时序</strong>（「死亡 → 掉宝 → UI → 音效」的先后由调用顺序决定，改动一处就乱）。</p>
+<p>队列化把「发生」和「处理」拆开：发布只是入队，消费发生在循环的固定位置，一次处理一批。</p>
+<h2>Unity 里它长什么样</h2>
+<p><code>Unity</code> 没有内置通用事件队列，但到处都是它的影子：<code>CommandBuffer</code>（渲染指令排队）、<code>NetworkClient</code> 的消息队列、<code>Addressables</code> 的回调队列。</p>
+<p>自己实现一个最小的：</p>
+<pre class="code"><code>public static class GameEvents
+{
+    static readonly Queue&lt;Action&gt; queue = new(64);
+
+    public static void Push(Action e) =&gt; queue.Enqueue(e);
+
+    // 在某个系统的 Update 末尾调用一次
+    public static void Flush()
+    {
+        int count = queue.Count;          // 只消费这一帧入队的，避免死循环
+        while (count-- &gt; 0 &amp;&amp; queue.Count &gt; 0)
+            queue.Dequeue()?.Invoke();
+    }
+}</code></pre>
+<p>用法：<code>GameEvents.Push(() => OnEnemyDied(enemy));</code>。好处是「死亡处理」永远发生在帧末，遍历中途不会被打断。</p>
+<p>进阶：队列可以<strong>合并</strong>（同一目标的多段伤害累加后只处理一次）、<strong>排序</strong>（优先级队列）、<strong>跨帧</strong>（延迟到下一帧生效，做「回合结算」很自然）。</p>
+<h2>什么时候别用</h2>
+<ul class="p-list"><li>语义会变：本来「立刻发生」的事变成「这帧末/下一帧发生」。跨帧队列尤其危险，动画和表现会晚一帧。</li><li>调试变难：调用栈里看不到「谁触发的」，必须记事件日志。</li><li>每帧几百个事件时，<code>Action</code> 闭包会产生 <code>GC Alloc</code>，改用结构体事件 + 泛型队列。</li></ul>
+<h2>10 分钟动手</h2>
+<ol class="p-list p-list-num"><li>找出项目里「在一个 <code>foreach</code> 里删元素」的代码，那通常就是重入 bug 的现场。</li><li>把「死亡 → 掉落 → 加分 → 音效」改成入队，在 <code>LateUpdate</code> 里 <code>Flush</code>。</li><li>故意在 <code>Flush</code> 里再 <code>Push</code> 一个事件，确认你的实现不会无限循环。</li></ol>
+      </div>
+
+      <nav class="p-foot" aria-label="相邻章节">
+        <a class="p-nav p-nav-prev" href="command.html"><span class="p-nav-tag">上一章</span><span class="p-nav-name">← 命令模式</span></a>
+        <a class="p-nav p-nav-next" href="service-locator.html"><span class="p-nav-tag">下一章</span><span class="p-nav-name">服务定位器 →</span></a>
+      </nav>
+    </article>
+  </div>
+</main>
+
+<footer class="p-pagefoot">
+  <p>内容按 Bob Nystrom《Game Programming Patterns》重排，所有解释与代码都换成了 Unity / C# 的说法。
+     原文免费在线阅读：<a href="https://gpp.tkchu.me/event-queue.html" target="_blank" rel="noopener">gpp.tkchu.me</a>。</p>
+</footer>
+
+<script src="../assets/pattern.js"></script>
+</body>
+</html>
