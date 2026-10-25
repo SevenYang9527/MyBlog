@@ -8,3 +8,6 @@ public/
 _multiconfig.yml
 _demo-site/
 _backup-before-redesign/
+
+# 子站源目录是本机绝对路径，不跟着仓库走
+tools/series-sources.json

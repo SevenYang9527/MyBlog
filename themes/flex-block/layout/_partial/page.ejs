@@ -11,7 +11,7 @@
       <%# 输出自定义友链内容 %>
       <% if (page.layout === "links") { %>
         <section class="page-link-container">
-          <% site.data.links.forEach(function(link) { %>
+          <% (site.data.links || []).forEach(function(link) { %>
             <div class="link-item layout-padding">
               <a href="<%= link.link %>" title="<%= link.name %>" class="content-padding--primary soft-size--primary soft-style--box" target="_blank" rel="noopener noreferrer">
                 <% if (link.cover) { %>

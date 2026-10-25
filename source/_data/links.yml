@@ -1,18 +1,9 @@
-- name: 计算机教育中缺失的一课
-  link: https://missing-semester-cn.github.io/
-  describe: MIT 讲 Shell、Vim、Git、调试的课程，工具篇的天花板
-- name: CS 自学指南
-  link: https://csdiy.wiki/
-  describe: 按课程和方向组织的计算机自学路线，用来校准自己的学习顺序
-- name: MDN Web Docs
-  link: https://developer.mozilla.org/zh-CN/
-  describe: HTTP、HTML、CSS 的第一手资料，查缓存规范只认这里
-- name: 《深度工作》
-  link: https://book.douban.com/subject/27029707/
-  describe: 关于注意力与专注的底层方法论，读完改了工作节奏
-- name: Obsidian
-  link: https://obsidian.md/
-  describe: 本地 Markdown + 双链，笔记真正属于自己
-- name: 中文技术文档风格指南
-  link: https://zh-style-guide.readthedocs.io/
-  describe: 写技术笔记时的用词与格式规范，让条目更耐读
+# 收藏页（/collections）的数据。加一条就多一张卡片：
+#
+# - name: 名称
+#   link: https://example.com/
+#   describe: 一句话说明它为什么值得留在这里
+#   cover: https://...    # 可选，卡片封面图
+#
+# 现在留空：收藏页会先显示占位文案。
+[]
