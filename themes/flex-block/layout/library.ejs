@@ -1,0 +1,68 @@
+<!-- 知识库总览：按领域分组 -->
+
+<%
+  var totalPosts = site.posts.length;
+  var domainCount = site.categories.length;
+  var cats = site.categories.sort('name').toArray();
+%>
+<div class="body-container">
+  <div class="content-container layout-block">
+
+    <!-- 概览条 -->
+    <section class="layout-padding layout-margin">
+      <div class="content-padding--primary soft-size--large soft-style--box">
+        <div class="card-text--row" style="margin-top:0">
+          共 <strong><%= totalPosts %></strong> 条笔记，分布在 <strong><%= domainCount %></strong> 个知识域。
+          按领域浏览，或用右侧标签做细粒度检索。
+        </div>
+      </div>
+    </section>
+
+    <% if (totalPosts === 0) { %>
+      <section class="layout-padding layout-margin">
+        <div class="content-padding--primary soft-size--large soft-style--box">
+          <div class="card-text--row" style="margin-top:0">
+            还没有条目。写第一篇笔记：<code>npx hexo new "标题"</code>，然后在 front-matter 里加
+            <code>categories: 计算机基础</code> 和一句 <code>summary:</code>，它会自动出现在这里。
+          </div>
+        </div>
+      </section>
+    <% } %>
+
+    <% cats.forEach(function(cat) { var posts = cat.posts.sort('updated', -1); %>
+      <section class="layout-padding layout-margin">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+          <h2 class="card-text--title">
+            <a href="<%- url_for(cat.path) %>"><%= cat.name %></a>
+          </h2>
+          <span style="opacity:.55;font-size:var(--font-base-size)"><%= cat.length %> 条</span>
+        </div>
+
+        <div class="content-container article-list">
+          <% posts.forEach(function(post) { %>
+            <div class="article-item layout-padding" style="flex:1 1 320px;min-width:320px;max-width:100%">
+              <article class="card-container article-card content-padding--large soft-size--large soft-style--box">
+                <div class="card-text">
+                  <a href="<%- url_for(post.path) %>" itemprop="url">
+                    <h3 class="card-text--title"><%= post.title %></h3>
+                  </a>
+                  <% if (post.summary) { %>
+                    <div class="card-text--row"><%= post.summary %></div>
+                  <% } else if (post.content) { %>
+                    <div class="card-text--row"><%= strip_html(post.content).replace(/\s+/g, ' ').trim().slice(0, 80) %>…</div>
+                  <% } %>
+                  <div class="card-text--row">
+                    <span>更新于</span>
+                    <time datetime="<%= date_xml(post.updated) %>"><%= date(post.updated, 'YYYY-MM-DD') %></time>
+                  </div>
+                  <%- partial("_widget/tag", { page: post, class_name: 'light' }) %>
+                </div>
+              </article>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    <% }) %>
+
+  </div>
+</div>

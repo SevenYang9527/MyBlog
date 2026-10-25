@@ -1,0 +1,91 @@
+<%
+  var useComments = theme.comments.use
+  var valine = theme.comments.valine
+  var disqus = theme.comments.disqus
+  var giscus = theme.comments.giscus || {}
+  // Hexo 会给每篇文章默认塞 comments: true，所以这里以主题开关为准：
+  // 主题 comments.enable 关着 = 全站不显示；开着时还可以在文章 front-matter 里写 comments: false 单独关掉
+  var show_comments = theme.comments.enable && post.comments !== false
+%>
+
+<% if (show_comments) { %>
+  <%# valine 评论 %>
+  <% if (useComments === 'valine' && valine.appId && valine.appKey) { %>
+    <div class="valine-container comments-container content-padding--primary soft-size--large soft-style--box">
+      <div id="valine_thread" class="valine-thread"></div>
+    </div>
+    <script type="text/javascript" src="//cdn1.lncld.net/static/js/3.0.4/av-min.js"></script>
+    <script type="text/javascript" src='//unpkg.com/valine/dist/Valine.min.js'></script>
+    <script type="text/javascript">
+      new Valine({
+        el: "#valine_thread",
+        appId: "<%= valine.appId %>",
+        appKey: "<%= valine.appKey %>",
+        avatar: "<%= valine.avatar %>",
+        placeholder: "<%= valine.placeholder %>",
+        notify: <%= valine.notify %>,
+        visitor: <%= valine.visitor %>,
+        pageSize: <%= valine.pageSize %>,
+      });
+    </script>
+  <% } %>
+
+  <%# giscus 评论（数据存在 GitHub Discussions） %>
+  <% if (useComments === 'giscus' && giscus.repo && giscus.repoId && giscus.categoryId) { %>
+    <div class="giscus-container comments-container content-padding--primary soft-size--large soft-style--box">
+      <script src="https://giscus.app/client.js"
+              data-repo="<%= giscus.repo %>"
+              data-repo-id="<%= giscus.repoId %>"
+              data-category="<%= giscus.category %>"
+              data-category-id="<%= giscus.categoryId %>"
+              data-mapping="<%= giscus.mapping || 'pathname' %>"
+              data-strict="0"
+              data-reactions-enabled="<%= giscus.reactionsEnabled || '1' %>"
+              data-emit-metadata="0"
+              data-input-position="<%= giscus.inputPosition || 'top' %>"
+              data-theme="<%= giscus.themeLight || 'light' %>"
+              data-lang="<%= giscus.lang || 'zh-CN' %>"
+              crossorigin="anonymous"
+              async>
+      </script>
+    </div>
+    <script type="text/javascript">
+      (function () {
+        var LIGHT = '<%= giscus.themeLight || "light" %>';
+        var DARK = '<%= giscus.themeDark || "dark" %>';
+        function current() {
+          return document.documentElement.classList.contains('theme-dark') ? DARK : LIGHT;
+        }
+        function sync(theme) {
+          var frame = document.querySelector('iframe.giscus-frame');
+          if (!frame || !frame.contentWindow) return;
+          frame.contentWindow.postMessage({ giscus: { setConfig: { theme: theme } } }, 'https://giscus.app');
+        }
+        // 主题的深色按钮只改 <html> 的 class，这里跟着同步 giscus 的主题
+        new MutationObserver(function () { sync(current()); })
+          .observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+      })();
+    </script>
+  <% } %>
+
+  <%# disqus 评论 %>
+  <% if (useComments === 'disqus' && disqus.website) { %>
+    <div class="disqus-container comments-container content-padding--primary soft-size--large soft-style--box">
+      <p id="disqus_error" class="disqus-error" style="display: none;"><%= disqus.error %></p>
+      <div id="disqus_thread" class="disqus-thread"></div>
+    </div>
+    <script type="text/javascript">
+      (function() {
+        var d = document, s = d.createElement('script'), c = d.querySelector(".disqus-container");
+        if (!c) return;
+        s.src = 'https://<%= disqus.website %>.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        s.onerror = () => {
+          document.querySelector("#disqus_error").style.display = "block";
+        }
+        (d.head || d.body).appendChild(s);
+      })();
+    </script>
+  <% } %>
+
+<% } %>

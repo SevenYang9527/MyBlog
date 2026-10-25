@@ -1,0 +1,27 @@
+<%
+  var s = item;
+  var isCompact = (typeof compact === 'undefined') ? false : compact;
+%>
+<div class="article-item layout-padding" style="flex:1 1 320px;min-width:300px;max-width:100%">
+  <article class="card-container article-card content-padding--large soft-size--large soft-style--box" style="height:100%">
+    <div class="card-text">
+      <% if (!isCompact && s.tag) { %>
+        <div class="card-text--row" style="margin-top:0;font-size:var(--font-base-size);opacity:.6"><%= s.tag %></div>
+      <% } %>
+      <a href="<%- url_for(s.url) %>" itemprop="url">
+        <h3 class="card-text--title"><%= s.title %></h3>
+      </a>
+      <div class="card-text--row"><%= s.intro %></div>
+      <% if (s.stats) { %>
+        <div class="card-text--row" style="opacity:.7;display:flex;gap:14px;flex-wrap:wrap">
+          <% s.stats.forEach(function(x) { %><span><%= x %></span><% }) %>
+        </div>
+      <% } %>
+      <% if (!isCompact) { %>
+        <div style="margin-top:18px">
+          <a href="<%- url_for(s.url) %>" style="display:inline-block;padding:8px 18px;border-radius:999px;background:var(--theme-text-stress,#3367D6);color:#fff;font-size:var(--font-base-size)">进入系列</a>
+        </div>
+      <% } %>
+    </div>
+  </article>
+</div>

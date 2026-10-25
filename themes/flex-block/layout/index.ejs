@@ -1,0 +1,83 @@
+<!-- 首页：知识域入口 + 最近更新 -->
+
+<div class="body-container">
+  <div class="content-container layout-block">
+
+    <!-- 知识域 -->
+    <section class="layout-padding layout-margin">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 class="card-text--title">知识域</h2>
+        <span style="opacity:.55;font-size:var(--font-base-size)">先选一个方向，再往下挖</span>
+      </div>
+
+      <% if (site.categories.length === 0) { %>
+        <div class="content-padding--primary soft-size--large soft-style--box">
+          <div class="card-text--row" style="margin-top:0">
+            还没有条目。写第一篇笔记：<code>npx hexo new "标题"</code>，在 front-matter 里写
+            <code>categories: 计算机基础</code>，这里就会自动多出一个知识域。
+          </div>
+        </div>
+      <% } else { %>
+        <div class="content-container article-list">
+          <% site.categories.sort('name').each(function(cat) { %>
+            <div class="article-item layout-padding" style="flex:1 1 320px;min-width:320px;max-width:100%">
+              <article class="card-container article-card content-padding--large soft-size--large soft-style--box">
+                <div class="card-text">
+                  <a href="<%- url_for(cat.path) %>" itemprop="url">
+                    <h3 class="card-text--title"><%= cat.name %></h3>
+                  </a>
+                  <div class="card-text--row"><%= cat.length %> 条笔记</div>
+                  <div class="card-text--row">
+                    最近更新：<%= date(cat.posts.sort('updated', -1).first().updated, 'YYYY-MM-DD') %>
+                  </div>
+                </div>
+              </article>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- 系列专题 -->
+    <section class="layout-padding layout-margin">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 class="card-text--title">系列</h2>
+        <a href="<%- url_for('/series/') %>" style="font-size:var(--font-base-size)">全部系列 →</a>
+      </div>
+
+      <div class="content-container article-list">
+        <% site.data.series.forEach(function(item) { %>
+          <%- partial('_widget/series-card', { item: item, compact: true }) %>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- 最近更新 -->
+    <section class="layout-padding layout-margin">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px">
+        <h2 class="card-text--title">最近更新</h2>
+        <a href="<%- url_for('/library/') %>" style="font-size:var(--font-base-size)">查看全部知识库 →</a>
+      </div>
+
+      <% if (site.posts.length === 0) { %>
+        <div class="content-padding--primary soft-size--large soft-style--box">
+          <div class="card-text--row" style="margin-top:0">
+            这里会按修改时间列出最近 6 条条目。写第一篇笔记后它就会出现。
+          </div>
+        </div>
+      <% } else { %>
+        <div class="content-padding--large soft-size--large soft-style--box">
+          <% site.posts.sort('updated', -1).limit(6).each(function(post, i) { %>
+            <div style="display:flex;align-items:baseline;gap:12px;<%= i > 0 ? 'margin-top:16px' : '' %>">
+              <a href="<%- url_for(post.path) %>" style="flex:1;min-width:0"><%= post.title %></a>
+              <span style="opacity:.55;white-space:nowrap;font-size:var(--font-base-size)">
+                <%= date(post.updated, 'YYYY-MM-DD') %>
+              </span>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+  </div>
+</div>

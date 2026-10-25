@@ -1,0 +1,31 @@
+<!-- 系列专题：挂载在知识站下的两份"独立小站" -->
+
+<div class="body-container">
+  <div class="content-container layout-block">
+
+    <section class="layout-padding layout-margin">
+      <div class="content-padding--primary soft-size--large soft-style--box">
+        <div class="card-text--row" style="margin-top:0">
+          这两个系列是已经写完的独立小站（各自的目录、进度、深浅色都保留），挂在这个域名下的
+          <code>/unity-graphics/</code> 和 <code>/gpp-unity/</code> 路径上，所以链接是站内的、能一起备份。
+        </div>
+      </div>
+    </section>
+
+    <section class="layout-padding layout-margin">
+      <div class="content-container article-list">
+        <% site.data.series.forEach(function(item) { %>
+          <%- partial('_widget/series-card', { item: item, compact: false }) %>
+        <% }) %>
+      </div>
+    </section>
+
+    <section class="layout-padding layout-margin">
+      <div class="card-text--row" style="opacity:.6;font-size:var(--font-base-size)">
+        想加第三个系列（比如某个技术专题、某本书的读书笔记）：在 <code>source/_data/series.yml</code> 里加一条，子站文件放进
+        <code>source/新的目录名/</code>，然后 <code>node tools/sync-series.js</code>。
+      </div>
+    </section>
+
+  </div>
+</div>
