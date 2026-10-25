@@ -32,9 +32,9 @@ comments:
   # 没填 repoId / categoryId 时不会渲染评论区（不会留空白框）
   giscus:
     repo: 'SevenYang9527/MyBlog'
-    repoId: ''
+    repoId: 'R_kgDOVXFJOA'
     category: 'Announcements'
-    categoryId: ''
+    categoryId: 'DIC_kwDOVXFJOM4DJmWT'
     mapping: pathname # pathname | url | title | og:title
     reactionsEnabled: '1'
     inputPosition: top
