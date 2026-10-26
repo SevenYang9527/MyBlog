@@ -1,0 +1,942 @@
+﻿<h3>内置渲染管线到 URP：低画质设置（Low settings）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>设置</th>
+      <th>内置渲染管线</th>
+      <th>URP</th>
+      <th>URP Asset 设置</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="4"><strong>阴影（Shadows）</strong></td>
+    </tr>
+    <tr>
+      <td>阴影遮罩模式（Shadowmask Mode）</td>
+      <td>阴影遮罩（Shadowmask）</td>
+      <td>阴影遮罩（Shadowmask）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影（Shadows）</td>
+      <td>禁用（Disabled）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影分辨率（Shadow Resolution）</td>
+      <td>低分辨率（Low resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影投射（Shadow Projection）</td>
+      <td>稳定适配（Stable fit）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影距离（Shadow Distance）</td>
+      <td>20</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影近平面偏移（Shadow Near Plane Offset）</td>
+      <td>3</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影级联（Shadow Cascades）</td>
+      <td>无级联（No Cascades）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>级联拆分（Cascade splits）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>工作单位（Working unit）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>深度偏移（Depth Bias）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>法线偏移（Normal Bias）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>软阴影（Soft Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>异步资源上传（Async Asset Upload）</strong></td>
+    </tr>
+    <tr>
+      <td>时间片（Time Slice）</td>
+      <td>2</td>
+      <td>2</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>缓冲区大小（Buffer Size）</td>
+      <td>16</td>
+      <td>16</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>持久缓冲区（Persistent Buffer）</td>
+      <td>是（Yes）</td>
+      <td>是（Yes）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>细节层次（Level of Detail）</strong></td>
+    </tr>
+    <tr>
+      <td>LOD 偏移（LOD Bias）</td>
+      <td>0.4</td>
+      <td>0.4</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>最大 LOD 级别（Maximum LOD level）</td>
+      <td>0</td>
+      <td>0</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>网格（Meshes）</strong></td>
+    </tr>
+    <tr>
+      <td>蒙皮权重（Skin Weights）</td>
+      <td>4 根骨骼（4 bones）</td>
+      <td>4 根骨骼（4 bones）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>光照（Lighting）</strong></td>
+    </tr>
+    <tr>
+      <td>主光源（Main Light）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>逐像素（Per pixel）</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影（Cast Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率（Shadow Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>附加光源（Additional Lights）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>禁用（Disabled）</td>
+    </tr>
+    <tr>
+      <td>• 每对象上限（Per Object Limit）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影（Cast Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• 阴影图集分辨率（Shadow Atlas Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率层级（Shadow Resolution tiers）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集分辨率（Cookie Atlas Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集格式（Cookie Atlas Format）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>反射探针（Reflection Probes）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>• 探针混合（Probe Blending）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td>• 盒式投影（Box Projection）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>后处理（Post-processing）</strong></td>
+    </tr>
+    <tr>
+      <td>调色模式（Grading Mode）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>低动态范围（Low Dynamic Range）</td>
+    </tr>
+    <tr>
+      <td>LUT 尺寸（LUT size）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>16</td>
+    </tr>
+    <tr>
+      <td>快速 sRGB/线性转换（Fast sRGB/Linear conversion）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>* 在 URP 中，逐像素光源数量（Pixel Light Count）通过 Additional Lights &gt; (Per pixel) &gt; Per Object Limit 来处理。</p>
+
+<h3>内置渲染管线到 URP：高画质设置（High settings）</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>设置</th>
+      <th>内置渲染管线</th>
+      <th>URP</th>
+      <th>URP Asset 设置</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="4"><strong>渲染（Rendering）</strong></td>
+    </tr>
+    <tr>
+      <td>逐像素光源数量（Pixel Light Count）</td>
+      <td>2</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>抗锯齿（Anti-aliasing）</td>
+      <td>禁用（Disabled）</td>
+      <td>不适用（NA）</td>
+      <td>2x</td>
+    </tr>
+    <tr>
+      <td>渲染缩放（Render Scale）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>实时反射探针（Real-time Reflection Probes）</td>
+      <td>是（Yes）</td>
+      <td>是（Yes）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>分辨率缩放固定 DPI 系数（Resolution Scaling Fixed DPI Factor）</td>
+      <td>1</td>
+      <td>1</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>垂直同步计数（VSync Count）</td>
+      <td>每个垂直消隐期（Every V Blank）</td>
+      <td>每个垂直消隐期（Every V Blank）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>深度纹理（Depth Texture）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td>不透明纹理（Opaque Texture）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td>不透明降采样（Opaque Downsampling）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>地形孔洞（Terrain Holes）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td>HDR</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>纹理（Textures）</strong></td>
+    </tr>
+    <tr>
+      <td>纹理质量（Texture Quality）</td>
+      <td>全分辨率（Full res）</td>
+      <td>全分辨率（Full res）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>各向异性纹理（Anisotropic Textures）</td>
+      <td>禁用（Disabled）</td>
+      <td>禁用（Disabled）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>纹理流式加载（Texture Streaming）</td>
+      <td>否（No）</td>
+      <td>否（No）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>粒子（Particles）</strong></td>
+    </tr>
+    <tr>
+      <td>软粒子（Soft Particles）</td>
+      <td>否（No）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>粒子射线检测预算（Particle Raycast Budget）</td>
+      <td>256</td>
+      <td>256</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>地形（Terrain）</strong></td>
+    </tr>
+    <tr>
+      <td>公告牌朝向摄像机位置（Billboards Face Camera Position）</td>
+      <td>是（Yes）</td>
+      <td>是（Yes）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>阴影（Shadows）</strong></td>
+    </tr>
+    <tr>
+      <td>阴影遮罩模式（Shadowmask Mode）</td>
+      <td>距离阴影遮罩（Distance Shadowmask）</td>
+      <td>距离阴影遮罩（Distance Shadowmask）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影（Shadows）</td>
+      <td>硬阴影和软阴影（Hard and Soft Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影分辨率（Shadow Resolution）</td>
+      <td>中等分辨率（Medium resolution）</td>
+      <td>不适用（NA）</td>
+      <td>2048</td>
+    </tr>
+    <tr>
+      <td>阴影投射（Shadow Projection）</td>
+      <td>稳定适配（Stable fit）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影距离（Shadow Distance）</td>
+      <td>40</td>
+      <td>不适用（NA）</td>
+      <td>50</td>
+    </tr>
+    <tr>
+      <td>阴影近平面偏移（Shadow Near Plane Offset）</td>
+      <td>3</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>阴影级联（Shadow Cascades）</td>
+      <td>2 级级联（2 Cascades）</td>
+      <td>不适用（NA）</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <td>级联拆分（Cascade splits）</td>
+      <td>33/67</td>
+      <td>不适用（NA）</td>
+      <td>12.5/33.8/3.8</td>
+    </tr>
+    <tr>
+      <td>工作单位（Working unit）</td>
+      <td>百分比（Percent）</td>
+      <td>百分比（Percent）</td>
+      <td>公制（Metric）</td>
+    </tr>
+    <tr>
+      <td>深度偏移（Depth Bias）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>法线偏移（Normal Bias）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <td>软阴影（Soft Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>异步资源上传（Async Asset Upload）</strong></td>
+    </tr>
+    <tr>
+      <td>时间片（Time Slice）</td>
+      <td>2</td>
+      <td>2</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>缓冲区大小（Buffer Size）</td>
+      <td>16</td>
+      <td>16</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>持久缓冲区（Persistent Buffer）</td>
+      <td>是（Yes）</td>
+      <td>是（Yes）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>细节层次（Level of Detail）</strong></td>
+    </tr>
+    <tr>
+      <td>LOD 偏移（LOD Bias）</td>
+      <td>1</td>
+      <td>1</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td>最大 LOD 级别（Maximum LOD level）</td>
+      <td>0</td>
+      <td>0</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>网格（Meshes）</strong></td>
+    </tr>
+    <tr>
+      <td>蒙皮权重（Skin Weights）</td>
+      <td>无限制（Unlimited）</td>
+      <td>无限制（Unlimited）</td>
+      <td>不适用（NA）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>光照（Lighting）</strong></td>
+    </tr>
+    <tr>
+      <td>主光源（Main Light）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>逐像素（Per pixel）</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影（Cast Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率（Shadow Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>附加光源（Additional Lights）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>逐像素（Per pixel）</td>
+    </tr>
+    <tr>
+      <td>• 每对象上限（Per Object Limit）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>4</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影（Cast Shadows）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td>• 阴影图集分辨率（Shadow Atlas Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>2048</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率层级（Shadow Resolution tiers）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>512/1024/2048</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集分辨率（Cookie Atlas Resolution）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>2048</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集格式（Cookie Atlas Format）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>色彩高精度（Color high）</td>
+    </tr>
+    <tr>
+      <td>反射探针（Reflection Probes）：</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>• 探针混合（Probe Blending）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>是（Yes）</td>
+    </tr>
+    <tr>
+      <td>• 盒式投影（Box Projection）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+    <tr>
+      <td colspan="4"><strong>后处理（Post-processing）</strong></td>
+    </tr>
+    <tr>
+      <td>调色模式（Grading Mode）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>低动态范围（Low Dynamic Range）</td>
+    </tr>
+    <tr>
+      <td>LUT 尺寸（LUT size）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>32</td>
+    </tr>
+    <tr>
+      <td>快速 sRGB/线性转换（Fast sRGB/Linear conversion）</td>
+      <td>不适用（NA）</td>
+      <td>不适用（NA）</td>
+      <td>否（No）</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>在 Unity 2022 LTS 的 URP 中，有一项可选功能：可以通过 Camera &gt; Rendering &gt; Anti-aliasing，为摄像机选择时间抗锯齿（TAA，Temporal Anti-aliasing）作为抗锯齿方式。</p>
+
+<figure>
+  <figcaption>图 1：选择了 TAA</figcaption>
+</figure>
+
+<h3>如何使用 Quality 设置</h3>
+
+<p>过去，画质设置是在 Project Settings 对话框的 Quality 面板中处理的。使用 URP 时，设置被拆分到 Quality 面板与各个 URP Asset 之间。下表列出了每项设置分别位于何处。</p>
+
+<h4>使用 URP 时的 Quality 设置</h4>
+
+<table>
+  <thead>
+    <tr>
+      <th>设置</th>
+      <th>Quality 面板</th>
+      <th>URP Asset</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="3"><strong>渲染</strong></td>
+    </tr>
+    <tr>
+      <td>抗锯齿</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>渲染缩放</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>分辨率缩放固定 DPI 系数</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>垂直同步计数</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>深度纹理</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>不透明纹理</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>不透明降采样</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>地形孔洞</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>HDR</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>纹理</strong></td>
+    </tr>
+    <tr>
+      <td>纹理质量</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>各向异性纹理</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>纹理流式加载</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>粒子</strong></td>
+    </tr>
+    <tr>
+      <td>粒子射线检测预算</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>地形</strong></td>
+    </tr>
+    <tr>
+      <td>公告牌朝向摄像机位置</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>阴影</strong></td>
+    </tr>
+    <tr>
+      <td>阴影遮罩模式</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>阴影分辨率</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>阴影距离</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>阴影级联</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>级联拆分</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>工作单位</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>深度偏移</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>法线偏移</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>软阴影</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>异步资源上传</strong></td>
+    </tr>
+    <tr>
+      <td>时间片</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>缓冲区大小</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>持久缓冲区</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>细节层次</strong></td>
+    </tr>
+    <tr>
+      <td>LOD 偏移</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>最大 LOD 级别</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>网格</strong></td>
+    </tr>
+    <tr>
+      <td>蒙皮权重</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>光照</strong></td>
+    </tr>
+    <tr>
+      <td>主光源：</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>附加光源：</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 每对象上限</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 投射阴影</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 阴影图集分辨率</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 阴影分辨率层级</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集分辨率</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• Cookie 图集格式</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>反射探针：</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 探针混合</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td>• 盒式投影</td>
+      <td></td>
+      <td>√</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>后处理</strong></td>
+    </tr>
+    <tr>
+      <td>调色模式</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>LUT 尺寸</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>快速 sRGB/线性转换</td>
+      <td>√</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>如果你要在多个 Quality 选项之间切换，请通过 Project Settings 在 Quality 面板中为渲染管线资源（Render Pipeline Asset）选择一个质量等级（Quality Level）。请注意，如果没有设置质量等级，渲染管线资源会默认使用 Graphics 面板中设置为 Scriptable Render Pipeline Asset 的那一个。这可能会在你尝试调整某个 URP Asset 的画质设置时造成一些困惑。</p>
+
+<p>例如，你可能会误以为 URP Asset 中设置的质量等级，就是 Scene 视图和 Game 视图当前正在使用的那个等级。</p>
+
+<figure>
+  <figcaption>图 2：为渲染管线资源设置质量等级</figcaption>
+</figure>
+
+<h3>修改 URP Asset</h3>
+
+<p><strong>注意：</strong>如果你启用了 URP 2D Renderer，URP Asset 中与 3D 渲染相关的一些选项不会影响你最终的应用或游戏。2D Renderer Asset 可在 Edit &gt; Project Settings &gt; Graphics 的 Scriptable Render Pipeline Settings 下找到。</p>
+
+<figure>
+  <figcaption>图 3：Inspector 中的 URP Asset</figcaption>
+</figure>
+
+<p>这张图展示了 Inspector 中的一个 URP Asset 及其所有可用设置。要了解每项设置的更多信息，请参阅 URP 文档。</p>
+
+<p>URP Asset 的 Quality 面板允许你将 HDR 格式设置为 64 位，以获得更好的保真度。但要注意，这会带来性能损失并需要额外的内存，因此在低端硬件上应避免使用该设置。</p>
+
+<p>Quality 面板的另一个功能是可以启用 LOD 淡入淡出（LOD Cross Fade）。LOD 是一种用于降低渲染远处网格所需 GPU 开销的技术。随着摄像机的移动，不同的 LOD 会被切换，以提供恰当的质量水平。LOD 淡入淡出可以让不同 LOD 几何体之间的过渡更平滑，避免切换时出现生硬的跳变与突现。</p>
+
+<h3>将示例项目从内置渲染管线转换为 URP</h3>
+
+<p>Unity 的演示项目 Viking Village URP 展示了 URP 的多种能力，包括光照探针（Light Probes）、反射探针、使用自定义 ScriptableRenderPass 的水面特效、通过 Shader Graph 转换的着色器，以及 URP 后处理。该项目可在 Unity Asset Store 上免费获取。</p>
+
+<p>在编辑器中打开 Viking Village URP，跟着本节的步骤一起操作。首先点击 Add to My Assets，把这个演示项目添加到编辑器中可用的 Packages 列表里。</p>
+
+<figure>
+  <figcaption>图 4：Unity Asset Store 上的 Viking Village URP</figcaption>
+</figure>
+
+<p>然后通过 Unity Hub 创建一个新的 3D 项目（不必使用 URP 模板）。进入 Window &gt; Package Manager，从 Packages 下拉菜单中选择 My Assets &gt; Viking Village URP，然后点击 Import。</p>
+
+<figure>
+  <figcaption>图 5：Package Manager 中的 Viking Village URP</figcaption>
+</figure>
+
+<p>此时会出现几条警告信息（见下图）。第一条警告提示你：导入一个完整项目会影响当前的 Project Settings，但由于你创建的是一个空项目，因此可以安全地继续。第二条警告提醒你要安装或升级某些包。点击默认的蓝色按钮即可。这一步是必需的，可以避免出现错误的光照设置，因为 URP 默认使用线性色彩空间（linear color space），而内置渲染管线的默认值是伽马色彩空间（gamma color space）。</p>
+
+<p>下载完成后，会打开下图所示的面板。请确保所有内容都保持勾选，然后点击 Import。</p>
+
+<figure>
+  <figcaption>图 6：导入 Viking Village URP 时出现的警告信息</figcaption>
+</figure>
+
+<figure>
+  <figcaption>图 7：导入演示项目</figcaption>
+</figure>
+
+<p>等待所有资源导入完成，然后打开 Viking Village &gt; Scenes &gt; The_Viking_Village 中的演示场景。点击 Window &gt; Package Manager，在下拉菜单中选择 Unity Registry，然后选择 Universal RP。将 URP 包更新到 14.x。</p>
+
+<figure>
+  <figcaption>图 8：Game 视图中的 Viking Village</figcaption>
+</figure>
+
+<p>在 Graphics 面板中通过 Scriptable Render Pipeline Asset 设置的 URP Asset 名为 Viking Village &gt; Rendering &gt; VikingVillageUniversal。它是为高端硬件配置的，因此在较旧的硬件上可能只能以较低的帧率运行。</p>
+
+<p>按照以下步骤测试不同的质量等级：</p>
+
+<ol>
+  <li>通过 Window &gt; Rendering &gt; Render Pipeline Converter 生成一组资源。</li>
+  <li>选择 Built-in Render Pipeline to URP 选项，然后选择 Rendering Settings。</li>
+  <li>点击 Initialize Converters。</li>
+  <li>面板中会出现若干 Settings 选项；点击 Convert Assets 以创建 URP Asset。</li>
+  <li>这些 URP Asset 会通过 Project Settings &gt; Quality 面板分配给各个可用的质量等级。</li>
+  <li>最高质量的资源会替换 Graphics 面板中的 VikingVillageUniversal。Viking Village &gt; Rendering &gt; VikingVillageUniversal_Renderer 使用了渲染器功能（Renderer Features）和水面特效。</li>
+  <li>要恢复这些设置，请把上面的渲染器添加到 Renderer List，并将它设为每个质量等级所用 URP Asset 的默认渲染器。现在你就可以在 Quality 面板中快速切换质量等级了。</li>
+</ol>
+
+<figure>
+  <figcaption>图 9：Scene 视图中的 Viking Village</figcaption>
+</figure>

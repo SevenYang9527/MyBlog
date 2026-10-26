@@ -1,0 +1,118 @@
+<h2>Profile Analyzer 视图</h2>
+
+<h3>Single 视图（Single view）</h3>
+<p>Single 视图显示关于单组已捕获剖析数据的信息。你可以用它分析性能标记（profile marker）在各帧之间的表现。该视图划分为多个面板，面板中包含计时信息，以及帧、线程和标记的最小值、最大值、中位数、平均值和上/下四分位值。</p>
+
+<p>Single 视图是任何剖析工具包中不可或缺的一部分，能够提供许多有用的洞见。下面是一些深入挖掘其所呈现数据的技巧。</p>
+
+<figure><figcaption>图 1：Single 视图展示单帧或某一帧范围内的性能标记统计信息与计时。</figcaption></figure>
+
+<h3>Profile Analyzer 使用技巧</h3>
+<ul>
+  <li>通过将深度（Depth）级别选为 4 来深入查看用户脚本（忽略 Unity 引擎 API 层级）。筛选到该层级并在时间线（timeline）模式下查看 Unity Profiler 后，你可以将调用堆栈深度对应起来，从而在此处做出选择——MonoBehaviour 脚本会以蓝色显示，并且位于向下第四层。这是一种快速方法，可以在排除其他“噪声”的情况下，判断你特定的逻辑与游戏玩法脚本本身是否带来较大开销。</li>
+  <li>用同样的方式筛选 Unity 引擎其他领域的数据，例如动画器（animator）或引擎物理。</li>
+  <li>在右侧的帧摘要（Frame Summary）区域，你会看到所高亮方法的性能范围直方图。将鼠标悬停在最大帧（Max Frame）编号上（即发现最大计时值的确切帧），会出现一个可点击的链接，用于在 Unity Profiler 中查看该帧选择。使用此视图可以分析其他可能造成最大帧时间偏高的因素。</li>
+</ul>
+
+<h3>Compare 视图（Compare view）</h3>
+<p>Compare 视图正是 Profile Analyzer 真正发挥威力的地方。在该视图中，你可以加载两个数据集，Profile Analyzer 会用两种不同颜色显示它们。</p>
+
+<p>首先要定位游戏或应用中要测试的特定区域。一种方法是运行一段预先录制或脚本化的游戏会话，该会话可以多次执行。手动捕获多次会话游玩过程也可以。</p>
+
+<p>使用“Pull Data”（拉取数据）方法将剖析会话数据加载到 Profile Analyzer 中：</p>
+<ul>
+  <li>通过 Window &gt; Analysis &gt; Profile Analyzer 打开 Profile Analyzer。</li>
+  <li>在进行优化工作之前，使用 Unity Profiler 对确定性（deterministic）会话进行剖析。</li>
+  <li>在 Profile Analyzer 中切换到 Compare 选项卡，然后单击第一个 Pull Data 按钮，从 Profiler 加载当前捕获。</li>
+  <li>应用代码与性能改进，然后清除并再次剖析一个新会话。</li>
+  <li>单击第二个 Pull Data 按钮，加载新的会话数据。</li>
+</ul>
+
+<p>使用标记比较（Marker Comparison）窗格查看第一个与第二个数据集（左侧和右侧）之间标记计时的差异。标有 &lt; 和 &gt; 的列显示左侧或右侧数据集的数值更大时的差异。调整 Marker Columns 筛选器会相应地改变参与比较的值。</p>
+
+<p>有关每个 Marker Comparison 列的更多详细信息，请参阅 Compare View 条目页面。</p>
+
+<figure><figcaption>图 2：对比一次捕获中的中位帧与最长帧。</figcaption></figure>
+
+<p>注意：如果选择 Load 选项，数据必须为 Profile Analyzer 的 .pdata 文件格式。如果你从 Profiler 获得的是 .data 文件格式的数据，请先在 Profiler 中打开它，然后单击 Profile Analyzer 中的 Pull Data 按钮。在拉取之前，务必保存你的 Profiler .data 文件，这样你也能保留一份该格式的副本。</p>
+
+<h3>比较中位帧与最长帧（Comparing median and longest frames）</h3>
+<p>在单次 Profiler 捕获中比较中位帧与最长帧，以查明后者中出现而前者中没有的情况，或者查看哪些任务的完成时间高于平均水平。</p>
+
+<p>打开 Profile Analyzer 的 Compare 视图，并为左侧和右侧加载同一个数据集。你也可以在 Single 视图中加载数据集，然后切换到 Compare。</p>
+
+<p>右键单击上方的 Frame Control 图表，然后选择 Select Median Frame。右键单击下方的图表，然后选择 Select Longest Frame。</p>
+
+<p>Profile Analyzer 的 Marker Comparison 面板会更新以显示差异。</p>
+
+<p>在此处比较数据的另一个技巧是，按帧时长对两个图表进行排序（右键单击 &gt; Order By Frame Duration），然后在每个集合中选择一个范围，既可以专注于离群帧（时长异常长或异常短的帧），也可以将其排除。</p>
+
+<figure><figcaption>图 3：比较一次捕获中的中位帧与最长帧。</figcaption></figure>
+
+<figure><figcaption>图 4：按帧时长对帧排序并选择一个离群范围。</figcaption></figure>
+
+<p>这样便可以在最普通与最异常的帧之间进行比较。随后可以在名为 Marker Comparison 的筛选表中分析当前所选范围的数据。</p>
+
+<p>请查看以下资源，进一步了解 Profiler Analyzer：</p>
+<ul>
+  <li>使用 Unity 的 Profile Analyzer 进行 CPU 性能分析（CPU performance analysis with Unity’s Profile Analyzer）</li>
+  <li>剖析入门（Introduction to profiling）</li>
+</ul>
+
+<h2>Memory Profiler</h2>
+<p>Memory Profiler 是 Unity 包管理器（Unity Package Manager）中提供的附加包。使用 Memory Profiler 可以创建内存快照，无论是在编辑器中还是在播放器（player）中运行时。</p>
+
+<p>快照会显示引擎中的内存分配情况，使你能够快速找出内存占用过高或不必要的内存使用的原因、追踪内存泄漏，或查看堆碎片（heap fragmentation）。</p>
+
+<p>安装 Memory Profiler 包后，通过单击 Window &gt; Analysis &gt; Memory Profiler 将其打开。</p>
+
+<p>Memory Profiler 顶部的菜单栏允许你更改播放器选择目标，以及捕获或导入快照。</p>
+
+<p>Memory Profiler 窗口的左侧是 Workbench 区域。用它来管理并打开或关闭已保存的内存快照。你也可以使用该区域在 Single 与 Compare Snapshots 视图之间切换。</p>
+
+<figure><figcaption>图 5：更改播放器选择目标，并捕获或导入内存快照。</figcaption></figure>
+
+<p>注意：通过 Target 选择下拉菜单将 Memory Profiler 连接到远程设备，从而在目标硬件上剖析内存。由于编辑器和其他工具会增加额外开销，在 Unity 编辑器中剖析会得到不准确的数值。</p>
+
+<p>与 Profile Analyzer 类似，Memory Profiler 允许你加载两个数据集（内存快照）进行比较。这在查看内存使用量随时间或场景之间如何增长，以及查找内存泄漏时尤其有用。</p>
+
+<p>Memory Profiler 主窗口中有多个选项卡，可用于深入查看内存快照，包括 Summary、Objects and Allocations 和 Fragmentation。下面详细看看这些选项。</p>
+
+<h3>Summary 视图（The Summary view）</h3>
+<p>当你想快速概览项目的内存使用情况时，可以选择此视图。它还包含与所捕获内存快照相关的一些有用且重要的内存数据。它非常适合快速了解拍摄快照那一刻正在发生的情况。</p>
+
+<figure><figcaption>图 6：Workbench 窗格用于管理内存快照。</figcaption></figure>
+
+<figure><figcaption>图 7：Summary 视图显示拍摄快照时的内存概览。</figcaption></figure>
+
+<p>Summary 视图还会以图形化树状图（Tree Map）的形式显示内存使用情况的细分，你可以深入查看以发现那些消耗内存最多的区域。</p>
+
+<p>Tree Map 视图下方是一个经过筛选的表，它会更新以显示所选网格单元中的对象列表。</p>
+
+<p>Tree Map 显示归属于对象（Object）的内存，这些对象可以是原生（Native）或托管（Managed）的。托管对象内存往往远小于原生对象内存，因此在图视图中更难发现。你可以放大树状图来查看这些内容，但若要检查较小的对象，表格通常能提供更好的概览。单击 Tree Map 中的单元格，会将其下方的表筛选为该分区对应的类型，和/或在 Objects and Allocations 视图中选中感兴趣的特定对象。</p>
+
+<p>通过选择表中的行或代表该对象的 Tree Map 网格单元，然后查看 Details 侧面板中的 References 部分，你可以追踪到哪些项引用了此列表中的对象，以及这些引用可能位于哪些托管类字段中。如果该侧面板被隐藏，可以通过窗口工具栏右上角的切换按钮将其显示出来。</p>
+
+<figure><figcaption>图 8：Summary 视图还会显示拍摄快照那一刻内存使用情况的 Tree Map。</figcaption></figure>
+
+<figure><figcaption>图 9：内存快照中的对象筛选表会更新，以显示当前所选 Tree Map 网格单元中的对象。</figcaption></figure>
+
+<figure><figcaption>图 10：Details 面板包含 References 与 Selection Details 两个部分；References 部分显示对 Tree Map 或表格中所选对象的引用，Selection Details 部分则包含该对象或 References 部分中所选任何对象的详细信息。</figcaption></figure>
+
+<p>这是因为并非所有原生内存都与对象相关联。它还可能包含与对象无关的原生分配（Native Allocation），例如可执行文件和 DLL、NativeArray 等。甚至更抽象的概念，例如“已保留但未使用的内存空间”，也会计入原生分配总量。</p>
+
+<h3>Objects and Allocations</h3>
+<p>Objects and Allocations 视图显示一个表，可以切换为基于预设选项进行筛选，例如 All Objects、All Native Objects、All Managed Objects、All Native Allocations 等。</p>
+
+<p>你可以切换底部的表，以显示所选范围内的 Objects、Allocations 或 Memory Regions。</p>
+
+<p>在优化内存使用、并希望为内存预算有限的硬件平台更高效地打包内存时，可以利用这一点。</p>
+
+<h3>内存剖析技巧与工作流（Memory profiling techniques and workflows）</h3>
+<p>加载 Memory Profiler 快照，并浏览 Tree Map 视图，检查各个类别，这些类别按内存占用大小从大到小排列。</p>
+
+<p>项目资源通常是内存的最大消耗者。使用 Table 视图，定位 Texture 对象、Mesh、AudioClip、RenderTexture、着色器变体（shader variant）和预分配缓冲区（preallocated buffer）。这些都是内存优化的良好候选对象。</p>
+
+<p>注意：Tree Map 只显示内存中的对象。它并不完整呈现受跟踪内存（tracked memory）。如果你注意到 Memory Usage Overview 的数值与 Tracked Memory 总量不同，理解这一点很重要。</p>
+
+<figure><figcaption>图 11：Objects and Allocations 表可以在多个层级上进行筛选，使你能够以很高的粒度深入查看所捕获快照的内存使用情况。</figcaption></figure>

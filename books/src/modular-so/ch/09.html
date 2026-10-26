@@ -1,0 +1,111 @@
+<h2>模式：运行时集合（Runtime Sets）</h2>
+
+<p>在运行时，你经常需要跟踪场景中的一组 GameObject 或组件。例如，你可能需要维护一份敌人或 NPC 的列表。由于 ScriptableObject 实例存在于项目层级，它可以存储任何场景中的任何对象都能访问的数据。这同样在相当程度上复刻了单例（Singleton）那种便捷的全局访问能力，却没有该模式已知的缺陷。直接从 ScriptableObject 读取数据，也比用 Object.FindObjectOfType 或 GameObject.FindWithTag 之类的查找操作搜索场景层级（Scene Hierarchy）更优。具体取决于你的用例和层级规模，这些方法相对昂贵，用于逐帧更新时可能效率低下。</p>
+
+<h3>基础运行时集合（Basic Runtime Set）</h3>
+
+<p>因此，可以考虑把数据存放在 ScriptableObject 上，做成一个“运行时集合（Runtime Set）”。这是一种专门的数据容器，它维护一个公开的元素集合，同时提供向集合添加元素和从集合移除元素的基础方法。</p>
+
+<figure><figcaption>图 1：运行时集合为某一数据集合提供全局访问能力。</figcaption></figure>
+
+<p>下面是一个跟踪 GameObject 列表的基础运行时集合：</p>
+
+<h4>一个 GameObject 运行时集合</h4>
+
+<pre><code>using System.Collections.Generic;
+using UnityEngine;
+
+[CreateAssetMenu(menuName = "GameObject Runtime Set", fileName = "GORuntimeSet")]
+public class GameObjectRuntimeSetSO : ScriptableObject
+{
+    private List&lt;GameObject&gt; items = new List&lt;GameObject&gt;();
+    public List&lt;GameObject&gt; Items =&gt; items;
+
+    public void Add(GameObject thingToAdd)
+    {
+        if (!items.Contains(thingToAdd))
+            items.Add(thingToAdd);
+    }
+
+    public void Remove(GameObject thingToRemove)
+    {
+        if (items.Contains(thingToRemove))
+            items.Remove(thingToRemove);
+    }
+}</code></pre>
+
+<p>在运行时，任何 MonoBehaviour 都可以引用公开的 Items 属性来获取完整列表。必须由另一个脚本或组件负责管理这些 GameObject 如何被添加到该列表、如何从中移除。</p>
+
+<p>在 MonoBehaviour 中引用该运行时集合。然后在 OnEnable 和 OnDisable 事件函数中，把该对象加入运行时集合的 Items 列表或从中移除。或者，也可以使用事件通道（Event Channel）以 GameObject 作为载荷（payload）发送（例如 GameObjectEventChannel）。</p>
+
+<h3>泛型版本（Generic version）</h3>
+
+<p>你可能希望把运行时集合用于特定类型的 MonoBehaviour。例如，这可以让你维护一份敌人或可拾取物品的列表，供场景中任何对象访问。这种情况下，你可以为每种类型分别创建专用的运行时集合（例如 EnemyRuntimeSet、PickupRuntimeSet 等）。</p>
+
+<p>简化创建更多运行时集合的一种方式是使用泛型抽象类（generic abstract class）：</p>
+
+<pre><code>public abstract class RuntimeSetSO&lt;T&gt; : ScriptableObject
+{
+    [HideInInspector]
+    public List&lt;T&gt; Items = new List&lt;T&gt;();
+
+    public void Add(T thing)
+    {
+        if (!Items.Contains(thing))
+            Items.Add(thing);
+    }
+
+    public void Remove(T thing)
+    {
+        if (Items.Contains(thing))
+            Items.Remove(thing);
+    }
+}</code></pre>
+
+<p>它的工作方式与最初的 GameObjectRuntimeSet 类似，但灵活性更强。如果你想为自定义的 Foo 组件创建运行时集合，就要像这样创建一个具体的 FooRuntimeSetSO：</p>
+
+<pre><code>[CreateAssetMenu(menuName = "Foo Runtime Set", fileName = "FooRuntimeSet")]
+public class FooRuntimeSetSO : RuntimeSet&lt;Foo&gt;
+{
+}</code></pre>
+
+<p>按游戏玩法需要构建任意数量的具体类（例如敌人、NPC、库存物品、任务等都可以拥有各自的运行时集合）。你只需要声明一个类型正确的新空类。</p>
+
+<p>作为使用事件的替代方案，每个 Foo 组件都可以用自身的 OnEnable 或 OnDisable 方法把自己加入或移除。这样，只要在 Inspector 中设置 FooRuntimeSet 字段，该 Foo 组件就会自动出现在运行时集合中。如果你在预制体（Prefab）中使用 Foo 组件，这一点尤其方便。</p>
+
+<pre><code>public class Foo : MonoBehaviour
+{
+    public FooRuntimeSetSO RuntimeSet;
+
+    private void OnEnable()
+    {
+        RuntimeSet.Add(this);
+    }
+
+    private void OnDisable()
+    {
+        RuntimeSet.Remove(this);
+    }
+}</code></pre>
+
+<h4>注意</h4>
+
+<p>这项技术的一个局限是：如果你在运行时检查该 ScriptableObject，你将无法在 Inspector 中看到运行时集合列表的内容。如果你试图把该列表公开暴露到 Inspector 中，就会看到这样：</p>
+
+<figure><figcaption>图 2：运行时集合不会在 Inspector 中显示场景对象或组件。</figcaption></figure>
+
+<p>默认情况下，每个元素字段都会显示“Type mismatch”，因为 ScriptableObject 无法序列化场景对象。列表本身工作正常，但数据无法正确显示。如果想避免混淆并阻止该列表在 Inspector 中显示，请使用公开属性（property）或 HideInInspector 特性（attribute）。</p>
+
+<p>你也可以用自定义的 Editor 脚本和 Inspector 修复这个问题。关于良好示例，参见 Asset Store 上的 SOAP（ScriptableObject Architectural Pattern）。</p>
+
+<figure><figcaption>图 3：SOAP 中的自定义 Editor 会显示运行时集合的内容。</figcaption></figure>
+
+<h3>关于 foo 和 bar 的趣闻（Fun facts about foo and bar）</h3>
+
+<p>foo 和 bar 这两个词是计算领域常见的占位名称（placeholder name）。之所以选用它们，很可能是因为它们简短、易记，而且听起来很独特。</p>
+
+<p>虽然它们的确切起源并不清楚，但有些人认为这两个词源自第二次世界大战期间的雷达操作员。无意义的词“foo”也曾作为一句口头禅出现在 20 世纪 30 年代的一部连环漫画中。</p>
+
+<p>在编程语境下，它们的使用通常被归功于 1960 年前后麻省理工学院（MIT）的 Tech Model Railroad Club。MIT 的火车模型室里，门边有两个标着“foo”和“bar”的通用按钮。MIT 的黑客们常把这些名字挪用到自己的想法上，于是 foo 和 bar 被采纳为通用变量名。</p>
+
+<p>如今，把 foo 和 bar 用作哑变量（dummy variable）名称已是编程社区中广泛接受的惯例。</p>

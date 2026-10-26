@@ -1,0 +1,255 @@
+27 of 99 | unity. com
+© 2022 Unity Technologies
+public class Switch : MonoBehaviour
+{
+    public Door door;
+    public bool isActivated;
+    public void Toggle()
+    {
+        if (isActivated)
+        {
+            isActivated = false;
+            door.Close();
+        }
+        else
+        {
+            isActivated = true;
+            door.Open();
+        }
+    }
+}
+public class Door : MonoBehaviour
+{
+    public void Open()
+    {
+        Debug.Log("The door is open.");
+    }
+    public void Close()
+    {
+        Debug.Log("The door is closed.");
+    }
+}
+Switch can invoke the Toggle method to open and close the door. It works, 
+but the problem is that a dependency is wired from the Door directly into the 
+Switch.  What if the logic of the Switch needs to work on more than just a 
+Door for example, to activate a light or giant robot?
+
+28 of 99 | unity. com
+© 2022 Unity Technologies
+An interface, ISwitchable, between the two classes
+You can add extra methods into the Switch class, but you’d be violating the 
+open-closed principle. You have to modify the original code every time you want 
+to extend functionality.
+Once again abstractions come to the rescue. You can sandwich an interface 
+called ISwitchable in between your classes.
+With dependency 
+inversion
+ISwitchable just needs a public property so you know whether it’s active, plus 
+a couple of methods to Activate and Deactivate it. 
+public interface ISwitchable 
+{
+    public bool IsActive { get; }
+    public void Activate();
+    public void Deactivate();
+}
+
+29 of 99 | unity. com
+© 2022 Unity Technologies
+public class Door : MonoBehaviour, ISwitchable
+{
+    private bool isActive;
+    public bool IsActive => isActive;
+    public void Activate()
+    {
+        isActive = true;
+        Debug.Log("The door is open.");
+    }
+    public void Deactivate()
+    {
+        isActive = false;
+        Debug.Log("The door is closed.");
+    }
+}
+public class Switch : MonoBehaviour
+{
+    public ISwitchable client;
+    public void Toggle()
+    {
+        if (client.IsActive)
+        {
+            client.Deactivate();
+        }
+        else
+        {
+            client.Activate();
+        }
+    }
+}
+On the other hand, you’ll need to rework the Door to implement ISwitchable:
+Then the Switch becomes something like this, depending on an ISwitchable 
+client, instead of a door directly.
+Now you’ve inverted the dependency. The interface creates an abstraction in 
+between them rather than hardwiring the switch to the door exclusively. The Switch 
+no longer depends directly on the door-specific methods (Open and Close).  
+Instead it uses the ISwitchable’s Activate and Deactivate.
+This small but significant change promotes reusability. Whereas Switch would 
+only work with a Door previously, now it works with anything that implements 
+ISwitchable.
+
+30 of 99 | unity. com
+© 2022 Unity Technologies
+This enables you to make more classes that the Switch can activate. The high-
+level Switch will work, whether it’s a trap door or a laser beam. It just needs a 
+compatible client that implements ISwitchable.
+The Switch can now activate any ISwitchable object.
+Like the rest of SOLID, the dependency inversion principle asks you to examine 
+how you normally set up relationships between your classes. Conveniently scale 
+your project with loose coupling.
+Interfaces versus abstract classes
+In keeping with the philosophy of favoring “composition over 
+inheritance,” many examples in this guide use interfaces. However, you 
+can follow many of the design principles and patterns with abstract 
+classes as well. 
+Both are valid ways to achieve abstractions in C#. Which one you use 
+depends on your situational needs.
+Abstract classes
+The abstract keyword lets you define a base class, so you can pass 
+common functionality (methods, fields, constants, etc. ) to subclasses 
+through inheritance.
+
+31 of 99 | unity. com
+© 2022 Unity Technologies
+Inheritance defines an “is a” relationship. Shown in the diagram above 
+are all “switchable” things that can turn on and off.
+The advantage of abstract classes is they can have fields and constants 
+as well as static members. They can also apply more restricted access 
+modifiers, like protected and private. Unlike interfaces, abstract classes 
+let you implement logic that enables you to share core functionality 
+between your concrete classes.
+Inheritance works well until you want to create a derived class that has 
+characteristics of two different base classes. In C#, you can’t inherit 
+from more than one base class.
+Using abstract classes
+Abstract class
+Concrete
+class
+fields, constants,  
+static memebers
++Activate() 
++Deactivared()
+fully or partially
+implemented methods
+inherits
+"is a"relationship
++delay
++activationTime
+“is a” relationship
+You can’t instantiate an abstract class directly. Instead you’ll need to 
+derive a concrete class. 
+In the preceding example, an abstract class could achieve the same 
+dependency inversion, just with a different approach. So rather than 
+use an interface, derive a concrete class (e. g. , Light or Door) from an 
+abstract class called Switchable.
+
+32 of 99 | unity. com
+© 2022 Unity Technologies
+If you had another abstract class for all Robots in your game, then 
+it’s harder to decide what to derive from. Do you use the Robot or 
+Switchable base class?
+Interfaces
+As seen in the interface segregation principle, interfaces give you 
+more flexibility when something doesn’t fit neatly into the paradigm 
+of inheritance. You can pick and choose more easily with a “has a” 
+relationship.
+However, interfaces only contain declarations of their members. A class 
+that actually implements the interface will be responsible for fleshing 
+out the specific logic.
+Thus, it’s not always an either-or decision. Use abstract classes to 
+define the base functionality where you want to share code. Use 
+interfaces to define peripheral abilities where you need flexibility.
+Choosing between base classes
+
+33 of 99 | unity. com
+© 2022 Unity Technologies
+In this example, you can derive the NPC from the Robot base class to 
+inherit its core features, but then use an interface ISwitchable to add 
+the ability to switch the NPC on and off.
+Remember: A class can inherit from at most one abstract class, but it 
+can implement multiple interfaces. 
+Abstract class
+Interface
+Fully or partially implements 
+methods
+Declares methods but can’t 
+implement them
+Declares/uses variables and fields
+Declares only methods and 
+properties (but not fields)
+Has static members
+Can’t declare/use static members
+Uses constructors
+Can’t use constructors
+Uses all access modifiers 
+(protected, private, etc. )
+Can’t use access modifiers (all 
+members are implicitly public)
+The NPC Robot using both
+Keep in mind the following differences between abstract classes and 
+interfaces.
++MethodA() 
++MethodB()
+<<interface>>
+implement multiple
+interfaces as needed
+Composition
+NPC "has"
+an on/off switch
+inherit from at most
+one abstract base class
+Inheritance
+NPC "is a" robot
+NPC “is a” robot
+NPC “has”  
+an on/off switch
+
+34 of 99 | unity. com
+© 2022 Unity Technologies
+A SOLID understanding
+Getting to know the SOLID principles is a matter of daily practice. Think of them 
+as five basic rules to always keep in mind while coding. Here’s a handy recap: 
+	
+—
+Single responsibility: Make sure classes only do one thing and have only 
+one reason to change.
+	
+—
+Open-closed: You should be able to extend the functionality of a class 
+without changing how it already works.
+	
+—
+Liskov substitution: Subclasses should be substitutable for their base 
+classes.
+	
+—
+Interface segregation: Keep your interfaces short with few methods. 
+Clients only implement what they need.
+	
+—
+Dependency inversion: Depend on abstractions. Don’t depend directly 
+from one concrete class to another.
+The SOLID principles are guidelines to help you write cleaner code so that 
+it’s more efficient to maintain and extend. SOLID principles have dominated 
+software design for nearly two decades at the enterprise level because they’re 
+well-suited for large applications that must scale.
+In some cases, adhering to SOLID can result in additional work up front. 
+You might need to refactor some of your functionality into abstractions or 
+interfaces. However, there is often a payoff in long-term savings. 
+Determine for yourself how strictly you will apply the principles to your projects; 
+they’re not absolutes. There are nuances, and numerous ways to implement 
+each one that are not covered here. Remember: the thinking behind the principle 
+is more important than any specific syntax. 
+When unsure about how to use them, refer back to the KISS principle. Keep it 
+simple, and don’t try to force the principles into your scripts just for the sake of 
+doing it. Let them organically work themselves into place through necessity.
+For more information, be sure to check out the Unity SOLID presentation  
+from Unite Austin.

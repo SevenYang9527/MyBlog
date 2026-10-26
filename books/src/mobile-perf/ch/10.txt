@@ -1,0 +1,52 @@
+65 of 80 | unity. com
+© 2023 Unity Technologies
+A U D I O
+Though audio is not normally a performance bottleneck, you can still optimize  
+to save memory.
+Make sound clips mono when possible
+If you are using 3D spatial audio, author your sound clips as mono (single 
+channel) or enable the Force To Mono setting. A multichannel sound used 
+positionally at runtime will be flattened to a mono source, thus increasing CPU 
+cost and wasting memory.
+
+66 of 80 | unity. com
+© 2023 Unity Technologies
+Optimize the Import Settings of your AudioClips.
+
+67 of 80 | unity. com
+© 2023 Unity Technologies
+Use original uncompressed WAV files as your source assets when possible 
+If you use any compressed format (such as MP3 or Vorbis), then Unity will 
+decompress it and recompress it during build time. This results in two lossy 
+passes, degrading the final quality. 
+Compress the clip and reduce the compression bitrate 
+Reduce the size of your clips and memory usage with compression: 
+	
+—
+Use Vorbis for most sounds (or MP3 for sounds not intended to loop).
+	
+—
+Use ADPCM for short, frequently used sounds (e. g. , footsteps, gunshots).  
+This shrinks the files compared to uncompressed PCM but is fast  
+to decode during playback.
+Sound effects on mobile devices should be 22,050 Hz at most. Using lower 
+settings usually has minimal impact on the final quality; your own ears can help 
+you judge for yourself.
+Choose the proper Load Type 
+The setting varies per clip size.
+	
+—
+Small clips (< 200 kb) should Decompress on Load. This incurs CPU cost 
+and memory by decompressing a sound into raw 16-bit PCM audio data, 
+so it’s only desirable for short sounds.
+	
+—
+Medium clips (>= 200 kb) should remain Compressed in Memory.
+	
+—
+Large files (background music) should be set to Streaming.  
+Otherwise, the entire asset will be loaded into memory at once.
+Unload muted AudioSources from memory 
+When implementing a mute button, don’t simply set the volume to 0. You can 
+Destroy the AudioSource component to unload it from memory, provided the 
+player does not need to toggle this on and off very often.

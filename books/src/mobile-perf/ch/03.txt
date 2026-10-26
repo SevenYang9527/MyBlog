@@ -1,0 +1,86 @@
+18 of 80 | unity. com
+© 2023 Unity Technologies
+M E M O RY
+Unity employs automatic memory management for your user-generated code and 
+scripts. Small pieces of data, like value-typed local variables, are allocated on the 
+stack. Larger pieces of data and long-term storage are allocated to the managed 
+or native heaps. 
+The garbage collector periodically identifies and deallocates unused managed 
+heap memory. The Asset garbage collection runs on demand or when you load 
+a new scene and deallocates native objects and resources. While this runs 
+automatically, the process of examining all the objects in the heap can cause the 
+game to stutter or run slowly.
+Optimizing your memory usage means being conscious of when you allocate and 
+deallocate heap memory, and how you minimize the effect of garbage collection.
+See Understanding the managed heap for more information.
+
+19 of 80 | unity. com
+© 2023 Unity Technologies
+Use the Memory Profiler 
+The Memory Profiler package takes a snapshot of your managed heap memory to 
+help you identify problems like fragmentation and memory leaks.
+Use the Unity Objects tab to identify areas where you can eliminate duplicate 
+memory entries or find which objects use the most memory. The All of Memory 
+tab displays a breakdown of all the memory in the snapshot that Unity tracks.
+Learn how to leverage the Memory Profiler in Unity for improved memory usage.
+Capture, inspect, and compare snapshots in the Memory Profiler.
+
+20 of 80 | unity. com
+© 2023 Unity Technologies
+Reduce the impact of garbage collection (GC) 
+Unity uses the Boehm-Demers-Weiser garbage collector, which stops running 
+your program code and only resumes normal execution once its work is complete. 
+Be aware of certain unnecessary heap allocations, which could  
+cause GC spikes: 
+	
+—
+Strings: In C#, strings are reference types, not value types.  
+Reduce unnecessary string creation or manipulation. Avoid parsing string-
+based data files such as JSON and XML; store data in ScriptableObjects 
+or formats such as MessagePack or Protobuf instead. Use the 
+StringBuilder class if you need to build strings at runtime.
+	
+—
+Unity function calls: Be aware that some functions create heap 
+allocations. Cache references to arrays rather than allocating them in the 
+middle of a loop. Also, take advantage of certain functions that avoid 
+generating garbage; for example, use GameObject. CompareTag instead 
+of manually comparing a string with GameObject. tag (returning a new 
+string creates garbage).
+	
+—
+Boxing: Avoid passing a value-typed variable in place of a reference-
+typed variable. This creates a temporary object, and the potential 
+garbage that comes with it (e. g. , int i = 123; object o = i) implicitly 
+converts the value type to a type object. Instead, try to provide concrete 
+overrides with the value type you want to pass in. Generics can also be 
+used for these overrides.
+	
+—
+Coroutines: Though yield does not produce garbage, creating a new 
+WaitForSeconds object does. Cache and reuse the WaitForSeconds object 
+instead of creating it in the yield line.
+	
+—
+LINQ and Regular Expressions: Both of these generate garbage from  
+behind-the-scenes boxing. Avoid LINQ and Regular Expressions if 
+performance is an issue.
+For more information, see the manual page on Garbage collection  
+best practices.
+Time garbage collection if possible 
+If you are certain that a garbage collection freeze won’t affect a specific point  
+in your game, you can trigger garbage collection with System. GC. Collect.
+See Understanding automatic memory management for examples  
+of how to use this to your advantage. 2
+2 Note that using the GC can add read-write barriers to some C# calls, which come with little overhead that can add up to ~1 ms per frame of scripting call overhead. For optimal 
+performance, it is ideal to have no GC Allocs in the main gameplay loops and to hide the GC. Collect where a user won’t notice it.
+
+21 of 80 | unity. com
+© 2023 Unity Technologies
+Use the incremental garbage collector to split the GC workload 
+Instead of using a single, long interruption of your program’s execution, incremental 
+garbage collection uses multiple, much-shorter interruptions, distributing the 
+workload over many frames. If garbage collection is impacting performance, try 
+enabling this option to see if it can significantly reduce the problem of GC spikes. 
+Use the Profile Analyzer to verify the benefit to your application.
+Use the Incremental Garbage Collector to reduce GC spikes.

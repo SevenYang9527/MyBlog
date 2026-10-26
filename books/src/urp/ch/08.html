@@ -1,0 +1,192 @@
+<h2>后处理</h2>
+
+<p>内置渲染管线使用的 Post-Processing Stack v2 包与 URP 不兼容。</p>
+
+<p>URP 不需要额外的包来产生后处理（post-processing）效果，而是改用 Volume 框架（Volume framework）。当你在场景中添加 Volume 时，可以选择哪些后处理效果应用于该 Volume。Volume 可以是 Global（全局）或 Local（局部）。如果设为 Global，该 Volume 会影响场景中任意位置的摄像机。</p>
+
+<p>当 Mode 设置为 Local 时，只有当摄像机位于 Collider 的边界之内时，Volume 才会影响该摄像机。</p>
+
+<figure>
+  <figcaption>图 1：应用后处理效果：左上图像未应用任何效果，右上图像应用了泛光（Bloom），左下图像应用了暗角（Vignette），右下图像添加了颜色调整（Color Adjustments）。</figcaption>
+</figure>
+
+<h3>使用 URP 后处理框架</h3>
+
+<ol>
+  <li>
+    <p>第一步是确保你的 Main Camera 启用了后处理。在 Hierarchy 窗口中选择 Main Camera，进入 Inspector，展开 Rendering 面板，勾选 Post Processing 选项。</p>
+  </li>
+  <li>
+    <p>在 Hierarchy 窗口中右键单击，选择 Create &gt; Volume &gt; Global Volume，创建一个全局 Volume。</p>
+  </li>
+  <li>
+    <p>在 Hierarchy 窗口中选中该 Global Volume，在 Inspector 中找到 Volume 面板，单击 New 创建一个新的 Profile。</p>
+  </li>
+  <li>
+    <p>开始添加后处理效果。请参阅下方列出可用效果的表格。单击 Add Override 并选择 Post-processing。在本例中选择了泛光（Bloom）效果。</p>
+  </li>
+</ol>
+
+<figure>
+  <figcaption>图 2：选择泛光效果</figcaption>
+</figure>
+
+<ol start="5">
+  <li>
+    <p>每个效果都有专用的 Settings 面板。这里的图像展示了泛光的设置。</p>
+  </li>
+</ol>
+
+<figure>
+  <figcaption>图 3：泛光效果的 Settings 面板</figcaption>
+</figure>
+
+<ol start="6">
+  <li>
+    <p>你可以轻松添加多个效果（例如本例中的暗角），并使用各自的 Settings 面板配置每一个效果。</p>
+  </li>
+</ol>
+
+<h3>添加局部 Volume</h3>
+
+<p>借助 Volume 框架，你可以配置场景，使摄像机移动时触发不同的后处理 Profile。这通过添加局部 Volume（Local Volume）来实现。下面我们来逐步完成设置。</p>
+
+<ol>
+  <li>
+    <p>在 Hierarchy 窗口中右键单击，选择 Create &gt; Volume &gt; Box Volume。或者，如果 Sphere Volume 更符合你的用途，也可以选择它；如果你希望对定义 Volume 区域的 Collider 形状进行更精细的控制，则选择 Convex Mesh Volume。</p>
+  </li>
+  <li>
+    <p>在 Inspector 的 Volume 面板中，创建新的 Profile 来存储该 Volume 数据。该面板还可用于设置：</p>
+    <ol type="a">
+      <li>
+        <p><strong>Blend Distance</strong>：这是 URP 开始混合时距 Volume 的 Collider 的最远距离，也是该 Profile 在 Collider 尺寸范围内淡入的距离。在 Collider 边缘处，后处理效果会淡出；而在距 Collider 边缘 Blend Distance 的距离处，效果会完全淡入。</p>
+      </li>
+      <li>
+        <p><strong>Weight</strong>：Weight 定义后处理效果的最大强度。如果 Weight 设为 1，效果将达到完整强度。设为 0 表示没有效果，而 0.5 则将效果强度上限设为 50%。</p>
+      </li>
+      <li>
+        <p><strong>Priority</strong>：当多个 Volume 对场景的影响相同时，用该值决定 URP 使用哪个 Volume。数值越大，Priority 越高。如果你同时混用 Global 和 Local，请将 Global 保持默认值 0，并把 Local Volume 设为 1 或更高。</p>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<figure>
+  <figcaption>图 4：局部 Volume 的设置</figcaption>
+</figure>
+
+<ol start="3">
+  <li>
+    <p>使用 Box Collider 组件调整 Volume 的位置并控制其尺寸，如下图所示。</p>
+  </li>
+</ol>
+
+<figure>
+  <figcaption>图 5：使用所附加的 Box Collider 组件为 Box Volume 定位并调整尺寸</figcaption>
+</figure>
+
+<p>后处理会给处理器带来较大负担，因此在低端硬件和移动设备上要仔细考虑其影响。如果你的项目必须使用后处理，请在目标硬件上进行测试。有些滤镜对处理器的消耗低于其他滤镜。本文档概述了对移动设备友好的效果。</p>
+
+<p>以下是 URP 中可用的后处理效果。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>效果</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bloom</td>
+      <td>在高于指定亮度的像素周围添加光晕。</td>
+    </tr>
+    <tr>
+      <td>Channel Mixer</td>
+      <td>修改每个输入颜色通道对整体混合的影响。</td>
+    </tr>
+    <tr>
+      <td>Chromatic Aberration</td>
+      <td>沿分隔图像明暗部分的边界产生彩色边纹。</td>
+    </tr>
+    <tr>
+      <td>Color Adjustments</td>
+      <td>使用该效果微调最终渲染图像的整体色调、亮度和对比度。</td>
+    </tr>
+    <tr>
+      <td>Color Curves</td>
+      <td>分级曲线（grading curves）是一种调整色相、饱和度或亮度中特定范围的高级方法。</td>
+    </tr>
+    <tr>
+      <td>Color Lookup</td>
+      <td>使用查找纹理（Lookup Texture）将每个像素的颜色映射到新的值。</td>
+    </tr>
+    <tr>
+      <td>Depth of Field</td>
+      <td>该效果模拟摄像机镜头的对焦特性。</td>
+    </tr>
+    <tr>
+      <td>Film Grain</td>
+      <td>模拟摄影胶片的随机光学纹理。</td>
+    </tr>
+    <tr>
+      <td>Lens Distortion</td>
+      <td>扭曲最终渲染画面，以模拟真实世界摄像机镜头的形状。</td>
+    </tr>
+    <tr>
+      <td>Lift Gamma Gain</td>
+      <td>使用不同的轨迹球影响图像中的不同范围。调整轨迹球下方的滑块可偏移该范围的色彩亮度。</td>
+    </tr>
+    <tr>
+      <td>Motion Blur</td>
+      <td>模拟真实世界摄像机拍摄运动速度快于摄像机曝光时间的物体时图像中出现的模糊。</td>
+    </tr>
+    <tr>
+      <td>Panini Projection</td>
+      <td>该效果帮助你在视野非常大的场景中渲染透视视图。</td>
+    </tr>
+    <tr>
+      <td>Shadows Midtones Highlights</td>
+      <td>该效果分别控制渲染的阴影、中间调和高光。</td>
+    </tr>
+    <tr>
+      <td>Split Toning</td>
+      <td>用它为场景中的阴影和高光添加不同的色调。</td>
+    </tr>
+    <tr>
+      <td>Tonemapping</td>
+      <td>色调映射（tonemapping）是将图像的 HDR 值重映射到新值范围的过程。</td>
+    </tr>
+    <tr>
+      <td>Vignette</td>
+      <td>该效果使图像边缘相对中心变暗。</td>
+    </tr>
+    <tr>
+      <td>White Balance</td>
+      <td>消除不真实的色偏，使现实生活中的白色物体在最终图像中渲染为白色。</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>用代码控制后处理</h3>
+
+<p>你也可以使用 C# 脚本动态调整后处理 Profile。下面的代码示例展示了如何调整泛光效果强度。如果应用了暗角，你可以通过代码控制暗角颜色。例如，当玩家角色受到伤害时，你可以临时将其染成红色。</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
+public class PPController : MonoBehaviour
+{
+    // Start 在第一帧更新之前被调用
+    void Start()
+    {
+        Volume volume = GetComponent&lt;Volume&gt;();
+        Bloom bloom;
+
+        if (volume.profile.TryGet&lt;Bloom&gt;(out bloom))
+        {
+            bloom.intensity.value = 0;
+        }
+    }
+}</code></pre>

@@ -1,0 +1,145 @@
+36 of 80 | unity. com
+© 2023 Unity Technologies
+A S S E T S
+The asset pipeline can dramatically impact your application’s performance. 
+An experienced technical artist can help your team define and enforce asset 
+formats, specifications, and import settings. 
+Don’t rely on default settings. Use the platform-specific override tab to optimize 
+assets such as textures and mesh geometry. Incorrect settings may yield larger 
+build sizes, longer build times, and poor memory usage. Consider using the 
+Presets feature to help customize baseline settings for a specific project to 
+ensure optimal settings.
+See this guide to best practices for art assets for more detail or  
+check out this course about 3D Art Optimization for Mobile Applications  
+on Unity Learn for more details.
+Import textures correctly 
+Most of your memory will likely go to textures, so the import settings here are 
+critical. In general, follow these guidelines:
+
+37 of 80 | unity. com
+© 2023 Unity Technologies
+The Boat Attack demo 
+project was created using the 
+Universal Render Pipeline.
+	
+—
+Lower the Max Size: Use the minimum settings that produce visually 
+acceptable results. This is non-destructive and can quickly reduce your 
+texture memory.
+	
+—
+Use powers of two (POT): Unity requires POT texture dimensions  
+for mobile texture compression formats (PVRCT or ETC).
+	
+—
+Atlas your textures: Placing multiple textures into a single texture can 
+reduce draw calls and speed up rendering. Use the Unity Sprite Atlas  
+or the third-party Texture Packer to atlas your textures.
+	
+—
+Toggle off the Read/Write Enabled option: When enabled, this option 
+creates a copy in both CPU- and GPU-addressable memory, doubling 
+the texture’s memory footprint. In most cases, keep this disabled. If you 
+are generating textures at runtime, enforce this via Texture2D. Apply, 
+passing in makeNoLongerReadable set to true.
+	
+—
+Disable unnecessary Mip Maps: Mip Maps are not needed for textures 
+that remain at a consistent size on-screen, such as 2D sprites and UI 
+graphics (leave Mip Maps enabled for 3D models that vary their distance 
+from the camera).
+
+38 of 80 | unity. com
+© 2023 Unity Technologies
+Proper texture import settings will help optimize your build size.
+
+39 of 80 | unity. com
+© 2023 Unity Technologies
+Compress textures 
+Consider these two examples using the same model and texture. The settings 
+on the left consume almost eight times the memory as those on the right, 
+without much benefit in visual quality.
+Use Adaptive Scalable Texture Compression (ATSC) for both iOS and Android. 
+The vast majority of games in development target min-spec devices that 
+support ATSC compression.
+The only exceptions are:
+	
+—
+iOS games targeting A7 devices or lower (e. g. , iPhone 5, 5S, etc. )  
+– use PVRTC
+	
+—
+Android games targeting devices prior to 2016 – use ETC2  
+(Ericsson Texture Compression)
+If the quality of compressed formats such as PVRTC and ETC isn’t sufficiently 
+high, and if ASTC is not fully supported on your target platform, try using 16-bit 
+textures instead of 32-bit textures.
+See the manual for more information on recommended texture compression 
+format by platform.
+Adjust mesh import settings
+Much like textures, meshes can consume excess memory if not imported 
+carefully. To minimize meshes’ memory consumption: 
+	
+—
+Compress the mesh: Aggressive compression can reduce disk space  
+(memory at runtime, however, is unaffected). Note that mesh quantization 
+can result in inaccuracy, so experiment with compression levels to see what 
+works for your models.
+Uncompressed textures require more memory.
+
+40 of 80 | unity. com
+© 2023 Unity Technologies
+	
+—
+Disable Read/Write: Enabling this option duplicates the mesh in memory, 
+keeping one copy of the mesh in system memory and another in GPU 
+memory. In most cases, you should disable it (in Unity 2019. 2 and earlier, this 
+option is checked by default).
+	
+—
+Disable rigs and BlendShapes: If your mesh does not need skeletal or 
+blendshape animation, disable these options wherever possible.
+	
+—
+Disable normals and tangents, if possible:  If you are certain the mesh’s 
+material will not need normals or tangents, uncheck these options for  
+extra savings.
+Check your mesh import settings.
+
+41 of 80 | unity. com
+© 2023 Unity Technologies
+Check your polygon counts 
+Higher-resolution models mean more memory usage and potentially longer 
+GPU times. Does your background geometry need half a million polygons? 
+Consider cutting down models in your DCC package of choice. Delete unseen 
+polygons from the camera’s point of view. Use textures and normal maps for fine 
+detail instead of high-density meshes.
+Automate your import settings using the AssetPostprocessor 
+The AssetPostprocessor allows you to hook into the import pipeline and run 
+scripts prior to or when importing assets. This prompts you to customize 
+settings before and/or after importing models, textures, audio, and so on in a 
+way similar to presets but through code. Learn more about the process in our 
+GDC 2023 talk, “Technical tips for every stage of game creation. ”
+Unity DataTools 
+Unity DataTools is a collection of open source tools provided by Unity  
+that aims to enhance data management and serialization capabilities in Unity 
+projects. It includes features for analyzing and optimizing project data,  
+such as identifying unused assets, detecting asset dependencies, and 
+reducing build size.
+Use the Addressable Asset System
+The Addressable Asset System provides a simplified way to manage your 
+content, loading AssetBundles by “address” or alias. This unified system loads 
+asynchronously from either a local path or a remote content delivery network 
+(CDN). 
+If you split your non-code assets (models, textures, Prefabs, audio, and even 
+entire scenes) into an AssetBundle, you can separate them as downloadable 
+content (DLC).
+
+42 of 80 | unity. com
+© 2023 Unity Technologies
+Then, use Addressables to create a smaller initial build for your mobile 
+application. Cloud Content Delivery lets you host and deliver your game 
+content to players as they progress through the game.
+Click here to see how the Addressable Asset System can take  
+the pain out of asset management.
+Load assets by “address” using the Addressable Asset System.

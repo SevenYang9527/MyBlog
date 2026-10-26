@@ -1,0 +1,162 @@
+52 of 75 | unity. com
+© 2023 Unity Technologies
+Because they are assets at the project level, ScriptableObject-based events 
+can then drive much of the infrastructure of your application. This is especially 
+useful for sending messages between the different systems that underpin the 
+game architecture.
+Some common management systems include:
+	
+—
+Audio management: Many things in your game can trigger sounds. This 
+system can play AudioClips or adjust the AudioMixer in response to 
+application events.
+	
+—
+Scene management: This system handles loading and unloading of Unity 
+scenes and game levels.
+	
+—
+UI management: This is responsible for menu screens before, during, and/
+or after gameplay.
+	
+—
+Save Data management: This handles saving and loading game data, as 
+well as settings to your file system.
+These systems all specialize in different tasks, but they need to talk to one 
+another. Events can form the glue that keeps them connected.
+Explore the accompanying sample project for more examples of how to 
+implement your own ScriptableObject-based events.
+The sample project’s GameManager uses event channels.
+Note that you can send different types of data with each event, using different 
+event payloads. For example, the ScriptableObject-based events include 
+IntEventChannelSO, a Vector2EventChannelSO, a VoidEventChannelsSO, 
+and so on. The event used will depend on the context.
+Customize additional event types according to gameplay. For instance, a 
+damage event may need to pass along who inflicted the damage and how much 
+was done.
+
+53 of 75 | unity. com
+© 2023 Unity Technologies
+How you deploy these event channels is limited only by your creativity. In 
+addition to the core systems above, events can often help join very different in-
+game systems so that they can interact:
+	
+—
+Cameras: These are used to control a player’s view of the game world 
+and can add dramatic or cinematic effects, such as shaking or cutting to a 
+different perspective.
+	
+—
+Quests: These are tasks or objectives that the player must complete in 
+order to progress through the game or receive a reward. Quests often 
+involve a variety of gameplay elements, such as fetching items, defeating 
+enemies, or solving puzzles.
+	
+—
+Health: This important aspect of many games connects the player, 
+enemies, and any objects or actions that can cause damage to the player.
+	
+—
+Achievements: Like quests, these are special rewards that players 
+can unlock by completing certain tasks or objectives within the game. 
+Achievements can span different gameplay elements, such as reaching a 
+certain level or accumulating a certain number of points.
+These gameplay elements, in turn, will interact with other management 
+systems, such as audio, UI, and save data, through the use of events. This 
+approach promotes modularity and independence within each component of the 
+architecture while still allowing for communication with other systems.
+   Debugging event channels
+A custom Editor or property drawer can create a "Raise Event" button in the 
+Inspector. This can help you manually invoke the event for debugging.
+For example, here's a basic Editor script that creates a custom Inspector button 
+for the VoidEventChannelSO: 
+[CustomEditor(typeof(VoidEventChannelSO))]
+public class VoidEventChannelSOEditor : Editor
+    {
+    public override void OnInspectorGUI()
+    {
+DrawDefaultInspector();
+VoidEventChannelSO eventChannel = (VoidEventChannelSO)
+target;
+if (GUILayout.Button("Raise Event"))
+{
+eventChannel.RaiseEvent();
+}
+    }
+}
+
+54 of 75 | unity. com
+© 2023 Unity Technologies
+This creates a button that allows you to raise the event at will, making it easier 
+to diagnose issues at runtime.
+A custom Editor button can help test event channels. 
+With a little more work, you can make buttons for event channels that carry data 
+as well. Reserve a field for a debug value in the event channel itself, then pass 
+this to the Editor script. You can find examples of how to implement this in the 
+SOAP or Unity Atoms projects.
+As you continue using event channels for object decoupling, consider developing 
+debugging tools, such as keeping a record of all listeners for each event. The 
+event channel class can have methods to add and remove subscribed objects, 
+making it easier to identify which events are causing specific behaviors .
+during runtime.
+Example: InputReader
+Objects that listen for user input need a specialized type of event channel. 
+Unity’s Input System uses InputActions to represent raw input data as logical 
+concepts (e. g. , jump, walk, etc. ).
+Each InputAction, in turn, includes its own started, performed, and .
+canceled events.
+Setting up Actions and Action Maps in the Input System Editor
+
+55 of 75 | unity. com
+© 2023 Unity Technologies
+In order to decipher the InputAction bindings, you can create a special 
+InputReader ScriptableObject. Again, this acts as an intermediary between the 
+subject and observers. In this case, however, MonoBehaviours won’t raise the 
+events explicitly.
+Instead, the Input System takes the place of the subject or broadcaster:
+A ScriptableObject InputReader relays events from InputActions.
+Here, we set up Actions and ActionMaps in the Input System. Each InputAction 
+describes a separate axis of input and binds to the keyboard, gamepad, or 
+alternative input devices.
+Rather than directly subscribing to the InputActions themselves, the paddle 
+controllers listen for the OnMoveP1.performed event and OnMoveP2.
+performed events, respectively.
+The InputReader insulates objects from direct dependency on the inputs.
+
+56 of 75 | unity. com
+© 2023 Unity Technologies
+The resulting InputReader standardizes how your GameObjects will process 
+gamepad or keyboard actions. Any GameObject that needs input:
+	
+—
+Maintains a reference to the InputReader ScriptableObject
+	
+—
+Subscribes to the relevant events and connects its event-handling 
+methods
+While this pattern may be overkill for a minimalist arcade game, we demonstrate 
+this on a simple project to make the structure easier to digest.
+The benefits won’t be apparent until your project grows and you add many more 
+components. Decoupling the inputs from the GameObjects consuming them 
+gives added flexibility and reusability. 
+If you have to modify the InputActions during development, you only need to 
+maintain the InputReader itself. The listening objects are unaffected if the events 
+don’t need to change. Thus, maintaining the connection from input to observers 
+becomes less work – especially when you have a lot of observers.
+   Static versus non-static events
+You can choose to use static events to ease the burden of locating the 
+ScriptableObject on the listening objects. 
+For example, a MonoBehaviour could subscribe to the InputReader’s static 
+MoveP1Event and MoveP2Event events in its OnEnable method:
+     InputReader.MoveP1Event += OnMoveP1;
+     InputReader.MoveP2Event += OnMoveP2;
+When using static events, be extra diligent when managing subscriptions. Don’t 
+forget to unsubscribe in OnDisable:
+    InputReader.MoveP1Event -= OnMoveP1;
+    InputReader.MoveP2Event -= OnMoveP2;
+Static events will always be reachable and won’t be garbage collected if they 
+have active subscribers. Any dangling subscribers will prevent their cleanup for 
+the duration of your application.
+Static events, however, aren’t serializable. If you want to work interactively in the 
+Editor, choose non-static events and make sure you reference the appropriate 
+ScriptableObject in the Inspector.

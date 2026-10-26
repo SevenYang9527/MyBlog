@@ -1,0 +1,234 @@
+U N I T Y 
+P R O F I L I N G & 
+D E B U G TO O L S
+4
+
+37 of 75 | unity. com
+© 2022 Unity Technologies
+debug tools
+This section dives deeper into the capabilities of each of the profiling and debug 
+tools available in Unity.  
+A note on tooling differences
+Some of the tooling mentioned in this section falls under other categories such 
+as debugging tools, for example, the Frame Debugger. While they are technically 
+not profilers, they’re important to include in your toolkit when it comes to 
+analyzing and improving your Unity projects.
+Here are the differences between profiling, debugging, and static analysis tools.
+	
+—
+Profiling tools instrument and collect timing data relating to code 
+execution.
+	
+—
+Debugging tools allow you to step through the execution of a program, 
+pause and examine values, and provide many other advanced features. 
+For example, the Frame Debugger lets you step through the rendering of 
+frames, examine shader values, and more.
+	
+—
+Static analyzers are programs that can take source code or other assets 
+as input and analyze them using built-in rules to reason about the 
+“correctness” of said input, without needing to run the project.
+Profiler
+The Unity Profiler helps you detect the causes of any bottlenecks or freezes at 
+runtime and better understand what’s happening at a specific frame or point in 
+time.
+Profiling in Unity is instrumentation-based, giving you a lot of Profiler marker 
+data to work with. Be aware that profiling directly in the Editor will add some 
+overhead and can skew your results. Similarly, chances are your development 
+machine may be much more powerful than your target device. 
+Only enable the Profiler modules you wish to work with or to use the Standalone 
+Profiler, which provides benefits such as cleaner profiling data and reduced 
+profiling overhead.
+As a general rule of thumb, it’s useful to always enable the CPU, Memory, and 
+Renderer modules. Enable other Profiler modules such as Audio and Physics as 
+you see fit.
+Getting started with Unity profiling
+Follow these steps to get started with the Unity Profiler: 
+	
+—
+You must use a development build when profiling. Do this via File > Build 
+Settings > Select Development Build.
+	
+—
+Tick the Autoconnect Profiler checkbox (this is optional).
+
+38 of 75 | unity. com
+© 2022 Unity Technologies
+	
+—
+Note: Autoconnect Profiler can add up to 10 seconds to initial startup 
+time and should only be enabled if you want to profile your first 
+scene’s initialization. If you don’t enable Autoconnect Profiler, you can 
+always connect the Profiler to a running development build manually.
+	
+—
+Build for the target platform.
+	
+—
+Open the Unity Profiler via Window > Analysis > Profiler.
+	
+—
+Disable any Profiler modules you will not need. Each module enabled will 
+incur a performance overhead for the player. (You can observe some of 
+this overhead using the Profiler. CollectGlobalStats marker).
+	
+—
+Disable your device mobile network, and leave WiFi enabled.
+	
+—
+Run the build on your target device.
+	
+—
+If you select Autoconnect Profiler, then the build will have the Editor 
+machine’s IP address baked in. At launch, the application will attempt 
+to connect directly to the Unity Profiler at this IP address. The Profiler 
+will automatically connect and begin displaying frame and profiling 
+information.
+	
+—
+If you did not select Autoconnect Profiler, then you will need to 
+manually connect to your Player using the Target Selection dropdown.
+To save on build time (at the cost of reduced accuracy), profile your application 
+running directly in the Unity Editor. Choose Playmode from the Attach to Player 
+dropdown menu in the Profiler window.
+The Profiler when automatically connected to a target device
+Using the Profiler to 
+target the game running 
+in Playmode
+
+39 of 75 | unity. com
+© 2022 Unity Technologies
+Profiler tips
+Disable VSync and Others categories in the CPU Usage Profiler module
+The VSync marker represents “dead time,” wherein the CPU main thread is 
+idle while waiting for VSync. Hiding markers can sometimes make it difficult to 
+understand how other category times came to be, or even how the total frame 
+time is formed. With this in mind, another option is to reorder the list so that 
+VSync is at the top. This provides a clearer view of the graph where the “noise” 
+added by the VSync marker is reduced and the overall picture clearer.
+The Others markers represent profiling overhead and can be safely ignored 
+since it won’t be present in final builds of your project.
+Disable VSync in the build
+Another option for getting a clear picture of how the main thread, render thread, 
+and GPU are interacting is to profile a build in which VSync is disabled entirely. 
+Go to Edit > Project Settings… then select Quality and click on the Quality 
+Level(s) to be used on your target device and set VSync Count to Don’t Sync. 
+Make a Development build of the game, and connect the Profiler to it. Instead 
+of waiting for the next VBlank, the game will begin a frame as soon as the 
+previous frame is complete. Disabling VSync can cause visual artifacts, such as 
+tearing, on some platforms (in which case, remember to re-enable it for release 
+builds), but removing the artificial wait can make profiler captures easier to read, 
+particularly when you’re investigating where the bottlenecks are in your project.
+Know when to profile in Playmode or Editor mode
+When using the Profiler, you can choose Playmode, Editor, or a remote or 
+attached device as the Player target.
+Use Playmode to profile your game/application, and Editor mode to see what 
+the Unity Editor surrounding the game is doing. 
+Using Editor as the target for profiling has a high impact on profiling accuracy. 
+The Profiler window is effectively profiling itself recursively. However, it can 
+be valuable to profile the Editor if its performance slows down. You can then 
+identify scripts and extensions that are slowing the Editor down and hampering 
+productivity.
+Examples of when you might want to profile the Editor include:
+	
+—
+If it takes a long time to enter Play mode after pressing the Play button
+	
+—
+If the Editor becomes sluggish and unresponsive
+	
+—
+If a project takes a long time to open. The blog post “Tips for working more 
+effectively with the Asset Database” describes how to use the 
+ -profiler-enable command line option to start profiling from the moment 
+the Editor starts running.
+
+40 of 75 | unity. com
+© 2022 Unity Technologies
+Here are some more resources to help you explore additional use cases and 
+features of the Unity Profiler:
+	
+—
+Profiler overview in Unity manual
+	
+—
+Introduction to profiling in Unity 
+	
+—
+How to profile and optimize a game 
+Use Standalone Profiler
+Use the Standalone Profiler. Here, the Profiler launches as a new process, 
+separate from the Unity Editor, when you want to perform Play mode or Editor 
+profiling. This avoids the Profiler UI or Editor from having an effect on measured 
+timings. You’ll also get a cleaner set of profiling data to filter and work with.
+Profile in the Editor for quick iterations
+Profile in the Editor when you want to quickly iterate on fixing performance 
+issues. For example, if a performance problem is spotted in the build, profile in 
+the Editor to verify that you can also find it there. If you do find the problem,  
+use Play mode profiling to quickly iterate on changes toward a potential solution. 
+Once the issue is solved, make a build and verify the solution also works on 
+target devices. 
+This workflow is optimal because you spend less time building changes and 
+deploying to devices. Instead, you can iterate quickly in the Editor and use 
+profiling tools to validate your change results.
+Starting the Profiler as a standalone process
+
+41 of 75 | unity. com
+© 2022 Unity Technologies
+Frame Debugger
+The Frame Debugger helps you to optimize rendering by letting you freeze 
+playback for a running game on a specific frame and view the individual draw 
+calls used to render it. The tool lets you step through the list of draw calls, one 
+by one, so you can see the frames as they are constructed to form a scene from 
+its graphical elements.
+One advantage of the Frame Debugger over other frame debugging tools is 
+where a draw call corresponds to the geometry of a GameObject that object will 
+be highlighted in the main Hierarchy panel to assist identification.
+The Frame Debugger can also be used to test for overdraw by analyzing the 
+rendering order frame-by-frame. See the optimization tips below for more 
+information.
+Open the Frame Debugger from the Window > Analysis > Frame Debugger menu.
+With your application running in the Editor or on a device, click Enable. This 
+will pause the application and list all the draw calls in sequence for the current 
+frame on the left side of the Frame Debug window. Additional details, such as 
+framebuffer clear events, are also included.
+Using the Frame Debugger to analyze how identified overdraw occurs
+
+42 of 75 | unity. com
+© 2022 Unity Technologies
+The slider at the top of the Debugger window lets you scrub rapidly through the 
+draw calls to locate an item of interest quickly. 
+Unity issues draw calls to the graphics API to draw geometry on the screen. A 
+draw call tells the graphics API what to draw and how. Each draw call contains 
+all the information the graphics API needs, such as information about textures, 
+shaders, and buffers. Often, the preparation for a draw call is more resource 
+intensive than the draw call itself.
+This preparation process is grouped under what’s known as “render state. ” One 
+way to optimize performance in this area is to reduce the number of changes to 
+this render state.
+The Frame Debugger helps identify where draw calls are coming in from. Use it 
+to visualize and understand the rendering process to guide decisions on how to 
+group draw calls in order to reduce changes to render state.
+The Frame Debugger window lists draw calls and events down the left side and provides a slider to visually step 
+through each one.
+The Game window displays a scene frame constructed up to and including the selected draw call (near the end of 
+applying post-processing effects) in the Frame Debugger.
+
+43 of 75 | unity. com
+© 2022 Unity Technologies
+Reference the Frame Debugger’s list hierarchy to locate where interesting draw 
+calls originate from. Selecting an item from the list will show the scene (in the 
+Game window) as it appears up to and including that draw call.
+The panel to the right of the list hierarchy provides information about each draw 
+call, such as the geometry details and the shader used for rendering.
+Other useful information provided includes reasons for why a draw call could not 
+be batched with previous ones, and an examination of the exact property values 
+that were fed into shaders.
+Along with shader property values, the ShaderProperties section also reveals 
+which shader stages it was used in (for example, vertex, fragment, geometry, 
+hull, domain).
+A draw call is selected and details showing its shader, reason for being excluded from batching, and shader 
+property values are all visible in the details area.
+Shader stages are revealed in the 
+ShaderProperties detail section.

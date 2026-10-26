@@ -1,0 +1,139 @@
+<h2>模式：观察者（Observer）</h2>
+
+<p>开发游戏时，经常会有多个 GameObject 需要彼此共享数据或状态。在小型游戏中，你可以让这些对象之间直接建立引用，但这种做法无法扩展。管理这些依赖关系需要投入大量精力，而且往往是缺陷的来源。随着应用程序规模的增长，你需要更好的解决方案。</p>
+
+<h3>避免使用单例</h3>
+
+<p>许多开发者选择使用单例（Singleton）——即某个类的唯一全局实例，它在场景加载后依然存在。然而，单例会引入全局状态，并使单元测试变得困难。</p>
+
+<p>如果你处理的是引用了单例的预制体（Prefab），为了测试一个孤立的功能，你最终会导入它的所有依赖项。这会降低模块化程度和可调试性。</p>
+
+<p>可以考虑另一种替代方案来帮助对象之间通信：基于 ScriptableObject 的事件。</p>
+
+<h4>关于单例的更多讨论</h4>
+
+<p>在 Unity 游戏开发中，单例这个话题常常引发争论。对于较小的项目或原型开发，单例可能是合适的解决方案。在大型应用程序中，使用单例的缺点往往超过其优点。许多开发者认为单例是一种反模式（anti-pattern）。</p>
+
+<p>单例易于学习和理解，但如果使用不当，也会带来问题。这里描述的大多数模式都能帮助你避免依赖单例。</p>
+
+<p>如果你想要方便地访问共享数据，可以考虑基于 ScriptableObject 的运行时集合（Runtime Set，见下文）。如果你需要一种在对象之间发送消息的方式，可以尝试基于 ScriptableObject 的事件通道。将架构从单例中重构出来，可能会提升可扩展性和可测试性。</p>
+
+<p>阅读电子书《Level up your code with game programming patterns》，了解更多关于单例优缺点的内容。</p>
+
+<h3>基于 ScriptableObject 的事件</h3>
+
+<p>正如你已经看到的，ScriptableObject 并不只是用来处理数据。它们可以包含方法，就像任何其他脚本一样。这些方法可以作为对象之间通信的手段。</p>
+
+<p>在观察者设计模式（observer design pattern）中，主体（subject）向一个或多个松散解耦的观察者（observer）广播消息。每个观察对象都可以独立于主体做出反应，但并不知道其他观察者的存在。主体也可以称为「发布者（publisher）」或「广播者（broadcaster）」。观察者又称为「订阅者（subscriber）」或「监听者（listener）」。</p>
+
+<p>基于事件的架构只在需要时执行，而不是每帧都运行。因此，与把逻辑加到 MonoBehaviour 的更新方法中相比，它通常更加高效。</p>
+
+<h3>观察者模式的基本实现</h3>
+
+<p>你可以用 MonoBehaviour 或 C# 对象来实现观察者模式。虽然这在 Unity 开发中已是常见做法，但纯脚本的方式意味着：游戏过程中需要的每一个事件，设计师都得依赖程序团队。</p>
+
+<p>另一种替代方案是创建基于 ScriptableObject 的事件。这是一种对设计师友好的观察者模式搭建方式。在这里，ScriptableObject 充当主体与观察者之间的中介，并在编辑器中提供图形化界面。</p>
+
+<h3>基于 ScriptableObject 的事件通道</h3>
+
+<p>乍看之下，你似乎只是给观察者模式增加了一层开销，但这种结构带来了一些优势。由于 ScriptableObject 是资源（asset），场景层级（Scene Hierarchy）中的所有对象都可以访问它，而且它不会在场景加载时消失。</p>
+
+<p>这正是许多开发者最初使用单例的原因：方便、持久地访问某些资源。ScriptableObject 通常能提供同样的好处，同时不会引入那么多不必要的依赖。</p>
+
+<p>在基于 ScriptableObject 的事件中，任何对象都可以充当发布者（广播事件），任何对象也都可以充当订阅者（监听事件）。ScriptableObject 位于中间，帮助中继信号，就像两者之间的一个集中式中介。</p>
+
+<p>一种理解方式是将它看作「事件通道（event channel）」。把 ScriptableObject 想象成一座无线电塔，有任意数量的对象在监听它的信号。感兴趣的 MonoBehaviour 只需订阅这个事件通道，就能在事情发生时做出响应。</p>
+
+<h3>示例：事件通道</h3>
+
+<p>任何包含以下内容的 ScriptableObject 都可以充当事件通道：</p>
+
+<ul>
+  <li>一个委托（delegate）（UnityAction 或 System.Action）：它负责通知订阅者，并将合适的数据作为参数传递。如果希望获得对美术更友好的体验，请使用 UnityAction；否则，System.Action 委托在这里也能很好地工作。event 关键字会限制该委托，使其只能在 ScriptableObject 类（或声明它的派生类）内部被调用。</li>
+  <li>一个触发事件的方法：这个公共方法会调用该委托。</li>
+</ul>
+
+<p>就这样。</p>
+
+<p>你可以设置任意数量的事件通道，用来决定游戏玩法的各个方面。由于它们存在于项目层级，ScriptableObject 可以触发全局可访问的事件。这能把场景中原本互不相关的对象连接起来。</p>
+
+<h4>System.Action 还是 UnityAction</h4>
+
+<p>System.Action 是 .NET Framework 的 System 命名空间中定义的通用委托类型。你可以在 Unity 项目中使用它，而无需声明自定义委托。加上 event 关键字会使该委托类型变为只读；其他对象可以监听该委托已注册的方法，但不能直接调用这些方法。</p>
+
+<p>UnityAction 是专门定义在 UnityEngine.Events 命名空间中的委托类型。你通常会把它与 UnityEvent 类一起使用，后者是在 Unity 中创建事件的另一种方式。UnityEvent 和 UnityAction 会显示在 Inspector 中，因此它们常常被当作一种对用户或美术更友好的方式来实现观察者模式。</p>
+
+<p>一般来说，你可以根据具体需求使用 System.Action 或 UnityAction。你可以选择在同一个项目中部署其中之一，或两者兼用。</p>
+
+<p>如果你想要一个不依赖 Unity 游戏引擎的通用委托，请使用 System.Action。如果你想要一个专为 UnityEvent 设计的委托，请使用 UnityAction。</p>
+
+<p>在这里，你可以创建一个不传递任何参数就触发事件的 VoidEventChannelSO。这个类包含一个名为 OnEventRaised 的 UnityAction。</p>
+
+<pre><code>[CreateAssetMenu(menuName = "Events/Void Event Channel")]
+public class VoidEventChannelSO : ScriptableObject
+{
+    public event UnityAction OnEventRaised;
+    public void RaiseEvent()
+    {
+        if (OnEventRaised != null)
+            OnEventRaised.Invoke();
+    }
+}</code></pre>
+
+<p>创建好 VoidEventChannelSO 类型的 ScriptableObject 之后，任何 MonoBehaviour 都可以监听 OnEventRaised。例如，我们可以创建一个 VoidEventChannelSO 类型的 StartNewGame ScriptableObject。</p>
+
+<p>另一个对象可以调用公共方法 RaiseEvent 来触发该事件。</p>
+
+<figure><figcaption>图 1：基于 ScriptableObject 的事件，展示了一个事件通道的示例</figcaption></figure>
+
+<p>另一个 MonoBehaviour 可以在 Inspector 中引用该事件通道 ScriptableObject，然后订阅或取消订阅 OnEventRaised。</p>
+
+<p>这样，每当事件通道调用 OnEventRaised 时，就会调用 StartNewGame 作为响应：</p>
+
+<pre><code>public class StartGame : MonoBehaviour
+{
+    [SerializeField] private VoidEventChannelSO
+        _onNewGameButton = default;
+    private void Start()
+    {
+        _onNewGameButton.OnEventRaised += StartNewGame;
+    }
+    private void OnDestroy()
+    {
+        _onNewGameButton.OnEventRaised -= StartNewGame;
+    }
+    private void StartNewGame()
+    {
+        // 在此处添加加载关卡的逻辑……
+    }
+}</code></pre>
+
+<p>如果你想要对美术或设计师更友好的监听组件，也可以改为创建一个无需任何脚本设置即可使用的 MonoBehaviour。下面这个 VoidEventListener 并没有增加额外功能，但它的字段可以在 Inspector 中访问：</p>
+
+<pre><code>public class VoidEventListener : MonoBehaviour
+{
+    [SerializeField] private VoidEventChannelSO _channel =
+        default;
+    public UnityEvent OnEventRaised;
+    private void OnEnable()
+    {
+        if (_channel != null)
+            _channel.OnEventRaised += Respond;
+    }
+    private void OnDisable()
+    {
+        if (_channel != null)
+            _channel.OnEventRaised -= Respond;
+    }
+    private void Respond()
+    {
+        if (OnEventRaised != null)
+            OnEventRaised.Invoke();
+    }
+}</code></pre>
+
+<p>只需把 VoidEventListener 添加到某个 GameObject 上，然后将事件通道 ScriptableObject 拖到 Inspector 中的 _channel 字段里。在 OnRaisedEvent 上创建 UnityAction，以便对该事件做出响应。</p>
+
+<figure><figcaption>图 2：事件监听器让非程序员也能设置由事件驱动的行为</figcaption></figure>
+
+<p>无论你选择哪个组件来监听事件，事件通道都提供了一种在运行时让对象之间通信的方式。玩家是否完成了任务或得了分？游戏是否结束？事件可以通知场景中任何需要该信息的 GameObject。</p>

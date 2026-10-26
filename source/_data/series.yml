@@ -16,3 +16,50 @@
     - ≈10 小时
     - 5 天节奏
   url: /gpp-unity/
+
+# —— Unity 官方电子书中文版（books/ 下按章翻译，tools/build-books.js 构建）——
+
+- tag: 书籍系列 · 架构
+  title: 《用 ScriptableObjects 构建模块化游戏架构》
+  intro: Unity 官方电子书全译：把数据与逻辑拆开，用 ScriptableObject 做数据容器，再讲透可扩展枚举、委托对象、观察者、命令、运行时集合五个模式。
+  stats:
+    - 9 章
+    - 原书 76 页
+    - 全译 + 代码
+  url: /books/modular-so/
+
+- tag: 书籍系列 · 渲染
+  title: 《URP 进阶指南》
+  intro: Unity 官方电子书全译：从内置管线迁移到 URP，逐项讲光照、贴花、Shader、管线回调、后处理、相机堆叠与性能。
+  stats:
+    - 12 章
+    - 原书 140 页
+    - 全译 + 代码
+  url: /books/urp/
+
+- tag: 书籍系列 · 架构
+  title: 《用游戏编程模式升级你的代码》
+  intro: Unity 官方电子书全译：先讲透 SOLID，再逐个拆解工厂、对象池、单例、命令、状态、观察者、MVP 七个模式在 Unity 里的落地写法。
+  stats:
+    - 10 章
+    - 原书 99 页
+    - 全译 + 代码
+  url: /books/gpp/
+
+- tag: 书籍系列 · 性能
+  title: 《Unity 游戏性能分析终极指南》
+  intro: Unity 官方电子书全译：把「卡」拆成可追的线索——帧预算、CPU/GPU 定位、内存分析，以及一整章 Unity 自带分析工具的使用手册。
+  stats:
+    - 5 章
+    - 原书 75 页
+    - 全译 + 代码
+  url: /books/profiling/
+
+- tag: 书籍系列 · 性能
+  title: 《Unity 移动游戏性能优化指南》
+  intro: Unity 官方电子书全译：从分析、内存、代码架构，一路到资源、GPU、UI、音频、动画、物理的逐项优化清单。
+  stats:
+    - 13 章
+    - 原书 80 页
+    - 全译 + 代码
+  url: /books/mobile-perf/

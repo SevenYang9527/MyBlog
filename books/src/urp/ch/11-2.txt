@@ -1,0 +1,163 @@
+112 of 140 | unity. com
+© 2024 Unity Technologies
+6.	 Click the “+” button 
+and add a Color 
+property. This will allow 
+the user to manipulate 
+the color of the smoke 
+in the Inspector.
+7.	
+Let’s look at the Spawn block. The default Spawn block comes with a 
+Constant Spawn Rate node. Set this to 20.
+8.	
+The next block, Initialize, defines how to handle a particle when it’s first created. 
+Remove the Set Lifetime Random node. Then add a Set Tex Index, and set it to 
+a random value from 0 to 63, so that each smoke particle has a different look. 
+This is important because the particle displays an image from the Smoke Sprite 
+sheet shown earlier and you’ll want the first index used to be 0.  
+ 
+Then add a Set Lifetime 
+node set to 1. 5 seconds. To 
+add some variation in the 
+speed at which a particle 
+is launched, use the Set 
+Velocity Random node. Set 
+A to -0.1, 0.4, -0.1 and B to 
+0. 1, 1, 0. 1. To set the Color 
+of a particle to brighten or 
+darken the Sprite, add a Set 
+Color node and drag the 
+Color property created to its 
+input.
+
+113 of 140 | unity. com
+© 2024 Unity Technologies
+9.	
+The next block, Update, defines what happens at each frame update. 
+By default, this appears as an empty block, but it actually contains some 
+implicit hidden blocks that can be disabled in the Inspector when  
+Update is selected. 
+ 
+Recall that you’re using a Sprite sheet for the image of each particle. In VFX 
+Graph, this means you’re using a Flipbook. Add a Flipbook Player node, 
+set its Mode to Constant, and the Frame Rate to 16. It will cycle through 
+consecutive frames in the Flipbook at 16 frame changes per second.
+10.	 Next, set the final output 
+of the Particle. Set the 
+UV Mode to Flipbook 
+(or Flipbook Blend for a 
+smoother transition between 
+frames) and the Flipbook 
+Layout to Texture 2D. Using 
+the Sprite sheet, set the 
+Flipbook Size to 8x8, and 
+set the Main Texture to this 
+Texture. Replace Set Color 
+Over Life with Set Alpha 
+Over Life. The default curve 
+will blend the particle in and 
+out over its lifetime.
+
+114 of 140 | unity. com
+© 2024 Unity Technologies
+11.  Select the GameObject with this VFX Graph attached. In the Scene view, 
+a panel should be visible that you can use to demo the effect outside of 
+runtime. If you don’t see it, make sure the toggle for visualizing Particle 
+Systems is on.
+Here’s an image of the final smoke effect in action:
+
+115 of 140 | unity. com
+© 2024 Unity Technologies
+2D Renderer and 2D lights
+If you are working on a 2D game, you’ll be pleased to know there is a dedicated 
+URP 2D Renderer. The simplest way to get started is to use the 2D URP template 
+from the Unity Hub. This template ensures that your project has a URP 2D 
+Renderer assigned via Project Settings > Graphics > Scriptable Render Pipeline 
+Settings. All verified and precompiled 2D packages are installed with the 2D URP 
+template and the default settings optimized for 2D projects. This also ensures that 
+the project loads faster than installing all the packages manually.
+The 2D URP template in the Unity Hub
+If you’re upgrading an existing project, then you need to find a suitable folder in 
+your project’s Assets folder. Right-click and select Create > Rendering > URP 
+Asset (with 2D Renderer). Give it a name, and select it using Project Settings > 
+Graphics > Scriptable Render Pipeline Settings. In the Scene view, be sure to 
+select the 2D button when editing.
+Creating a 2D Renderer and Settings Asset
+
+116 of 140 | unity. com
+© 2024 Unity Technologies
+If you’re updating an existing project, then you might find switching to the URP 
+2D Renderer gives a classic magenta render error.
+2D shaders available in URP
+Shader
+Description
+Sprite-Lit-Default
+Uses 2D lights when rendering
+Sprite-Mask-Default
+Works with the stencil buffer
+Sprite-Unlit-Default
+Uses only the texture colors when rendering
+Updating an existing project with URP 2D Renderer can result in rendering errors in your scene. 
+Fortunately, the Window > Rendering > Render Pipeline Converter has got you 
+covered. Select Built-in to 2D (URP) and click the Material and Material Reference 
+Upgrade panel. Then click Initialize Converters, followed by Convert Assets to 
+be able to deselect some items or Initialize And Convert to handle the process 
+with one click. If you still see magenta-colored sprites, you might need to manually 
+replace the shader in some of your materials. Choose one of the shaders in the 
+following table.
+Converting a Built-in Render Pipeline 2D project to URP 2D
+
+117 of 140 | unity. com
+© 2024 Unity Technologies
+2D lights are available with the URP 2D Renderer. These offer enhanced 
+performance and flexibility. Using the new tools, you can create a more 
+immersive experience and save time preparing different Sprite variations by 
+using baked lights to create new gameplay possibilities. If you have migrated 
+an existing project, then you will have no URP 2D lights in your scene. If your 
+Sprites use the Sprite-Lit-Default shader, you might be surprised to see a lit 
+render. But with no lights, you get a default Global Light assigned to the scene 
+for an unlit appearance.
+With no lights in the scene, the render defaults to Unlit.
+Add a light using the Hierarchy window. Right-click and choose Light > Global 
+Light 2D.
+
+118 of 140 | unity. com
+© 2024 Unity Technologies
+Now you can adjust the Settings, Color, Intensity, as well as the Target Sorting 
+Layers they affect.
+In the Global Light 2D Settings, the character uses an Unlit shader.
+The 2D URP framework includes four light types: 
+	
+—
+Sprite: Uses a Sprite to control the illumination level.
+	
+—
+Freeform: For creating a polygonal-shaped light. 
+	
+—
+Spot: Provides great control over the angle and direction of the selected 
+light. Use it as a Point light. By default, the inner and outer cones span 360 
+degrees. You can also adjust the inner and outer radius and decide whether 
+the light casts shadows, as well as the strength of those shadows.
+	
+—
+Global: Lights all objects on targeted sorting layers.
+Editing a Spot light 2D
+
+119 of 140 | unity. com
+© 2024 Unity Technologies
+If a Sprite casts a shadow, then it needs a Shadow Caster 2D component added.
+Adding a Shadow Caster 2D component
+The URP 2D Renderer provides all the tools necessary to create first-class 2D 
+games that will perform well on even low-end hardware.
+An image from the Unity 2D demo Dragon Crashers; Unity’s 2D development e-book, 2D game art, animation, and 
+lighting for artists, was authored by the creative director of Dragon Crashers.
+Related links:
+	
+—
+The Unity 2D demo Dragon Crashers is available on the Unity Asset Store. 
+	
+—
+The free e-book 2D game art, animation, and lighting for artists is an 
+advanced development guide created for Unity developers and artists 
+planning to make a commercial 2D game.

@@ -1,0 +1,50 @@
+65 of 140 | unity. com
+© 2024 Unity Technologies
+Decals
+Decal Projectors are a great way of adding detail to a mesh. Use them for elements 
+such as bullet holes, footsteps, signage, cracks, and more. Because they use a 
+projection framework, they conform to an uneven or curved surface. To use a Decal 
+Projector with URP, you need to locate your Renderer Data asset and add the Decal 
+Renderer Feature.
+Adding the Decal Renderer Feature
+
+66 of 140 | unity. com
+© 2024 Unity Technologies
+For most purposes, you can accept the default settings.
+Now your scene is ready for Decals. Create a Decal by right-clicking in the 
+Hierarchy view and selecting Rendering > URP Decal Projector. By default, 
+the projector uses the material Decal, which will project a white square onto a 
+surface. Use the usual tools to position and orientate the projector. Adjust the 
+Width, Height, and Projection Depth in the Inspector. 
+To customize the Decal, create a material using the Shader Graph > Decal 
+shader. This shader has three inputs: Base Map, Normal Map, and Normal Blend. 
+Once the material is prepared, assign it to the Decal Projector.
+Decal Projector settings
+The Inspector for a Decal Projector includes three Editing Mode buttons: Scale, 
+Crop, and Pivot/UV, which you read about here.
+
+67 of 140 | unity. com
+© 2024 Unity Technologies
+By default, the projector will affect any surface within its frustum. The Decal 
+Renderer Feature includes the setting Use Rendering Layers. Enable this to 
+facilitate targeting specific meshes. 
+Decal Renderer Feature settings
+Refer back to the Rendering Layers section to learn about setting up and using 
+this rendering option. Here are the steps to set up a Decal:
+1.	
+Use Edit > Project Settings … > Graphics > URP Global Settings to name a 
+Rendering Layer. 
+2.	
+Select the mesh/meshes that you want to receive the projector. In the 
+Inspector, find Mesh Renderer > Additional Settings > Rendering Layer 
+Mask, and add the named Rendering Layer to the mask.
+Adding Rendering Layer to the Mesh Renderer Rendering Layer Mask
+
+68 of 140 | unity. com
+© 2024 Unity Technologies
+3.	
+Select the URP Decal Projector and, in the Inspector, select the named 
+Rendering Layer for the Rendering Layers property.
+The image below shows the scene with and without a Decal, and with a wall 
+projection limited by using Rendering Layers.
+From left to right: No decal in the image, the decal hitting all objects, and the decal applied to the wall only using Rendering Layers

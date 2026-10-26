@@ -1,0 +1,119 @@
+57 of 140 | unity. com
+© 2024 Unity Technologies
+moves through the scene, it can select the nearest Reflection Probe and use that as 
+the basis of its reflections. You can also set up the scene to blend between probes.
+To create a Reflection Probe, right-click the Hierarchy window and select Light 
+> Reflection Probe.
+Creating a Reflection Probe
+Then position the probe and adjust its settings. Once the probe is placed 
+correctly and the settings are adjusted, click Bake to generate a cubemap.
+Reflection Probe settings
+The following image shows the two Reflection Probes used in FPS Sample:  
+The Inspection, one inside the hangar and one outside.
+
+58 of 140 | unity. com
+© 2024 Unity Technologies
+Each Reflection Probe captures an image of its surroundings in a cubemap texture.
+Reflection Probe blending
+Blending is a great feature of Reflection Probes. You can enable blending via the 
+Renderer Asset Settings panel. Blending is always on when the Forward+ path 
+is chosen, regardless of the Renderer Asset setting.
+Blending gradually fades out one probe’s cubemap, while fading in the other as 
+the reflective object passes from one zone to the other. This gradual transition 
+avoids the situation where a distinctive object suddenly “pops” into the 
+reflection as an object crosses the zone boundary.
+Box Projection
+Normally, the reflection cubemap is assumed to be at an infinite distance from 
+any given object. Different angles of the cubemap will be visible as the object 
+turns, but it’s not possible for the object to move closer or further away from the 
+reflected surroundings. While this works well for outdoor scenes, its limitations 
+show in an indoor scene. The interior walls of a room are clearly not an infinite 
+distance away, and the reflection of a wall should get larger as the object nears it.
+The Box Projection option enables you to create a reflection cubemap at a 
+finite distance from the probe, allowing objects to show reflections of different 
+sizes according to their distance from the cubemap’s walls. The size of the 
+surrounding cubemap is determined by the probe’s zone of effect, depending  
+on its Box Size property. For example, with a probe that reflects the interior  
+of a room, you should set the size to match the dimensions of the room.
+Lens Flare
+The workflow for creating a Lens Flare has been updated for URP. The first step in 
+configuring it is to create a Lens Flare (SRP) Data asset. Right-click in the Project 
+window, in a suitable Assets folder, and select Create > Lens Flare (SRP).
+
+59 of 140 | unity. com
+© 2024 Unity Technologies
+Creating a Lens Flare (SRP) Data asset
+Use this asset to configure the shape of your flare by setting Type as Circle, 
+Polygon, or Image assets and adjusting their Tint and Intensity.
+Adding and configuring Lens Flare elements
+
+60 of 140 | unity. com
+© 2024 Unity Technologies
+To render a Lens Flare, choose the light source that will cause the flare and then 
+select Add Component > Rendering > Lens Flare (SRP). 
+Setting up rendering for a Lens Flare
+In the Settings panel for this component (see following image), assign the Lens 
+Flare Data asset you created to the Lens Flare Data property. 
+Settings for the Lens Flare (SRP) componente
+The system is very flexible.
+
+61 of 140 | unity. com
+© 2024 Unity Technologies
+An example of a Lens Flare
+Light Halos
+The Draw Halo option is not available for lights in URP, but it’s easily mimicked 
+with a billboard. Another option is to set the alpha transparency of a sphere.  
+The first image below shows the Shader Graph for such a shader, and the 
+second image depicts the result. For more information on using Shader Graph  
+to create this shader, see the Additional tools chapter.
+Fresnel transparency using Shader Graph
+Light Halo using a sphere with a material using the Shader Graph shader from above
+
+62 of 140 | unity. com
+© 2024 Unity Technologies
+Screen Space Ambient Occlusion
+Since ambient light does not consider geometry by default, high levels of 
+ambient light can lead to unconvincing renders. In the real world, a narrow gap 
+between two objects is likely to be darker than a much wider gap. Ambient 
+Occlusion can help deal with this issue in your Unity project. To use it with URP, 
+select the Renderer that the URP Asset is using. Go to Add Renderer Feature 
+and choose Screen Space Ambient Occlusion (SSAO). 
+ 
+Add Renderer Feature
+Either use the default SSAO settings or adjust as needed:
+The SSAO settings
+
+63 of 140 | unity. com
+© 2024 Unity Technologies
+	
+—
+Method: This property defines the type of noise the SSAO effect uses.
+	
+—
+Intensity: This property defines the intensity of the darkening effect.
+	
+—
+Radius: When Unity calculates the Ambient Occlusion value, the SSAO 
+effect takes samples of the normal texture within this radius from the 
+current pixel. A lower Radius value improves performance because the 
+SSAO Renderer Feature samples pixels closer to the source pixel.
+	
+—
+Falloff Distance: SSAO does not apply to objects farther than this distance 
+from the Camera. A lower value increases performance in scenes that 
+contain many distant objects. 
+	
+—
+Direct Lighting Strength: This property defines how visible the effect is in 
+areas exposed to direct lighting. 
+A scene with only an Ambient Occlusion texture demonstrating a varying falloff distance
+SSAO adds shading to narrow gaps. Let’s look at the following three images.
+
+64 of 140 | unity. com
+© 2024 Unity Technologies
+The top image has no SSAO. The middle image shows the calculated SSAO, 
+while the bottom image shows the result of SSAO. Notice that the grinder and 
+scales have a stronger edge where they meet the desk.
+The haunted room screenshot, with no SSAO at the top, with SSAO applied in the middle, and rendered with SSAO at the bottom
+SSAO is a post-processing technique the details of which are covered later in 
+this guide.

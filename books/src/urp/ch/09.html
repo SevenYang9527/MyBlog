@@ -1,0 +1,41 @@
+<h2>摄像机堆叠（Camera Stacking）</h2>
+
+<p>游戏中一个常见需求是：将不同摄像机所看到的几何体组合到单次渲染中。上图展示了一个位于前景的架子，它在游戏内充当物品栏。收集到的物品会被添加到架子上，玩家可以在关键时刻从中进行选择。请注意，它拥有不同的视野（field of view），以及不同的光照和后处理。这一效果是通过 URP 中的摄像机堆叠（Camera Stacking）功能实现的。</p>
+
+<figure><figcaption>图 1：使用摄像机堆叠的示例</figcaption></figure>
+
+<h3>如何设置该功能</h3>
+
+<p>下面来看看如何设置这一功能。</p>
+
+<ol>
+  <li>通过右键单击 Hierarchy 视图并选择 <strong>Create &gt; Camera</strong> 来创建一个摄像机。移除 Audio Listener 组件。</li>
+  <li>使用 <strong>Inspector &gt; Camera Settings</strong> 面板，将该摄像机的 Render Type 设置为 <strong>Overlay</strong>。</li>
+  <li>为摄像机和它渲染的 GameObject 创建一个新的 Layer。</li>
+  <li>在 Inspector 中更新该摄像机的 <strong>Rendering &gt; Culling Mask</strong>。</li>
+  <li>将摄像机移动到场景中合适的位置，然后通过把 GameObject 放入 Overlay Layer 来添加并摆放它们。</li>
+  <li>通过更新主摄像机的 <strong>Rendering &gt; Culling Mask</strong>，确保主摄像机不渲染 Overlay。</li>
+  <li>在 Stack 面板中，使用“+”按钮添加该 Overlay 摄像机。</li>
+</ol>
+
+<h3>用代码控制堆栈</h3>
+
+<p>与后处理一样，你可以通过代码控制堆栈，并在运行时动态添加或移除摄像机。参见以下代码示例：</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+public class StackController : MonoBehaviour
+{
+    public Camera overlayCamera;
+
+    // Start 在第一帧更新之前被调用
+    void Start()
+    {
+        Camera camera = GetComponent&lt;Camera&gt;();
+        var cameraData = camera.GetUniversalAdditionalCameraData();
+        cameraData.cameraStack.Remove(overlayCamera);
+    }
+}</code></pre>
+
+<p>后处理和摄像机堆叠都可以通过 URP 轻松配置，它们是在游戏中创建丰富、富有氛围感效果的强大工具。</p>

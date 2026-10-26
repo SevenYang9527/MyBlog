@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>游戏开发中的设计模式 · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">03 · 游戏开发中的设计模式</div>
+    <div class="pager"><a href="ch-02-3.html">← 上一节</a><a href="ch-04.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>游戏开发中的设计模式</h2>
+
+<p>一旦你理解了 SOLID 原则，就会想更深入地研究设计模式（Design Patterns）。</p>
+
+<p>设计模式让你能够把众所周知的解决方案重新用于日常的软件问题。然而，模式并不是现成的库或框架，也不是算法（algorithm）——算法是达成某个结果的一组特定步骤。</p>
+
+<p>相反，不妨把设计模式想得更像一张蓝图。它是一份总体计划，把实际的建造工作留给你。两个程序可以遵循同一个模式，代码却可能截然不同。</p>
+
+<p>当开发者在实际工作中遇到同一个问题时，许多人不可避免地会想出相似的解决方案。一旦这样的方案被重复得足够多，就可能有人「发现」了一种模式，并正式为它命名。</p>
+
+<h3>四人组（The Gang of Four）</h3>
+
+<p>当今许多软件设计模式都源自那部开创性著作《设计模式：可复用面向对象软件的基础》（Design Patterns: Elements of Reusable Object-Oriented Software），作者是 Erich Gamma、Richard Helm、Ralph Johnson 和 John Vlissides。这本书描述了在日常生活中各种应用里识别出的 23 种模式。</p>
+
+<p>这几位原作者常被称为「四人组」（Gang of Four，GoF），你也会听到最初的这些模式被称为 GoF 模式。虽然书中引用的示例大多使用 C++（以及 Smalltalk）写成，但你可以把其中的思想应用到任何面向对象的语言，比如 C#。</p>
+
+<p>自四人组于 1994 年首次出版《设计模式》以来，开发者们已在各个领域发现了数十种更多的面向对象模式。许多工程专业领域都有成熟的模式体系。游戏开发也不例外。</p>
+
+<h3>学习设计模式</h3>
+
+<p>虽然不学习设计模式也能做一名游戏程序员，但学习它们只会帮助你成为更好的开发者。毕竟，设计模式之所以被如此标注，是因为它们是众所周知问题的常见解决方案。</p>
+
+<p>软件工程师在日常开发过程中不断地重新发现它们。你可能已经无意中实现过其中一些模式。</p>
+
+<p>训练自己去寻找它们。这样做可以帮助你：</p>
+
+<ul>
+<li><strong>学习面向对象编程（object-oriented programming）</strong>：设计模式并不是埋没在晦涩 StackOverflow 帖子里的秘密。它们是克服日常开发障碍的常见方式。它们能告诉你许多其他开发者是如何处理同一个问题的。记住，即使你没有使用模式，别人也在用。</li>
+<li><strong>与其他开发者交流</strong>：在团队沟通时，模式可以充当简写。提到「命令模式（command pattern）」或「对象池（Object Pool）」，有经验的 Unity 开发者就会立刻明白你想实现什么。</li>
+<li><strong>探索新框架</strong>：当你导入一个内置包或 Asset Store 上的资源时，必然会碰到这里讨论的一种或多种模式。识别设计模式有助于你理解一个新框架如何运作，以及它创建过程中所涉及的思路。</li>
+</ul>
+
+<p>当然，并非所有设计模式都适用于每一个游戏应用。不要像拿着马斯洛的锤子那样去寻找它们，否则你可能只会看到钉子。</p>
+
+<p>与任何其他工具一样，设计模式是否有用取决于上下文。每一种模式在特定情境下带来好处，也伴随着自身的缺点。软件开发中的每个决定都伴随着折中。</p>
+
+<p>你是否在运行时动态生成大量 GameObject？它是否影响了你的性能？重构代码能否解决这个问题？</p>
+
+<p>了解这些设计模式，并在时机合适时从你的游戏开发技巧锦囊中取出它们，来解决手头的问题。</p>
+
+<h3>延伸阅读</h3>
+
+<p>除了四人组的《设计模式：可复用面向对象软件的基础》，另一部出色的著作是 Robert Nystrom 的《游戏编程模式》（Game Programming Patterns）。作者以务实的风格详述了多种软件模式。网络版可在 gameprogrammingpatterns.com 免费获取。</p>
+
+<h3>Unity 中的模式</h3>
+
+<p>Unity 已经实现了若干成熟的游戏开发模式，省去了你自己编写的麻烦。其中包括：</p>
+
+<ul>
+<li><p><strong>游戏循环（Game loop）</strong>：所有游戏的核心都是一个必须独立于时钟速度运行的无限循环，因为运行游戏应用的硬件性能差异可能很大。为了兼顾速度不同的计算机，游戏开发者常常需要使用固定时间步长（fixed timestep，设定每秒帧数），以及由引擎测量自上一帧以来经过了多少时间的可变时间步长（variable timestep）。</p>
+<p>Unity 会处理这些，因此你不必自己实现。你只需使用 MonoBehaviour 的方法（如 Update、LateUpdate 和 FixedUpdate）来管理玩法逻辑。</p></li>
+<li><p><strong>更新（Update）</strong>：在游戏应用中，你常常要逐帧更新每个对象的行为。虽然你可以在 Unity 中手动重建这一机制，但 MonoBehaviour 类会自动完成。只需使用合适的 Update、LateUpdate 或 FixedUpdate 方法，让 GameObject 和组件随着游戏时钟的一个 tick 而改变。</p></li>
+<li><p><strong>原型（Prototype）</strong>：你经常需要复制对象而不影响原始对象。这种创建型模式解决了复制和克隆一个对象、使其他对象与它相似的问题。这样你就避免了为游戏中的每一种对象类型都定义一个单独的类来生成实例。</p>
+<p>Unity 的 Prefab 系统为 GameObject 实现了一种原型化形式。它允许你复制一个模板对象，连同其组件一起。覆盖特定属性来创建预制体变体（Prefab Variants），或把 Prefab 嵌套进其他 Prefab 来构建层级结构。使用特殊的 Prefab 编辑模式，可以孤立地或在上下文中编辑 Prefab。</p></li>
+<li><p><strong>组件（Component）</strong>：大多数使用 Unity 的人都了解这个模式。与其创建承担多项职责的大类，不如构建各自只做一件事的更小组件。</p>
+<p>如果你用组合的方式挑选组件，就能把它们组合起来实现复杂行为。添加 Rigidbody 和 Collider 组件来实现物理。添加 MeshFilter 和 MeshRenderer 来实现 3D 几何体。每个 GameObject 的丰富程度和独特性，都仅取决于它所拥有的组件集合。</p></li>
+</ul>
+
+<p>当然，Unity 无法为你包办一切。你不可避免地需要其他并非内置的模式。我们将在接下来的章节中探讨其中一些。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-02-3.html"><span class="dir">← 上一节</span>SOLID 原则（3/3）</a>
+    <a href="ch-04.html"><span class="dir">下一节 →</span>工厂模式</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

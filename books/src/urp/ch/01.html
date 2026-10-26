@@ -1,0 +1,37 @@
+<h2>简介</h2>
+
+<p>本指南旨在帮助经验丰富的 Unity 开发者和技术美术将其项目从内置渲染管线（Built-in Render Pipeline）迁移到通用渲染管线（Universal Render Pipeline，URP）。涵盖的主题包括如何：</p>
+
+<ul>
+<li>为新项目设置 URP，或将现有的基于内置渲染管线的项目转换为 URP</li>
+<li>更新基于内置渲染管线的光源、着色器和特效，使其适用于 URP</li>
+<li>理解两种渲染管线之间的回调差异、URP 中的性能优化，以及更多内容</li>
+</ul>
+
+<p>随着 Unity 支持的平台数量持续增长，内置渲染管线的局限性已变得十分明显。每增加一个平台和 API，都会增加修改与维护内置渲染管线架构的复杂度。</p>
+
+<p>2018 年，Unity 发布了两款新的可编程渲染管线（Scriptable Render Pipeline，SRP）：高清渲染管线（High Definition Render Pipeline，HDRP）和 URP。这些 SRP 让你无需使用 C++ 这样的底层编程语言，即可自定义对象的剔除、绘制以及帧的后期处理。你也可以创建完全自定义的 SRP。</p>
+
+<figure><figcaption>图 1：Unity Hub 中提供的 URP 3D 示例</figcaption></figure>
+
+<p>SRP 架构的目标是提供深度的灵活性与自定义能力、在各类当前及未来支持的平台上提升性能，并通过快速迭代释放你的创造力。</p>
+
+<p>多平台部署是许多游戏成功的关键因素。玩家经常会在不同设备上玩同一款游戏，例如主机和移动设备，这意味着 Unity 开发者需要能够在众多设备上灵活伸缩的渲染方案，且步骤尽可能少、复杂度尽可能低。</p>
+
+<p>经过数年的专注开发，URP 技术如今已稳固可靠并可用于生产环境。本指南将帮助你利用它的优势，成功开发你的游戏。</p>
+
+<h3>作者与贡献者</h3>
+
+<p>本电子书的作者 Nik Lever 自 20 世纪 90 年代中期起便从事实时 3D 内容的创作，并从 2006 年起使用 Unity。30 多年来，他一直领导着小型开发公司 Catalyst Pictures，并自 2018 年起提供课程，旨在帮助游戏开发者在快速演进的行业中拓展知识。</p>
+
+<h3>Unity 贡献者</h3>
+
+<p>Felipe Lira 是图形与 URP 的高级经理。他拥有超过 13 年的游戏行业软件工程师经验，专精于图形编程和多平台游戏开发。</p>
+
+<p>Ali Mohebali 是 Unity 运行时与编辑器的图形产品管理负责人。Ali 在游戏行业拥有 20 年工作经验，曾参与 Halfbrick Studios 的《水果忍者》（Fruit Ninja）和《火箭飞人》（Jetpack Joyride）等热门作品。</p>
+
+<p>Steven Cannavan 是 Accelerate Solutions Games 团队的高级开发顾问，专精于可编程渲染管线。他在游戏开发行业拥有超过 15 年的经验。</p>
+
+<p>Unity URP 工程团队和示例项目团队也做出了重要贡献。</p>
+
+<figure><figcaption>图 2：使用 URP 制作的场景</figcaption></figure>

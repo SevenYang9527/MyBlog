@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>管线回调（2/2） · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">07 · 管线回调</div>
+    <div class="pager"><a href="ch-07-1.html">← 上一节</a><a href="ch-08.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>管线回调（Pipeline callbacks）(2/2)</h2>
+
+<p><strong>8.</strong> 将以下代码添加到 <code>TintFeature</code> 的 <code>Create</code> 方法中。该函数在创建 <code>TintFeature</code> 时被调用。它将用于：从提供的 shader 初始化一个 material，使用自定义构造函数新建 <code>TintPass</code> 类的实例，以及使用刚刚由 <code>TintBlit</code> shader 创建的 material。</p>
+
+<pre><code>material = CoreUtils.CreateEngineMaterial(shader);
+renderPass = new TintPass(material);</code></pre>
+
+<p><strong>9.</strong> 需要添加一个 <code>SetupRenderPasses</code> 重写来准备渲染通道。你只希望在 Game 视图中进行着色，因此代码被包裹在 if 语句中。使用 <code>ScriptableRenderPassInput.Color</code> 参数调用 <code>ConfigureInput</code>，可确保不透明纹理（opaque texture）对渲染通道（Render Pass）可用。最后，通过调用前面创建的 <code>SetTarget</code> 方法，确保 <code>renderPass</code> 拥有所需的 <code>cameraColorTarget</code> 和 color。</p>
+
+<pre><code>public override void SetupRenderPasses(ScriptableRenderer renderer,
+                                   in RenderingData renderingData)
+{
+    if (renderingData.cameraData.cameraType == CameraType.Game)
+    {
+        renderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+        renderPass.SetTarget(renderer.cameraColorTargetHandle,
+                             color);
+    }
+}</code></pre>
+
+<p><strong>10.</strong> 现在你已经创建并初始化了 <code>TintPass</code> 的实例，将它添加到渲染队列。在 <code>AddRenderPasses</code> 方法中添加下一个代码片段，并同样将代码包裹在 if 语句中，检查当前相机类型是否为 Game。</p>
+
+<pre><code>if (renderingData.cameraData.cameraType == CameraType.Game)
+    renderer.EnqueuePass(renderPass);</code></pre>
+
+<p><strong>11.</strong> 由于创建了 material，应当通过添加 <code>Dispose</code> 重写来销毁它。</p>
+
+<pre><code>protected override void Dispose(bool disposing)
+{
+    CoreUtils.Destroy(material);
+}</code></pre>
+
+<p><strong>12.</strong> 回到 <code>TintPass</code>。你需要配置 <code>cameraColorTarget</code>。将下一个代码片段添加到 <code>OnCameraSetup</code> 中：</p>
+
+<pre><code>ConfigureTarget(cameraColorTarget);</code></pre>
+
+<p><strong>13.</strong> 现在一切都已初始化，你可以执行实际工作：使用 material 复制当前的 Render Texture，以处理结果。将下面的代码添加到 <code>Execute</code> 方法中。</p>
+
+<pre><code>var cameraData = renderingData.cameraData;
+if (cameraData.camera.cameraType != CameraType.Game)
+    return;
+
+if (material == null)
+    return;
+
+CommandBuffer cmd = CommandBufferPool.Get();
+
+material.SetColor("_Color", color);
+Blit(cmd, cameraColorTarget, cameraColorTarget, material, 0);
+
+context.ExecuteCommandBuffer(cmd);
+cmd.Clear();
+CommandBufferPool.Release(cmd);</code></pre>
+
+<p><strong>14.</strong> 要在实际运行中看到该效果，选择 Renderer Data 对象并点击 <span>Add Renderer Feature</span>。<code>TintFeature</code> 将出现在列表中。</p>
+
+<p><strong>15.</strong> 以下是完整的 <code>TintFeature</code> 代码，最终结果如下所示。</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+
+public class TintFeature : ScriptableRendererFeature
+{
+    class TintPass : ScriptableRenderPass
+    {
+        Material material;
+        RTHandle cameraColorTarget;
+        Color color;
+
+        public TintPass(Material mat)
+        {
+            material = mat;
+            renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+        }
+
+        public void SetTarget(RTHandle colorHandle, Color col)
+        {
+            cameraColorTarget = colorHandle;
+            color = col;
+        }
+
+        public override void OnCameraSetup(CommandBuffer cmd, ref RenderingData renderingData)
+        {
+            ConfigureTarget(cameraColorTarget);
+        }
+
+        public override void Execute(ScriptableRenderContext context, ref RenderingData renderingData)
+        {
+            var cameraData = renderingData.cameraData;
+
+            if (cameraData.camera.cameraType != CameraType.Game)
+                return;
+
+            if (material == null)
+                return;
+
+            CommandBuffer cmd = CommandBufferPool.Get();
+
+            material.SetColor("_Color", color);
+            Blit(cmd, cameraColorTarget, cameraColorTarget, material, 0);
+
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            CommandBufferPool.Release(cmd);
+        }
+    }
+
+    public Shader shader;
+    public Color color;
+
+    Material material;
+    TintPass renderPass = null;
+
+    public override void Create()
+    {
+        material = CoreUtils.CreateEngineMaterial(shader);
+        renderPass = new TintPass(material);
+    }
+
+    public override void SetupRenderPasses(ScriptableRenderer renderer,
+                                           in RenderingData renderingData)
+    {
+        if (renderingData.cameraData.cameraType == CameraType.Game)
+        {
+            // 使用 ScriptableRenderPassInput.Color 参数调用 ConfigureInput，
+            // 可确保不透明纹理对渲染通道可用。
+            renderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+            renderPass.SetTarget(renderer.cameraColorTargetHandle,
+                                 color);
+        }
+    }
+
+    public override void AddRenderPasses(ScriptableRenderer renderer,
+                                         ref RenderingData renderingData)
+    {
+        if (renderingData.cameraData.cameraType == CameraType.Game)
+            renderer.EnqueuePass(renderPass);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        CoreUtils.Destroy(material);
+    }
+}</code></pre>
+
+<figure>
+  <figcaption>图 1：TintFeature 的效果：左侧为未处理，右侧为着色后</figcaption>
+</figure>
+
+<p>如果你想允许用户选择在渲染管线中的何处使用它，可以添加一个附加属性，如下所示。</p>
+
+<pre><code>public RenderPassEvent renderEvent;
+
+…
+
+// Create method
+renderPass = new TintPass(material, renderEvent);
+
+…
+
+// TintPass constructor
+public TintPass(Material mat, RenderPassEvent renderEvent)
+{
+   material = mat;
+   renderPassEvent = renderEvent;
+}</code></pre>
+
+<p>你可以找到更多由社区驱动的 Renderer Feature 最佳实践示例，其中包括这个关于如何控制自定义 Renderer Feature 的视频教程，作者是 Ned Makes Games。</p>
+
+<p>在本视频教程中，我们向你展示三个使用 Renderer Features 的实用练习——即如何创建自定义后处理效果、模板（stencil）效果，以及被环境遮挡的角色。</p>
+
+<p>使用 Renderer Data 资产在 Inspector 中分配这些属性。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-07-1.html"><span class="dir">← 上一节</span>管线回调（1/2）</a>
+    <a href="ch-08.html"><span class="dir">下一节 →</span>后处理</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

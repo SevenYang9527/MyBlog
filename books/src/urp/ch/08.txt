@@ -1,0 +1,180 @@
+89 of 140 | unity. com
+© 2024 Unity Technologies
+Post-processing 
+The Built-in Post-Processing Stack v2 package is not compatible with URP.  
+URP does not require an additional package for post-processing effects. Instead, 
+it uses a Volume framework. When you add Volumes to a scene, you can choose 
+which post-processing effects apply to the Volume. A Volume can be Global or 
+Local. If Global, the Volume affects the Camera everywhere in the scene.  
+With the Mode set to Local, Volumes affect the Camera if it’s within the  
+bounds of the Collider. 
+Applying post-processing effects: The top-left image has no effects applied, the top-right image has Bloom applied, the 
+bottom-left has Vignette applied, and the bottom-right has Color Adjustment added.
+
+90 of 140 | unity. com
+© 2024 Unity Technologies
+Using the URP post-processing framework
+1.	
+The first step is to make sure your Main Camera has post-processing enabled. 
+Select the Main Camera in the Hierarchy window, go to the Inspector, and 
+expand the Rendering panel. Check the Post Processing option.
+2.	
+Right-click the Hierarchy window and select Create > Volume > Global 
+Volume to create a Global Volume.
+3.	
+With the Global Volume selected in the Hierarchy window, find the Volume 
+panel in the Inspector and create a new Profile by clicking on New.
+4.	
+Start adding post-processing effects. See the table further down that lists 
+available effects. Click Add Override and select Post-processing. In this 
+example, the Bloom effect is chosen.
+
+91 of 140 | unity. com
+© 2024 Unity Technologies
+Selecting the Bloom effect
+5.	
+Each effect has a dedicated Settings panel. The image here shows the 
+settings for Bloom.
+
+92 of 140 | unity. com
+© 2024 Unity Technologies
+6.	
+You can easily add multiple effects (such as Vignette in this example) and 
+configure each one using their Settings panel.
+Adding a Local Volume
+With the Volume framework, you can configure the scene so that as a Camera 
+moves around it, different post-processing profiles are triggered. This is achieved 
+by adding a Local Volume. Let’s go through the steps for setting this up.
+1.	
+In the Hierarchy window, right-click and choose Create > Volume > Box 
+Volume. Alternatively, choose Sphere Volume if this shape is more suited  
+to your purpose, or Convex Mesh Volume for a tighter control over the 
+shape of the Collider that defines the Volume region.
+
+93 of 140 | unity. com
+© 2024 Unity Technologies
+2.	
+From the Volume panel in the Inspector, create a new Profile to store this 
+Volume data. The panel can also be used to set:
+a.	
+Blend Distance: This is the furthest distance from the Volume’s Collider 
+that URP starts blending from, and the distance in Collider dimensions 
+where this profile fades in. At the edge of the Collider, the post-
+processing effects will fade out and the Blend Distance from the edge 
+of the Collider will fully fade in.
+b.	
+Weight: Weight defines the maximum strength of the post-processing 
+effects. If Weight is set to 1, then the effect will reach full strength. A 
+setting of 0 means there is no effect, while 0. 5 sets the strength of the 
+effect at a maximum of 50%.
+c.	
+Priority: Use this value to determine which Volume URP is used when 
+multiple Volumes have an equal amount of influence on the scene. The 
+higher the number, the higher the Priority. If you are merging Global 
+and Local, then keep Global at the default 0 setting and set the Local 
+Volume(s) to 1 or more.
+Settings for a Local Volume
+3.	
+Position the Volume and control its dimensions using the Box Collider 
+component, as shown in the image below.
+Positioning and sizing a Box Volume using the attached Box Collider component
+
+94 of 140 | unity. com
+© 2024 Unity Technologies
+Post-processing can weigh heavily on your processor, so carefully consider the 
+effects on low-end hardware and mobile devices. If your project must use it, 
+then test on the target hardware. Some filters are less processor intensive than 
+others. This document outlines the mobile-friendly effects.
+These are the available post-processing effects in URP.
+Effect
+Description
+Bloom
+Adds a glow around pixels above a defined  
+brightness level.
+Channel Mixer
+Modifies the influence of each input color channel  
+on the overall mix.
+Chromatic 
+Aberration
+Creates fringes of color along boundaries that  
+separate dark and light parts of the image.
+Color Adjustments
+Use this effect to tweak the overall tone, brightness, 
+and contrast of the final rendered image.
+Color Curves
+Grading curves are an advanced way to adjust  
+specific ranges in hue, saturation, or luminosity.
+Color Lookup
+This maps the colors of each pixel to a new value using 
+a Lookup Texture.
+Depth of Field
+This effect simulates the focus properties  
+of a camera lens.
+Film Grain
+This simulates the random optical texture of 
+photographic film.
+Lens Distortion
+Distorts the final rendered picture to simulate  
+the shape of a real-world camera lens.
+Lift Gamma Gain
+Use the different trackballs to affect different ranges 
+within the image. Adjust the slider under the trackball 
+to offset the color lightness of that range.
+Motion Blur
+This simulates the blur that occurs in an image when a 
+real-world camera films objects moving faster than the 
+camera’s exposure time.
+Panini Projection
+This effect helps you render perspective views in 
+scenes with a very large field of view.
+Shadows Midtones 
+Highlights
+This effect separately controls the shadows, midtones, 
+and highlights of the render.
+Split Toning
+Use this to add different color tones to the  
+shadows and highlights in your scene.
+Tonemapping
+Tonemapping is the process of remapping the  
+HDR values of an image to a new range of values.
+Vignette
+This effect comprises darkening toward the edges  
+of an image compared to the center.
+White Balance
+Removes unrealistic color casts, so items that  
+would appear white in real life render as white in  
+your final image.
+
+95 of 140 | unity. com
+© 2024 Unity Technologies
+Controlling post-processing with code
+You can also dynamically adjust your post-processing profile using a C# script. 
+The following code example shows how to adjust the intensity of the Bloom 
+effect. If a Vignette is applied, you can control the vignetting color via code.  
+For example, if the player character takes damage, you can temporarily tint it red.
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+ 
+public class PPController : MonoBehaviour
+{
+	
+// Start is called before the first frame update
+	
+void Start()
+	
+{
+    	
+Volume volume = GetComponent<Volume>();
+    	
+Bloom bloom;
+    	
+if (volume.profile.TryGet<Bloom>(out bloom))
+    	
+{
+        	
+bloom.intensity.value = 0;
+    	
+}
+    }
+}

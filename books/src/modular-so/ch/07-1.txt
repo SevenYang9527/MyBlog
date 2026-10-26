@@ -1,0 +1,194 @@
+PAT T E R N : O B S E RV E R
+
+45 of 75 | unity. com
+© 2023 Unity Technologies
+   More on singletons
+The subject of singletons in Unity game development is often cause for debate. 
+Singletons may be a suitable solution for smaller projects or prototyping. In large 
+applications, the cons of using singletons often outweigh their advantages. 
+Many developers consider the singleton to be an anti-pattern.
+Singletons are easy to learn and understand but can introduce issues when 
+they’re used incorrectly. Most of the patterns described here will help you avoid 
+relying on singletons. 
+If you want easy access to shared data, consider a Runtime Set based on 
+ScriptableObjects (see below). If you need a way to send messages between 
+objects, try a ScriptableObject-based event channel. Restructuring your 
+architecture away from singletons may improve scalability and testability.
+Read the e-book Level up your code with game programming patterns to learn 
+more about the pros and cons of singletons.
+When developing a game, it’s common to have multiple GameObjects that need 
+to share data or states with each other. In a small game, you can make direct 
+references between these objects, but this doesn’t scale. Managing these 
+dependencies can require significant effort and is often a source of bugs. 
+You’ll need a better solution as your application grows in size.
+Avoiding singletons
+Many developers opt to use singletons – one global instance of a class that 
+survives scene loading. Singletons, however, introduce global states and make 
+unit testing difficult.
+If you’re working with a Prefab that references a singleton, you’ll end up 
+importing all of its dependencies just to test an isolated function. This reduces 
+modularity and debuggability.
+Consider an alternate solution to help your objects communicate: 
+ScriptableObject-based events.
+ScriptableObject-based events
+As you’ve already seen, ScriptableObjects aren’t just for handling data. They 
+can contain methods, just like any other script. These methods can serve as a 
+means for objects to communicate.
+
+46 of 75 | unity. com
+© 2023 Unity Technologies
+In the observer design pattern, a subject broadcasts a message to one or more 
+loosely decoupled observers. Each observing object can react independently 
+of the subject but is unaware of the other observers. The subject can also be 
+referred to as the “publisher” or “broadcaster. ” The observers are also known as 
+“subscribers” or “listeners. ”
+An event-based architecture only executes when needed, rather than running 
+each frame. For this reason, it’s often more optimized than adding logic to a 
+MonoBehaviour’s update methods.
+
+47 of 75 | unity. com
+© 2023 Unity Technologies
+The basic observer pattern
+You can implement the observer pattern with MonoBehaviours or C# objects. 
+While this is already common practice in Unity development, a script-only 
+approach means your designers will rely on the programming team for every 
+event needed during gameplay.
+An alternative is to create ScriptableObject-based events. This is a designer-
+friendly way to set up the observer pattern. Here, the ScriptableObject works as 
+an intermediary between subject and observer, providing a graphical interface in 
+the Editor.
+The ScriptableObject-based event channel
+
+48 of 75 | unity. com
+© 2023 Unity Technologies
+While at first glance it appears that you’ve only added a layer of overhead 
+to the observer pattern, this structure offers some advantages. Because 
+ScriptableObjects are assets, they are accessible to all objects in your Scene 
+Hierarchy and don’t disappear on scene loading. 
+This is why many developers use singletons in the first place: easy, persistent 
+access to certain resources. ScriptableObjects can often provide the same 
+benefits without introducing as many unnecessary dependencies. 
+In ScriptableObject-based events, any object can serve as publisher (which 
+broadcasts the event), and any object can serve as a subscriber (which listens 
+for the event). The ScriptableObject sits in the middle and helps relay the signal, 
+acting like a centralized intermediary between the two.
+One way to think about this is as an “event channel. ” Imagine the 
+ScriptableObject as a radio tower that has any number of objects listening for its 
+signals. An interested Monobehaviour can simply subscribe to the event channel 
+and respond when something happens.
+Example: Event channels
+Any ScriptableObject that includes the following can function as an event 
+channel:
+	
+—
+A delegate (UnityAction or System. Action): This notifies subscribers and 
+passes the appropriate data as parameters. Use a UnityAction for a more 
+artist-friendly experience; otherwise, the System. Action delegate works 
+well here.
+The event keyword limits the delegate so that it can only be invoked from 
+within the ScriptableObject class (or derived class where it’s declared).
+	
+—
+An event-raising method: This public method invokes the delegate.
+And that’s it. 
+You can set up any number of event channels to determine various aspects 
+of gameplay. Because they exist at the project level, ScriptableObjects can 
+raise events that are globally accessible. This can connect otherwise unrelated 
+objects in the scene.
+
+49 of 75 | unity. com
+© 2023 Unity Technologies
+   System. Action or UnityAction
+System. Action is a general purpose delegate type defined in the .NET 
+Framework’s System namespace. It can be used in your Unity projects without 
+needing to declare a custom delegate. Adding the event keyword makes the 
+delegate type read only; other objects can listen for the delegate’s registered 
+methods, but they can’t invoke those methods directly.
+UnityAction is a delegate type that’s specifically defined within the UnityEngine.
+Events namespace. You will typically use it with the UnityEvent class, which is 
+an alternative means of creating events in Unity. UnityEvents and UnityActions 
+appear in the Inspector, so they often serve as a more user- or artist-friendly 
+way to implement the observer pattern.
+In general, you can use either System. Action or UnityAction, depending on your 
+specific needs. You have the option of deploying either or both in the same 
+project. 
+If you want a more general purpose delegate that is not tied to the Unity game 
+engine, use System. Action. If you want a delegate specifically designed for 
+UnityEvents, use UnityAction.
+Here, you can make a VoidEventChannelSO that raises an event without passing 
+any parameters. This one contains a UnityAction named OnEventRaised.
+[CreateAssetMenu(menuName = "Events/Void Event Channel")]
+public class VoidEventChannelSO : ScriptableObject
+{
+public event UnityAction OnEventRaised;
+public void RaiseEvent()
+{
+if (OnEventRaised != null)
+OnEventRaised.Invoke();
+}
+}
+
+50 of 75 | unity. com
+© 2023 Unity Technologies
+Once you create a ScriptableObject of type VoidEventChannelSO, any 
+MonoBehaviour can listen for OnEventRaised. For example, we can make a 
+StartNewGame ScriptableObject that is of type VoidEventChannelSO.
+Another object can invoke the public RaiseEvent method to trigger the event.
+A ScriptableObject-based event, an example of an event channel
+Another MonoBehaviour can reference the event channel ScriptableObject in 
+the Inspector, then subscribe/unsubscribe to OnEventRaised.
+This invokes StartNewGame as a response whenever the event channel calls 
+OnEventRaised:
+public class StartGame : MonoBehaviour
+{
+[SerializeField] private VoidEventChannelSO 
+_onNewGameButton = default;
+private void Start()
+{
+_onNewGameButton.OnEventRaised += StartNewGame;
+}
+private void OnDestroy()
+{
+_onNewGameButton.OnEventRaised -= StartNewGame;
+}
+private void StartNewGame()
+{
+// load level logic here…
+}
+}
+
+51 of 75 | unity. com
+© 2023 Unity Technologies
+public class VoidEventListener : MonoBehaviour
+{
+[SerializeField] private VoidEventChannelSO _channel = 
+default;
+public UnityEvent OnEventRaised;
+private void OnEnable()
+{
+if (_channel != null)
+_channel.OnEventRaised += Respond;
+}
+private void OnDisable()
+{
+if (_channel != null)
+_channel.OnEventRaised -= Respond;
+}
+private void Respond()
+{
+if (OnEventRaised != null)
+OnEventRaised.Invoke();
+}
+}
+For more artist- or designer-friendly listening components, you could 
+instead create a MonoBehaviour that doesn’t require any script setup. This 
+VoidEventListener doesn’t add extra functionality but has fields that are 
+accessible in the Inspector:
+Simply add the VoidEventListener to a GameObject, then drag the event 
+channel ScriptableObject into the _channel field in the Inspector. Create 
+UnityActions on the OnRaisedEvent in order to respond to the event.
+An Event Listener allows a nonprogrammer to set up event-driven actions.
+Regardless of which component you choose to listen for events, the event 
+channels provide a means of communicating between your objects at runtime. 
+Did the player complete a task or score a point? Is the game over? An event can 
+notify any GameObject in the scene that needs that information.

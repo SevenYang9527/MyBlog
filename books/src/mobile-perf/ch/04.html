@@ -1,0 +1,18 @@
+<h2>自适应性能（Adaptive Performance）</h2>
+
+<p>借助 Unity 与三星的 Adaptive Performance，你可以监控设备的温度与功耗状态，确保自己能够及时做出恰当的反应。当用户长时间游玩时，你可以动态降低细节层级（level of detail，LOD）偏移，帮助游戏持续流畅运行。Adaptive Performance 让开发者能够以可控的方式提升性能，同时保持图形保真度。</p>
+
+<p>你既可以使用 Adaptive Performance API 对应用进行精细调节，这个包也提供了自动模式。在这些模式下，Adaptive Performance 会依据若干关键指标来决定游戏设置：</p>
+
+<ul>
+<li>基于此前若干帧得出的目标帧率</li>
+<li>设备温度等级</li>
+<li>设备距离热事件的接近程度</li>
+<li>设备是受限于 CPU 还是 GPU</li>
+</ul>
+
+<p>这四项指标决定了设备的状态，Adaptive Performance 据此调整各项设置以缓解瓶颈。具体做法是提供一个整数值（称为索引器，Indexer）来描述设备的状态。</p>
+
+<p>请注意，Adaptive Performance 仅适用于三星（Samsung）设备。</p>
+
+<p>如需进一步了解 Adaptive Performance，你可以在 Package Manager 中查看我们提供的示例：选择 Package Manager &gt; Adaptive Performance &gt; Samples。每个示例都针对特定的缩放器（Scaler），因此你可以看到不同缩放器对游戏产生的影响。我们还建议你阅读最终用户文档，以进一步了解 Adaptive Performance 的各项配置，以及如何直接与 API 交互。</p>

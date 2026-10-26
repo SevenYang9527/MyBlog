@@ -1,0 +1,177 @@
+84 of 140 | unity. com
+© 2024 Unity Technologies
+8. 	 Add the following code to the TintFeature Create method. This function is 
+called when the TintFeature is created. It will be used to initialize a material 
+from the supplied shader, a new instance of the TintPass class using the 
+custom constructor, and the new Material just created from the TintBlit 
+shader. 
+9. 	 A SetupRenderPasses override needs to be added to prepare the render 
+pass. You only want the tinting in the Game view so the code is wrapped in 
+an if statement. Calling ConfigureInput with the ScriptableRenderPassInput.
+Color argument ensures that the opaque texture is available to the 
+Render Pass. Finally, you ensure the renderPass has the necessary 
+cameraColorTarget and color by calling the SetTarget method created 
+earlier. 
+10.  Now that you have created and initialized an instance of the TintPass, add 
+it to the render queue. Add the next code snippet in the AddRenderPasses 
+method, and, once again, wrap the code inside an if statement, checking 
+the current camera type is Game.
+11.   Since a material is created, it should be destroyed by adding a Dispose 
+override. 
+material = CoreUtils.CreateEngineMaterial(shader);
+renderPass = new TintPass(material);
+public override void SetupRenderPasses(ScriptableRenderer renderer,
+                                   in RenderingData renderingData)
+    {
+       if (renderingData.cameraData.cameraType == CameraType.Game)
+       {
+            renderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+            renderPass.SetTarget(renderer.cameraColorTargetHandle, 
+                                 color);
+        }
+    }
+if (renderingData.cameraData.cameraType == CameraType.Game)
+            renderer.EnqueuePass(renderPass);
+    protected override void Dispose(bool disposing)
+    {
+        CoreUtils.Destroy(material);
+    }
+
+85 of 140 | unity. com
+© 2024 Unity Technologies
+12. Back to the TintPass. You need to configure the cameraColorTarget. Add the 
+next code snippet to OnCameraSetup:
+13.  Now that everything is initialized, you can do the actual work of copying the 
+current Render Texture using a material to process the result. Add the code 
+below to the Execute method.
+14.  To see the effect in action, select the Renderer Data object and click Add 
+Renderer Feature. TintFeature will appear in the list. 
+15.  Here is the complete TintFeature code, with the final result shown below. 
+var cameraData = renderingData.cameraData;
+if (cameraData.camera.cameraType != CameraType.Game)
+                return;
+if (material == null)
+                return;
+CommandBuffer cmd = CommandBufferPool.Get();
+            
+material.SetColor("_Color", color);
+Blit(cmd, cameraColorTarget, cameraColorTarget, material, 0);
+          
+context.ExecuteCommandBuffer(cmd);
+cmd.Clear();
+CommandBufferPool.Release(cmd);
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+public class TintFeature : ScriptableRendererFeature
+{
+    class TintPass : ScriptableRenderPass
+    {
+        Material material;
+        RTHandle cameraColorTarget;
+        Color color;
+        public TintPass(Material mat)
+        {
+            material = mat;
+            renderPassEvent = RenderPassEvent.
+BeforeRenderingPostProcessing;
+        }
+        public void SetTarget(RTHandle colorHandle, Color col)
+ConfigureTarget(cameraColorTarget);
+
+86 of 140 | unity. com
+© 2024 Unity Technologies
+        {
+            cameraColorTarget = colorHandle;
+            color = col;
+        }
+        public override void OnCameraSetup(CommandBuffer cmd, ref 
+RenderingData renderingData)
+        {
+            ConfigureTarget(cameraColorTarget);
+        }
+        public override void Execute(ScriptableRenderContext context, ref 
+RenderingData renderingData)
+        {
+            var cameraData = renderingData.cameraData;
+            if (cameraData.camera.cameraType != CameraType.Game)
+                return;
+            if (material == null)
+                return;
+            CommandBuffer cmd = CommandBufferPool.Get();
+            
+            material.SetColor("_Color", color);
+            Blit(cmd, cameraColorTarget, cameraColorTarget, material, 0);
+          
+            context.ExecuteCommandBuffer(cmd);
+            cmd.Clear();
+            CommandBufferPool.Release(cmd);
+        }
+    }
+    public Shader shader;
+    public Color color;
+    Material material;
+    TintPass renderPass = null;
+    public override void Create()
+    {
+        material = CoreUtils.CreateEngineMaterial(shader);
+        renderPass = new TintPass(material);
+    }
+    public override void SetupRenderPasses(ScriptableRenderer renderer,
+                                        in RenderingData renderingData)
+    {
+        if (renderingData.cameraData.cameraType == CameraType.Game)
+        {
+            // Calling ConfigureInput with the ScriptableRenderPassInput.
+Color argument
+            // ensures that the opaque texture is available to the Render 
+Pass.
+            renderPass.ConfigureInput(ScriptableRenderPassInput.Color);
+            renderPass.SetTarget(renderer.cameraColorTargetHandle, 
+color);
+        }
+    }
+    public override void AddRenderPasses(ScriptableRenderer renderer,
+
+87 of 140 | unity. com
+© 2024 Unity Technologies
+Effect of TintFeature: Unprocessed to the left, tinted on the right
+                                    ref RenderingData renderingData)
+    {
+        if (renderingData.cameraData.cameraType == CameraType.Game)
+            renderer.EnqueuePass(renderPass);
+    }
+    protected override void Dispose(bool disposing)
+    {
+        CoreUtils.Destroy(material);
+    }
+}
+;
+If you want to allow a user to choose where in the render pipeline to use this you 
+could add an additional property, as outlined below.
+public RenderPassEvent renderEvent;
+…
+//Create method
+renderPass = new TintPass(material, renderEvent);
+…
+//TintPass constructor
+public TintPass(Material mat, RenderPassEvent renderEvent)
+{
+   material = mat;
+   renderPassEvent = renderEvent;
+}
+
+88 of 140 | unity. com
+© 2024 Unity Technologies
+You can find more community-driven examples of Renderer Feature best 
+practices, including this video tutorial on how to control a custom Renderer 
+Feature by Ned Makes Games.
+In this video tutorial, we show 
+you three practical exercises 
+using Renderer Features 
+– namely, how to create a 
+custom post-processing 
+effect, stencil effect, and 
+characters occluded by  
+their environment.
+Use the Renderer Data asset to assign the properties in the Inspector.

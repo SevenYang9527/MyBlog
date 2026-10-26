@@ -1,0 +1,314 @@
+S TAT E PAT T E R N
+
+70 of 99 | unity. com
+© 2022 Unity Technologies
+Imagine constructing a playable character. At one moment, the character may 
+be standing on the ground. Move the controller, and it appears to run or walk. 
+Press the jump button and the character leaps into midair. A few frames later,  
+it lands and reenters its idle, standing position.
+States and state machines
+Games are interactive, and they force us to track many systems that change 
+at runtime. If you draw a diagram that represents the different states of your 
+character, you might come up with something like this:
+A simple state diagram
+It resembles a flowchart with a few differences:
+	
+—
+The diagram consists of a number of states (Idling/Standing, Walking, 
+Running, Jumping, and so on), and only one current state is active at a 
+given time.
+	
+—
+Each state can trigger a transition to one other state based on conditions 
+at runtime.
+	
+—
+When a transition occurs, the output state becomes the new active state.
+This diagram describes something called a finite-state machine (FSM). In game 
+development, one typical use case is for tracking the internal state of a game 
+actor or prop.
+To describe a basic FSM in code, you might use a naive approach with an enum 
+and a switch statement.
+
+71 of 99 | unity. com
+© 2022 Unity Technologies
+public enum PlayerControllerState
+{
+    Idle,
+    Walk,
+    Jump
+}
+public class UnrefactoredPlayerController : MonoBehaviour
+{
+    private PlayerControllerState state;
+    private void Update()
+    {
+        GetInput();
+        switch (state)
+        {
+            case PlayerControllerState.Idle:
+                Idle();
+                break;
+            case PlayerControllerState.Walk:
+                Walk();
+                break;
+            case PlayerControllerState.Jump:
+                Jump();
+                break;
+        }
+    }
+    private void GetInput()
+    {
+        // process walk and jump controls
+    }
+    private void Walk()
+    {
+        // walk logic
+    }
+    private void Idle()
+    {
+        // idle logic
+    }
+    private void Jump()
+    {
+        // jump logic
+    }
+}
+This would work, but the PlayerController script can get messy quickly. Adding 
+more states and complexity requires us to revisit the PlayerController script’s 
+internals each time.
+
+72 of 99 | unity. com
+© 2022 Unity Technologies
+Example: Simple state pattern
+Fortunately, the state pattern can help you reorganize the logic. According to 
+the original Gang of Four, the state pattern solves two problems:
+	
+—
+An object should change its behavior when its internal state changes.
+	
+—
+State-specific behavior is defined independently. Adding new states does 
+not impact the behavior of existing states.
+While the above example UnrefactoredPlayerController class can track 
+state changes, it does not satisfy the second issue. You want to minimize the 
+impact on existing states when you add new ones. Instead, you can encapsulate 
+a state as an object. 
+Imagine structuring each state like this: 
+The encapsulated state with an Entry, Exit, and Update
+Transition to  
+next state
+Transition from 
+previous state
+Evaluate 
+each frame
+
+73 of 99 | unity. com
+© 2022 Unity Technologies
+Here you enter the state and loop each frame until a condition causes control 
+flow to exit. To implement this pattern, create an interface, IState:
+Each concrete state in your game will implement the IState interface:
+	
+—
+An Entry: This logic executes when first entering the state.
+	
+—
+Update: This logic runs every frame (sometimes called Execute or Tick). 
+You can further segment the Update method as MonoBehaviour does, 
+using a FixedUpdate for physics, LateUpdate, and so on. 
+ 
+Any functionality in the Update runs each frame until a condition is 
+detected that triggers a state change.
+	
+—
+An Exit: Code here runs before leaving the state and transitioning  
+to a new state.
+You’ll need to create a class for each state that implements IState. In the 
+sample project, a separate class has been set up for WalkState, IdleState, 
+and JumpState.
+public interface IState
+{
+    public void Enter()
+    {
+        // code that runs when we first enter the state
+    }
+    public void Update()
+    {
+        // per-frame logic, include condition to transition to a new 
+state
+    }
+    public void Exit()
+    {
+        // code that runs when we exit the state
+    }
+}
+
+74 of 99 | unity. com
+© 2022 Unity Technologies
+Another class, the StateMachine, will then manage how control flow enters and exits 
+the states. With the three example states, the StateMachine could look like this:
+To follow the pattern, the StateMachine references a public object for each state 
+under its management (in this case, walkState, jumpState, and idleState). 
+Because StateMachine doesn’t inherit from MonoBehaviour, use a constructor to 
+set up each instance:
+[Serializable]
+public class StateMachine
+{
+    public IState CurrentState { get; private set; }
+    public WalkState walkState;
+    public JumpState jumpState;
+    public IdleState idleState;
+    public void Initialize(IState startingState)
+    {
+        CurrentState = startingState;
+        startingState.Enter();
+    }
+    public void TransitionTo(IState nextState)
+    {
+        CurrentState.Exit();
+        CurrentState = nextState;
+        nextState.Enter();
+    }
+    public void Update()
+    {
+        if (CurrentState != null)
+        {
+            CurrentState.Update();
+        }
+    }
+}
+public StateMachine(PlayerController player)
+{
+    this.walkState = new WalkState(player);
+    this.jumpState = new JumpState(player);
+    this.idleState = new IdleState(player);
+}
+
+75 of 99 | unity. com
+© 2022 Unity Technologies
+You can pass in any parameters needed to the constructor. In the sample 
+project, a PlayerController is referenced in each state. You then use that to 
+update each state per frame (see the IdleState example below).
+Note the following about the StateMachine:
+	
+—
+The Serializable attribute allows us to display the StateMachine (and its public 
+fields) in the Inspector. Another MonoBehaviour (e. g. , a PlayerController or 
+EnemyController) can then use the StateMachine as a field.
+	
+—
+The CurrentState property is read-only. The StateMachine itself does 
+not explicitly set this field. An external object like the PlayerController can 
+then invoke the Initialize method to set the default State.
+	
+—
+Each State object determines its own conditions for calling the 
+TransitionTo method to change the currently active state. You can pass 
+in any necessary dependencies (including the State Machine itself) to 
+each state when setting up the StateMachine instance. 
+ 
+In the example project, the PlayerController already includes a reference to 
+the StateMachine, so you only pass in one player parameter.
+Each state object will manage its own internal logic, and you can make as many 
+states as needed to describe your GameObject or component. Each one gets its 
+own class that implements IState. In keeping with the SOLID principles, adding 
+more states has minimal impact on any previously created states.
+Here’s an example of the IdleState:
+public class IdleState : IState
+{
+    private PlayerController player;
+    public IdleState(PlayerController player)
+    {
+        this.player = player;
+    }
+    public void Enter()
+    {
+        // code that runs when we first enter the state
+    }
+    public void Update()
+    { 
+        // Here we add logic to detect if the conditions exist to 
+        // transition to another state
+        …
+    }
+    public void Exit()
+    {
+        // code that runs when we exit the state
+    }
+}
+
+76 of 99 | unity. com
+© 2022 Unity Technologies
+Again, use the constructor to pass in the PlayerController object. In the 
+example, this player contains a reference to the StateMachine and everything 
+else needed for the Update logic. The idleState monitors the Character 
+Controller’s velocity or jump state and then invokes the StateMachine’s 
+TransitionTo method appropriately.
+Review the sample project for the WalkState and JumpState implementation as 
+well. Rather than have one large class that switches behavior, each state has its 
+own update logic. This way, states can function independently from one another.
+Pros and cons
+The state pattern can help you adhere to the SOLID principles when setting 
+up internal logic for an object. Each state is relatively small and just tracks the 
+conditions for transitioning into another state. In keeping with the open-closed 
+principle, you can add more states without affecting existing ones and avoid 
+cumbersome switch or if statements.
+On the other hand, if you only have a few states to track, the extra structure can 
+be overkill. This pattern might only make sense if you expect your states to grow 
+to a certain complexity.
+The state pattern sample
+Improvements
+The capsule in the sample project changes color, and the UI updates with the 
+player’s internal state. In a real-world example, you could have much more 
+complex effects to accompany the state changes:
+
+77 of 99 | unity. com
+© 2022 Unity Technologies
+	
+—
+Add events: To communicate state changes to outside objects, you 
+might want to add events (see the observer pattern). Having an event on 
+entering or exiting a state can notify the relevant listeners and have them 
+respond at runtime.
+	
+—
+Add a hierarchy: As you begin to describe more complex entities with the 
+state pattern, you might want to implement hierarchical state machines. 
+Inevitably some states will be similar; for example, if the player or game 
+actor is grounded, it can duck or jump whether in a WalkingState or 
+RunningState. 
+An example of an Animator state graph: Compare its structure with a StateMachine.
+	
+—
+Combine the state pattern with animation: One common application for 
+the state pattern is animation. The player or enemy characters are often 
+represented as primitives (a capsule) on a macro level. Then, you can have 
+animated geometry that reacts to internal state changes, so the game 
+actor can appear to be running, jumping, swimming, climbing, etc. 
+ 
+If you’ve used Unity’s Animator window, you’ll notice that its workflow pairs 
+well with the state pattern. Each animation clip occupies one state, with 
+only one state active at a time.
+
+78 of 99 | unity. com
+© 2022 Unity Technologies
+Here’s the state pattern at work again in a completely different context. Every 
+state represents an action, such as attacking, fleeing, or patrolling. Only one state 
+is active at a time, with each state determining its transition to the next one.
+A simple AI based on state patterns
+Low health
+Recovered 
+Player sighted
+Player out of sight
+Player out 
+of sight
+Injured
+If you implement a SuperState, you can keep common behaviors together. 
+Then using inheritance, you can override anything specific in a sub-state. 
+For example, you might first declare a GroundedState. You could then 
+inherit a RunningState or WalkingState from that.
+	
+—
+Implement simple AI: Finite-state machines can also be useful in 
+generating basic enemy AI. An FSM approach to building an NPC brain 
+might look like this:

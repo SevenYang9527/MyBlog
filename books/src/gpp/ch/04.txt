@@ -1,0 +1,149 @@
+F A C T O RY PAT T E R N
+
+40 of 99 | unity. com
+© 2022 Unity Technologies
+A factory can spawn one or more products.
+Sometimes it’s helpful to have a special object that creates other objects. Many 
+games spawn a variety of things over the course of gameplay, and you often 
+don’t know what you need at runtime until you actually need it.
+The factory pattern designates a special object called – you guessed it – a factory 
+for this purpose. On one level, it encapsulates many of the details involved in 
+spawning its “products. ” The immediate benefit is to declutter your code. 
+However, if each product follows a common interface or base class, you can 
+take this a step further and make it contain more of its own construction logic, 
+hiding it away from the factory itself. Creating new objects thus becomes more 
+extensible.
+You can also subclass the factory to make multiple factories dedicated to 
+specific products. Doing this helps generate enemies, obstacles, or anything 
+else at runtime.
+Example: A simple factory
+Imagine you want to create a factory pattern to instantiate items for a game 
+level. You can use Prefabs to create GameObjects, but you might also want to 
+run some custom behavior when creating each instance.
+Rather than using if statements or a switch to maintain this logic, create an 
+interface called IProduct and an abstract class called Factory:
+
+41 of 99 | unity. com
+© 2022 Unity Technologies
+public interface IProduct
+{
+    public string ProductName { get; set; }
+    public void Initialize();
+}
+public abstract class Factory : MonoBehaviour
+{
+    public abstract IProduct GetProduct(Vector3 position);
+    // shared method with all factories
+    …
+}
+Products need to follow a specific template for their methods, but they don’t 
+otherwise share any functionality. Hence, you define the IProduct interface.
+Factories might need some shared common functionality, so this sample 
+uses abstract classes. Just be mindful of Liskov substitution from the SOLID 
+principles when using subclasses.
+They can result in a structure like this:
+Using an interface to define shared properties and logic between your products 
+The IProduct interface defines what is common between your products.  
+In this case, you simply have a ProductName property and any logic the product 
+runs on Initialize.
+You can then define as many products as you need (ProductA, ProductB, etc. ) 
+so long as they follow the IProduct interface.
+
+42 of 99 | unity. com
+© 2022 Unity Technologies
+The base class, Factory, has a GetProduct method that returns an IProduct. 
+It’s abstract, so you can’t make instances of Factory directly. You derive a 
+couple of concrete subclasses (ConcreteFactoryA and ConcreteFactoryB), 
+which will actually get the different products.
+GetProduct in this example takes a Vector3 position so that you can instantiate 
+a Prefab GameObject more easily at a specific location. A field in each concrete 
+factory also stores the corresponding template Prefab.
+Here’s the sample ProductA and ConcreteFactoryA. 
+public class ProductA : MonoBehaviour, IProduct
+{
+    [SerializeField] private string productName = "ProductA";
+    public string ProductName { get => productName; set => productName 
+= value ; }
+    private ParticleSystem particleSystem;
+    public void Initialize()
+    {
+        // any unique logic to this product
+        gameObject.name = productName;
+        particleSystem = GetComponentInChildren<ParticleSystem>();
+        particleSystem?.Stop();
+        particleSystem?.Play();
+    }
+}
+public class ConcreteFactoryA : Factory
+{
+    [SerializeField] private ProductA productPrefab;
+    public override IProduct GetProduct(Vector3 position)
+    {
+        // create a Prefab instance and get the product component
+        GameObject instance = Instantiate(productPrefab.gameObject, 
+position, Quaternion.identity);
+        ProductA newProduct = instance.GetComponent<ProductA>();
+        // each product contains its own logic
+        newProduct.Initialize();
+        return newProduct;
+    }
+}
+
+43 of 99 | unity. com
+© 2022 Unity Technologies
+Here, you’ve made the product classes MonoBehaviours that implement 
+IProduct take advantage of Prefabs in the factory. 
+Note how each product can have its own version of Initialize. The 
+example ProductA Prefab contains a ParticleSystem, which plays when the 
+ConcreteFactoryA instantiates a copy. The factory itself does not contain 
+any specific logic for triggering the particles; it only invokes the Initialize 
+method, which is common to all products.
+Explore the sample project to see how the ClickToCreate component switches 
+between factories to create ProductA and ProductB, which have different 
+behaviors. ProductB plays a sound when it spawns, while ProductA sets off a 
+particle effect.
+Pros and cons
+You’ll benefit the most from the factory pattern when setting up many products. 
+Defining new product types in your application doesn’t change your existing 
+ones or require you to modify previous code.
+Separating each product’s internal logic into its own class keeps the factory 
+code relatively short. Each factory only knows to invoke Initialize on each 
+product without being privy to the underlying details.
+The downside is that you create a number of classes and subclasses to 
+implement the pattern. Like the other patterns, this introduces a bit of overhead, 
+which may be unnecessary if you don’t have a large variety of products.
+One product plays a sound, while another plays particles. Both use the same interface.
+
+44 of 99 | unity. com
+© 2022 Unity Technologies
+Improvements
+The implementation of the factory can vary widely from what’s shown here. 
+Consider the following adjustments when building your own factory pattern:
+	
+—
+Use a dictionary to search for products: You might want to store your 
+products as key-value pairs in a dictionary. Use a unique string identifier 
+(e. g. , the Name or some ID) as the key and the type as a value. This 
+can make retrieving products and/or their corresponding factories more 
+convenient.
+	
+—
+Make the factory (or a factory manager) static: This makes it easier to use 
+but requires additional setup. Static classes won’t appear in the Inspector, 
+so you will need to make your collection of products static as well.
+	
+—
+Apply it to non-GameObjects and non-MonoBehaviours: Don’t limit 
+yourself to Prefabs or other Unity-specific components. The factory 
+pattern can work with any C# object.
+	
+—
+Combine with the object pool pattern: Factories don’t necessarily need 
+to instantiate or create new objects. They can also retrieve existing ones 
+in the hierarchy. If you are instantiating many objects at once, (e. g. , 
+projectiles from a weapon), use the object pool pattern for more optimized 
+memory management.
+Factories can spawn any gameplay element on an as-needed basis. Note, 
+however, that creating products is often not their only purpose. You might 
+be using the factory pattern as part of another larger task (e. g. , setting up UI 
+elements in a dialog box of parts of a game level).

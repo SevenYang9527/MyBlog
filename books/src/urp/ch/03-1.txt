@@ -1,0 +1,283 @@
+12 of 140 | unity. com
+© 2024 Unity Technologies
+The conversion process
+This section covers the steps for starting a new project with URP or converting 
+an existing project to URP.
+How to open a new URP project
+Open a new project using URP via the Unity Hub. Click on New and verify that 
+the Unity version selected at the top of the window is 2022. 2 or newer. Choose 
+a name and location for the project, select the 3D (URP) template or 3D Sample 
+Scene (URP), and click Create.
+Creating a new project with the URP template, which might require you to download the template for the first time
+
+13 of 140 | unity. com
+© 2024 Unity Technologies
+Note: The template ensures that your project is set to use a linear color 
+space, which is required for calculating lighting correctly. 
+One of the four environments included in the URP 3D Sample, available in the Unity Hub
+You can create new scenes via File > New Scene, with essential GameObjects 
+such as Camera and Directional light, and even create your own scene 
+template with prepopulated objects. Read more in the URP Scene Templates 
+documentation. 
+Go to Edit > Project Settings and open the Graphics panel. To use URP in-
+Editor, you must select a URP Asset from the Scriptable Render Pipeline 
+Settings. The URP Asset controls the global rendering and Quality settings  
+of a project and creates the rendering pipeline instance. Meanwhile, the 
+rendering pipeline instance contains intermediate resources and the render 
+pipeline implementation.
+UniversalRP-HighFidelity is the default URP Asset selected, but you can switch 
+to UniversalRP-Balanced or UniversalRP-Performant.
+The New Scene dialog displaying Scene Templates
+
+14 of 140 | unity. com
+© 2024 Unity Technologies
+The Graphics panel in Project Settings
+A later section of this guide details how to adjust the settings of a URP Asset.
+How to add URP to an existing Built-in Render Pipeline project
+Important: Be sure to backup your project using source control before following 
+the steps in this section. This process will convert assets, and Unity does not 
+provide an undo option. If you use source control, you will be able to revert to 
+previous versions of the assets if necessary.
+If you upgrade an existing Built-in Render Pipeline project, you’ll need to add  
+the URP package to your project as it’s not included in Unity 2022.2 or 2022 LTS.
+The Package Manager displaying the Unity Registry packages 
+ 
+Go to Window > Package Manager and click the Packages drop-down to 
+add URP to your project. Make sure to select the Unity Registry, followed by 
+Universal RP. Click Download in the lower-right corner of the window if the  
+URP package is not yet installed on your development computer. Then click 
+Install once it’s downloaded.
+
+15 of 140 | unity. com
+© 2024 Unity Technologies
+Installing URP via the Package Manager
+To create a URP Asset, right-click in the Project window and choose Create > 
+Rendering > URP Asset (with Universal Renderer). Name the asset.
+Creating a URP Asset
+Remember : If you create a new project using the Universal Render Pipeline 
+or 3D (URP) templates, these URP Assets and the URP package are already 
+available in the project.
+Rather than creating a single URP Asset, URP uses two files, each with an Asset 
+extension.
+Two Assets in URP, one for URP settings and the other for Renderer Data
+
+16 of 140 | unity. com
+© 2024 Unity Technologies
+One is called UniversalRP_Renderer, a Renderer Data Asset that you can use 
+to filter the layers the renderer works on, and intercept the rendering pipeline 
+to customize how the scene is rendered. This way, you can facilitate the 
+creation of high-quality effects. See the section on Pipeline callbacks for more 
+information.
+Additionally, the UniversalRP_Renderer controls high-level rendering logic and 
+passes for URP. It supports Forward and Deferred paths, and a 2D Renderer  
+that enables features such as 2D lights, 2D shadows, and Light Blend Styles. 
+You can even extend URP to create your own renderers.
+The Inspector for UniversalRP_Renderer Data Asset
+
+17 of 140 | unity. com
+© 2024 Unity Technologies
+The other URP Asset serves to control settings for Quality, Lighting, Shadows, and 
+Post-processing. You can use different URP Assets to control the Quality settings, 
+a process outlined further down in this section. This Settings Asset is linked to the 
+Renderer Data Asset via the Renderer List. When you create a new URP Asset, the 
+Settings Asset will have a Renderer List containing a single item – the Renderer 
+Data Asset created at the same time, set as the default. You can add alternative 
+Renderer Data Assets to this list.
+The default renderer is used for all Cameras, including the Scene view.  
+A Camera can override the default renderer by selecting another one from  
+the Renderer List. This can be done through the use of a script, as needed.
+A URP Asset in the Inspector
+Despite following these steps to create a URP Asset, an open scene in the 
+Scene or Game view will still use the Built-in Render Pipeline. You must 
+complete one last step to make the switch to URP: Go to Edit > Project 
+Settings and open the Graphics panel. Click the small dot next to None 
+(Render Pipeline Asset). In the open panel, select UniversalRP.
+
+18 of 140 | unity. com
+© 2024 Unity Technologies
+Selecting a Scriptable Render Pipeline Asset 
+A warning message will pop up regarding the switch, but just press Continue.
+As there is no content in your project yet, changing the render pipeline will be 
+almost instantaneous. You’re now ready to use URP.
+Converting the scenes of an existing project
+After you complete the above steps, you’ll find that your beautiful scenes are 
+suddenly colored magenta. This is because the shaders used by the materials  
+in a Built-in Render Pipeline project are not supported in URP. Fortunately,  
+there is a method for restoring your scenes to their original quality.
+Materials in a scene appear in magenta because their Built-in Render Pipeline-based shaders must be converted for use 
+in URP.
+Go to Window > Rendering > Render Pipeline Converter. Choose Convert Built-
+In to 2D (URP) for a 2D project, or Built-In to URP for a 3D project. Assuming that 
+your project is 3D, you’ll need to select the appropriate converters:
+
+19 of 140 | unity. com
+© 2024 Unity Technologies
+	
+—
+Rendering Settings: Select this to create multiple Render Pipeline setting 
+assets that will match Built-in Render Pipeline Quality settings as closely 
+as possible. This lets you test different Quality Levels more efficiently.  
+See the section on comparing Built-in Render Pipeline and URP Quality 
+options for more details.
+	
+—
+Material Upgrade: Use this to convert materials from the Built-in Render 
+Pipeline to URP.
+	
+—
+Animation Clip Converter: This converts animation clips. It runs once the 
+Material Upgrade converter finishes.
+	
+—
+Read-only Material Converter: This converts the prebuilt, read-only 
+Materials included in a Unity project. It indexes the project and creates  
+the temporary . index file. Note that it can take significant time.
+Converting custom shaders
+Custom shaders are not converted using the Material Upgrade converter.  
+The Shaders and New tools sections outline the steps for converting custom 
+Built-in Render Pipeline shaders to URP. Using Shader Graph is often the 
+quickest way to update a custom shader to URP.
+There are several different URP shaders including:
+	
+—
+Universal Render Pipeline/Lit: This physically based render (PBR) shader, 
+similar to the built-in Standard Shader, can be used to represent most 
+real-life materials. It supports all the Standard Shader features with both 
+metallic and specular workflows.
+	
+—
+Universal Render Pipeline/Simple Lit: This uses a Blinn-Phong model, and is 
+suitable for low-end mobile devices or games that don’t use PBR workflows.
+	
+—
+Universal Render Pipeline/Unlit: This is a GPU performant shader that 
+doesn’t use lighting equations.
+	
+—
+Universal Render Pipeline/Terrain/Lit: This is suitable to use with the 
+Terrain Tools package.
+	
+—
+Universal Render Pipeline/Particles/Lit: This particle shader uses a PBR 
+lighting model.
+	
+—
+Universal Render Pipeline/Particles/Unlit: This unlit particle shader is 
+light on the GPU.
+Although Simple Lit replaces many legacy/mobile shaders, the performance is 
+not the same. Legacy/mobile shaders only partially evaluate lighting, whereas
+
+20 of 140 | unity. com
+© 2024 Unity Technologies
+Simple Lit considers all lights as defined by the URP Asset.
+Refer to this table in our URP documentation to see how each URP shader maps 
+to its Built-in Render Pipeline equivalent.
+Once you select one or more of the above converters, either click Initialize 
+Converters or Initialize And Convert. Whichever option you choose, the project 
+will be scanned and those assets that need converting will be added to each 
+of the converter panels. If you choose Initialize Converters you can limit the 
+conversions by deselecting the items using the checkbox provided for each one. 
+At this stage, click Convert Assets to start the conversion process. If you choose 
+Initialize And Convert, the conversion starts automatically after the converters 
+are initialized. Once it’s complete you might be asked to reopen the scene that is 
+active in the Editor.
+The Render Pipeline Converter
+
+21 of 140 | unity. com
+© 2024 Unity Technologies
+Comparing Quality options between the Built-in Render Pipeline 
+and URP 
+ 
+There are several default Quality options available in the Built-in Render Pipeline, 
+from Very low to Ultra. The Quality settings impact the fidelity of the scene, 
+including Texture resolution, lighting, shadow rendering, and so on.
+Go to Edit > Project Settings and select the Quality panel. Here, you can switch 
+between these Quality options by picking the current quality. This will change 
+the render settings used by the Scene and Game views. You can also edit each 
+of the Quality options from this panel.
+If you select the Rendering Settings option while using the Render Pipeline 
+Converter and switching from the Built-in Render Pipeline to URP, a set of URP 
+Assets that attempt to match the Built-in Render Pipeline Quality options will 
+be created. The first table below shows how the Built-in Render Pipeline maps 
+to URP for Low settings, while the second table displays a comparison for High 
+settings. In both the Built-in Render Pipeline and URP, settings are chosen via 
+the Quality panel. The URP Asset settings are available via the Inspector when 
+selecting a URP Asset. Refer to the URP documentation for more details.
+Built-in Render Pipeline to URP: Low settings
+Setting
+Built-in Render 
+Pipeline
+URP
+URP Asset settings
+Rendering
+Pixel Light Count
+0
+Not applicable 
+(NA) *
+NA
+Anti-aliasing
+Disabled
+NA
+Disabled
+Render Scale
+NA
+NA
+1
+Real-time Reflection Probes No
+No
+Resolution Scaling Fixed 
+DPI Factor
+1
+1
+NA
+VSync Count
+Don’t sync
+Don’t sync
+Depth Texture
+NA
+NA
+No
+Opaque Texture
+NA
+NA
+No
+Opaque Downsampling
+NA
+NA
+NA
+Terrain Holes
+NA
+NA
+Yes
+HDR
+NA
+NA
+Yes
+Textures
+Texture Quality
+Half res
+Half res
+NA
+Anisotropic Textures
+Disabled
+Disabled
+NA
+Texture Streaming
+No
+No
+NA
+Particles
+Soft Particles
+No
+NA
+NA
+Particle Raycast Budget
+16
+16
+NA
+Terrain
+Billboards Face Camera 
+Position
+No
+No
+NA

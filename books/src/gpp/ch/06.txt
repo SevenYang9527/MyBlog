@@ -1,0 +1,242 @@
+S I N G L E T O N 
+PAT T E R N
+
+54 of 99 | unity. com
+© 2022 Unity Technologies
+Singletons get a bad rap. If you’re new to Unity development, the singleton is 
+likely one of the first recognizable patterns that you will encounter in the wild. 
+It’s also one of the most maligned design patterns.
+According to the original Gang of Four, the singleton pattern:
+	
+—
+Ensures that a class can only instantiate one instance of itself
+	
+—
+Gives easy global access to that single instance
+This is useful if you need to have exactly one object that coordinates actions 
+across the entire scene. For example, you might want exactly one game 
+manager in your scene to direct the main game loop. You also probably only 
+want one file manager writing to your filesystem at a time. Central, manager-
+level objects like these tend to be good candidates for the singleton pattern. 
+The SimpleSingleton destroys any instances beyond the first.
+In Game Programming Patterns, it says that singletons do more harm than good 
+and lists it as an anti-pattern. This poor reputation is because the pattern’s ease 
+of use lends itself to abuse. Developers tend to apply singletons in inappropriate 
+situations, introducing unnecessary global states or dependencies.
+Let’s examine how to build a singleton in Unity and weigh its strengths and 
+weaknesses. Then you can decide whether it’s worth incorporating into your 
+application.
+
+55 of 99 | unity. com
+© 2022 Unity Technologies
+Example: Simple singleton
+One of the simplest singletons might look like this:
+using UnityEngine;
+public class SimpleSingleton : MonoBehaviour
+{
+    public static SimpleSingleton Instance;
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this; 
+        }
+            else
+        {
+            Destroy(gameObject); 
+        }
+    }
+}
+The public static Instance will hold the one instance of Singleton in the scene.
+In the Awake method, check if it’s already set. If Instance is currently null, then 
+Instance gets set to this specific object. This must be the first singleton in the scene.
+Otherwise, this instance must be a duplicate; you call Destroy(gameObject) to 
+guarantee your singleton only has one such component in the scene.
+If you attach the script to more than one GameObject in the hierarchy at 
+runtime, the logic in Awake will keep the first object and then discard the rest.
+
+56 of 99 | unity. com
+© 2022 Unity Technologies
+The Instance field is public and static. Any component has global access to the 
+lone singleton from anywhere in the scene.
+Persistence and lazy instantiation
+The SimpleSingleton works as written. However, it does suffer from two 
+issues:
+	
+—
+Loading a new scene destroys the GameObject.
+	
+—
+You need to set up the singleton in the hierarchy before using it. 
+Because the singleton often serves as an omnipresent manager script, you can 
+benefit from making it persistent using a DontDestroyOnLoad.
+Further, you can use lazy instantiation to build the singleton automatically when 
+you first need it. You only need some logic to create a GameObject and then add 
+the appropriate Singleton component.
+The singleton pattern only allows one instance.
+
+57 of 99 | unity. com
+© 2022 Unity Technologies
+  public class Singleton : MonoBehaviour
+  {
+        private static Singleton instance;
+        public static Singleton Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    SetupInstance();
+                }
+                return instance;
+            }
+        }
+        private void Awake()
+        {
+            if (instance == null)
+            {
+                instance = this;
+                DontDestroyOnLoad(this.gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+        private static void SetupInstance()
+        {
+            instance = FindObjectOfType<Singleton>();
+            if (instance == null)
+            {
+                GameObject gameObj = new GameObject();
+                gameObj.name = "Singleton";
+                instance = gameObj.AddComponent<Singleton>();
+                DontDestroyOnLoad(gameObj);
+            }
+        }
+The improved singleton looks something like this:
+Instance is now a public property referring to the private instance backing 
+field. The first time you refer to the singleton, check for the existence of 
+Instance in the getting. If it doesn’t exist, the SetupInstance method creates a 
+GameObject with the appropriate component.
+DontDestroyOnLoad(gameObject) prevents a scene load from clearing the 
+singleton from the hierarchy. The singleton instance is now persistent, staying 
+active even if you change scenes in your game.
+
+58 of 99 | unity. com
+© 2022 Unity Technologies
+public class Singleton<T> : MonoBehaviour where T : Component
+{
+    private static T instance;
+    public static T Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = (T)FindObjectOfType(typeof(T));
+                if (instance == null)
+                {
+                    SetupInstance();
+                }
+            }
+            return instance;
+        }
+    }
+    public virtual void Awake()
+    {
+        RemoveDuplicates();
+    }
+    private static void SetupInstance()
+    {
+        instance = (T)FindObjectOfType(typeof(T));
+        if (instance == null)
+        {
+           GameObject gameObj = new GameObject();
+           gameObj.name = typeof(T).Name;
+           instance = gameObj.AddComponent<T>();
+           DontDestroyOnLoad(gameObj);
+        }
+    }
+    private void RemoveDuplicates()
+    {
+        if (instance == null)
+        {
+            instance = this as T;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+Using generics
+Neither version of the script addresses how to create different singletons 
+within the same scene. For example, if you want a singleton that behaves as an 
+AudioManager and another singleton as a GameManager, they can’t coexist right 
+now. You’ll need to duplicate the relevant code and paste the logic into each class.
+Instead, make a generic version of the script like so:
+
+59 of 99 | unity. com
+© 2022 Unity Technologies
+This allows you to turn any class into a singleton. When you declare your 
+class, simply inherit from the generic singleton. For example, you can make a 
+MonoBehaviour called GameManager into a singleton by declaring it like so:
+Then you can always refer to the public static GameManager.Instance 
+whenever you need it.
+public class GameManager: Singleton<GameManager>
+{
+    // ...
+}
+Pros and cons
+Singletons are unlike the other patterns in this guide in that they break with 
+SOLID principles in several respects. Many developers dislike them for a variety 
+of reasons:
+	
+—
+Singletons require global access: Because you use them as global 
+instances, they can hide many dependencies, making bugs much harder to 
+troubleshoot.
+	
+—
+Singletons make testing difficult: Unit tests must be independent of each 
+other. Because the singleton can change the state of many GameObjects 
+across the scene, they can interfere with your testing. 
+	
+—
+Singletons encourage tight coupling: Most of the patterns in this guide 
+attempt to decouple dependencies. Singletons do the opposite. Tight 
+coupling makes refactoring difficult. If you change one component, you 
+can affect any component connected to it, leading to unclean code.
+The nays against singletons are considerable. If you’re building an enterprise-
+level game that you expect to maintain for years to come, you might want to  
+steer clear of singletons.
+But many games are not enterprise-level applications. You don’t need to extend 
+them continuously the same way you might for business software.
+
+60 of 99 | unity. com
+© 2022 Unity Technologies
+In fact, singletons offer some benefits that you may find attractive if you’re 
+building a small game that doesn’t need extensibility:
+	
+—
+Singletons are relatively quick to learn: The core pattern itself is 
+somewhat straightforward.
+	
+—
+Singletons are user-friendly: To use your singleton from another 
+component, simply reference the public and static instance. The singleton 
+instance is always available on demand from any object in your scene.
+	
+—
+Singletons are performant: Because you always have global access 
+to the static singleton instance, you can avoid caching the results of 
+GetComponent or Find operations, which tend to be slow.
+In this way, you can make a manager object (e. g. , game flow manager or audio 
+manager) that is always accessible from every other GameObject in your scene. 
+Also, if you’ve implemented the object pool, you can design your pooling system 
+as a singleton to make getting pooled objects easier.
+If you decide to use singletons in your project, keep them to a minimum. Don’t 
+use them indiscriminately. Reserve the singletons for a handful of scripts that 
+can benefit from global access.

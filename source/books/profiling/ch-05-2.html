@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unity 性能分析与调试工具（2/5） · Unity 游戏性能分析终极指南</title>
+<meta name="description" content="Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 游戏性能分析终极指南</div>
+    <div class="book-en">Ultimate Guide to Profiling Unity Games</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析入门</a></li>
+      <li><a href="ch-03-1.html">性能分析工作流（1/3）</a></li>
+      <li><a href="ch-03-2.html">性能分析工作流（2/3）</a></li>
+      <li><a href="ch-03-3.html">性能分析工作流（3/3）</a></li>
+      <li><a href="ch-04.html">内存分析</a></li>
+      <li><a href="ch-05-1.html">Unity 性能分析与调试工具（1/5）</a></li>
+      <li><a href="ch-05-2.html">Unity 性能分析与调试工具（2/5）</a></li>
+      <li><a href="ch-05-3.html">Unity 性能分析与调试工具（3/5）</a></li>
+      <li><a href="ch-05-4.html">Unity 性能分析与调试工具（4/5）</a></li>
+      <li><a href="ch-05-5.html">Unity 性能分析与调试工具（5/5）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 75 页 · 共 5 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">05 · Unity 性能分析与调试工具</div>
+    <div class="pager"><a href="ch-05-1.html">← 上一节</a><a href="ch-05-3.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h4>远程帧调试（Remote Frame Debugging）</h4>
+
+<p>在受支持的平台上，可以将 Frame Debugger 远程附加到正在运行的播放器上（不支持 WebGL）。对于桌面平台，请为构建启用 Run In Background。</p>
+
+<p>要设置远程帧调试：</p>
+
+<ul>
+<li>为目标平台创建项目的标准构建（选择 Development Player）。</li>
+<li>运行播放器。</li>
+<li>从编辑器中打开 Frame Debug 窗口。</li>
+<li>点击 Player 选择下拉菜单，选择正在运行的活动播放器。</li>
+<li>点击 Enable。</li>
+</ul>
+
+<p>现在你可以在 Frame Debug 列表层级中单步查看绘制调用与事件，并在活动的播放器中观察结果。</p>
+
+<figure><figcaption>图 1：附加到远程播放器构建的 Frame Debug 窗口。</figcaption></figure>
+
+<h4>渲染目标的显示选项</h4>
+
+<p>Frame Debug 窗口带有一个工具栏，可针对 Game 视图的当前状态单独隔离红色、绿色、蓝色和 Alpha 通道。</p>
+
+<p>使用通道按钮右侧的 Levels 滑块，可以按亮度级别隔离视图的各个区域。这些控件在渲染到 RenderTexture 时才会启用。</p>
+
+<p>当一次渲染到多个渲染目标时，可以使用 RenderTarget 下拉列表选择要在 Game 视图中显示哪一个。</p>
+
+<figure><figcaption>图 2：Frame Debug 渲染目标的深度通道控件。</figcaption></figure>
+
+<p>该下拉列表还包含一个 Depth 选项，用于显示深度缓冲区的内容。</p>
+
+<figure><figcaption>图 3：使用 Frame Debug 窗口查看深度缓冲区的内容。</figcaption></figure>
+
+<h3>常见问题的五项渲染优化</h3>
+
+<p>使用这些技巧与诀窍，优化那些可以用 Frame Debugger 及其他渲染调试工具识别出的常见渲染性能问题。</p>
+
+<h4>先定位你的性能瓶颈</h4>
+
+<p>首先要找到一个 GPU 负载较高的帧。大多数平台都提供了可靠的工具，用于分析项目在 CPU 与 GPU 上的性能。示例包括用于 Arm 硬件 / Mali GPU 的 Arm Mobile Studio、用于 Microsoft Xbox 的 PIX、用于 Sony PlayStation 的 Razor，以及用于 Apple iOS 的 Xcode Instruments。</p>
+
+<p>使用对应平台的原生性能分析器，把帧开销拆解为具体的组成部分。这就是你改善图形性能的起点。</p>
+
+<figure><figcaption>图 4：该视图在 PS4 Pro 上受 GPU 限制，每帧约 45 ms。</figcaption></figure>
+
+<h4>绘制调用优化</h4>
+
+<p>PC 与当前世代主机硬件可以承受大量绘制调用（draw call），但每次调用的开销仍然高到值得设法减少它们。在移动设备上，绘制调用优化至关重要。你可以通过绘制调用批处理（draw call batching）来实现这一点。</p>
+
+<p>使用 Frame Debugger 帮助识别那些可以通过重新组织来获得最佳分组与批处理的绘制调用。该工具还有助于找出某些绘制调用无法被批处理的原因。</p>
+
+<p>有助于减少绘制调用批次的技术包括：</p>
+
+<ul>
+<li><strong>遮挡剔除（Occlusion Culling）</strong>：移除被前景物体遮挡的物体，并减少过度绘制。请注意，这需要额外的 CPU 处理，因此请使用 Profiler 确认把工作从 GPU 转移到 CPU 是否划算。</li>
+<li><strong>GPU 实例化（GPU instancing）</strong>：如果有许多共享同一网格与材质的物体，这可以减少你的批次数量。场景中数量有限的模型可以提升性能。如果做得巧妙，你可以在不显得重复的前提下构建复杂场景。</li>
+<li><strong>SRP Batcher</strong>：通过批处理 Bind 与 Draw GPU 命令，它可以减少绘制调用之间的 GPU 设置工作。要从 SRP 批处理中获益，请按需要使用尽可能多的 Material，但要把它们限制在少量兼容的着色器变体上，例如通用渲染管线（Universal Render Pipeline，URP）与高清渲染管线（High Definition Render Pipeline，HDRP）中的 Lit 与 Unlit 着色器，并让关键字组合之间的差异尽可能少。</li>
+</ul>
+
+<h4>通过减少过度绘制来优化填充率</h4>
+
+<p>过度绘制（overdraw）可能表明应用程序试图每帧绘制比 GPU 所能承受更多的像素。这不仅会危及性能，移动设备上的散热与电池续航也会受损。你可以通过理解 Unity 在渲染前如何对物体排序来对抗过度绘制。</p>
+
+<p>内置渲染管线（Built-In Render Pipeline）会根据 GameObject 的 Rendering Mode 与 renderQueue 对其进行排序。每个物体的着色器会把它放入某个渲染队列，这通常决定了它的绘制顺序。</p>
+
+<p>彼此叠放渲染的物体会造成过度绘制。如果你使用的是内置渲染管线，可以使用 Scene 视图控制栏来可视化过度绘制。将绘制模式切换为 Overdraw。</p>
+
+<figure><figcaption>图 5：Scene 视图控制栏中的 Overdraw 选项。</figcaption></figure>
+
+<p>明亮的像素表示物体彼此叠放绘制，而较暗的像素意味着过度绘制较少。</p>
+
+<p>HDRP 对渲染队列的控制略有不同。请阅读有关 Renderer 与 Material Priority 的部分，以更深入地理解这一做法。</p>
+
+<p>HDRP 包含可以识别过度绘制的工具。要在 HDRP 游戏中查找过度绘制，请通过 Window &gt; Render Pipeline &gt; Render Pipeline Debug 使用 Render Pipeline Debug 工具。</p>
+
+<p>转到 Rendering 部分，将 Fullscreen Debug Mode 改为 TransparencyOverdraw。</p>
+
+<p>此调试选项会把每个像素显示为热图，从代表没有透明像素的黑色，经过蓝色，再到红色，红色表示达到 Max Pixel Cost 所设数量的透明像素。</p>
+
+<p>启用此模式后，你可以游历应用程序的场景与区域，记录下过度绘制明显的区域。</p>
+
+<figure><figcaption>图 6：为 Fullscreen Debug Mode 启用 TransparencyOverdraw，以帮助定位场景中的过度绘制。</figcaption></figure>
+
+<figure><figcaption>图 7：标准 Shaded 视图下的场景。</figcaption></figure>
+
+<figure><figcaption>图 8：同一场景的 Overdraw 视图——重叠的几何体往往是过度绘制的来源。</figcaption></figure>
+
+<figure><figcaption>图 9：使用 HDRP 与 Fullscreen Debug Mode 可视化过度绘制。</figcaption></figure>
+
+<p>还有更多可用于帧调试与分析的工具。请查看性能分析与调试工具索引以获取更多灵感。</p>
+
+<p>要详细了解 Unity Frame Debugger，请查看以下资源：</p>
+
+<ul>
+<li>Unity Frame Debugger 文档</li>
+<li>使用 Frame Debugger</li>
+<li>渲染性能分析</li>
+</ul>
+
+<h4>检查最昂贵的着色器</h4>
+
+<p>这是一个深入的话题，但总体而言，要尽可能降低着色器的复杂度。这里一些容易到手的收益包括：尽可能降低精度，例如在可行时使用半精度浮点变量。你还可以了解目标平台的波前占用率（wavefront occupancy），以及如何使用 GPU 性能分析工具来帮助获得健康的占用率。</p>
+
+<h4>渲染的多核优化</h4>
+
+<p>在 Player Settings &gt; Other Settings 中启用 Graphics Jobs，以利用 PlayStation 与 Xbox 的多核处理器。Graphics Jobs 让 Unity 可以把渲染工作分摊到多个 CPU 核心上，从而减轻渲染线程的压力。详情请参阅 Multithreaded Rendering and Graphics Jobs 教程。</p>
+
+<h4>对后处理效果进行性能分析</h4>
+
+<p>确保你的后处理资源针对目标平台做了优化。来自 Asset Store、最初为 PC 游戏编写的工具，在主机或移动设备上可能会消耗超出必要的资源。请使用目标平台的原生性能分析工具对该平台进行分析。在为移动或主机目标编写自己的后处理效果时，要让它们尽可能简单。</p>
+
+<h3>Profile Analyzer</h3>
+
+<p>标准 Unity Profiler 允许你进行单帧分析，而 Profile Analyzer 可以对从一组 Unity Profiler 帧中捕获的性能分析标记数据进行聚合与可视化。</p>
+
+<p>要开始使用 Profile Analyzer：</p>
+
+<ul>
+<li>通过 Window &gt; Package Manager 安装 Profile Analyze Package。</li>
+</ul>
+
+<p>使用 Profile Analyzer 时，一个好做法是把性能分析会话保存下来，以便比较性能优化工作前后的情况。</p>
+
+<figure><figcaption>图 10：从 Package Manager 安装 Profile Analyzer。</figcaption></figure>
+
+<p>Profile Analyzer 会提取在 Unity Profiler 中捕获的一组帧，并对它们执行统计分析。随后这些数据会被显示出来，为每个函数生成有用的性能耗时信息，例如 Min、Max、Mean 与 Median 耗时。</p>
+
+<p>它可以帮助你回答开发过程中的问题定位与优化问题。可以用它对某个游戏场景做 A/B 测试以比较性能差异，比较代码重构与优化前后的性能分析数据，也可以用于新功能，甚至 Unity 版本升级。</p>
+
+<figure><figcaption>图 11：作为 Unity Profiler 的绝佳搭档，Profile Analyzer 可以聚合并比较性能分析会话中捕获的多个帧。</figcaption></figure>
+
+<p>在 Profile Analyzer 的 Single 视图中使用聚合数据视图，也可以在一开始就回答高层次的、随时间变化的性能问题。与一次只看一帧相比，这可能是查看数据更好的方式。例如，在一段 300 帧（10 秒）的玩法捕获或一段 20 秒的加载序列中：</p>
+
+<ul>
+<li>主线程与渲染线程上最大的 CPU 开销是什么？</li>
+<li>这些标记各自的平均 / 中位数 / 总开销是多少？</li>
+</ul>
+
+<p>这类问题的答案，对于精准定位最大的问题所在、以及确定优化时应优先处理什么，可能至关重要。</p>
+
+<p>Profile Analyzer 提供的统计信息与细节，让你能在代码跨多帧运行、甚至与先前的性能分析捕获会话相比较时，更深入地探究其性能特征。</p>
+
+<p>Profile Analyzer 有多种视图与方法用于分析性能分析数据。它被划分为多个面板，用于选择、排序、查看与比较性能分析数据集。</p>
+
+<p>Frame Control 面板用于选择一帧或一个帧范围。选中后，Marker Details 窗格会更新，显示该选择范围内的聚合数据，并附带一个可排序的标记列表，其中包含有用的统计信息。</p>
+
+<p>Marker Summary 窗格显示所选标记的深入信息。列表中的每个标记，都是该标记在所选帧范围内、所有经过筛选的线程上的全部实例的聚合。</p>
+
+<figure><figcaption>图 12：Profile Analyzer 主窗口概览。</figcaption></figure>
+
+<figure><figcaption>图 13：Marker Summary 面板包含在 Marker Details 面板中所选每个标记聚合的详细信息。</figcaption></figure>
+
+<p>使用 Filters 可以按名称包含或排除标记，或按特定线程进行筛选。当你在范围选择中查看 Time 或 Count 统计值时，这很有用。</p>
+
+<p>调整筛选条件时，可以自定义 Marker details 窗格以显示不同的性能分析数据统计集合。使用 Marker 列下拉菜单选择一个预设，或选择你自己的自定义组合。</p>
+
+<p>预设如下：</p>
+
+<ul>
+<li><strong>Time and count</strong>：显示标记的平均耗时与被调用次数的信息</li>
+<li><strong>Time</strong>：显示标记平均耗时的信息</li>
+<li><strong>Totals</strong>：显示标记在整个数据集上总耗时的信息</li>
+<li><strong>Time with totals</strong>：同时显示标记的平均耗时与总耗时信息</li>
+<li><strong>Count totals</strong>：显示标记被调用总次数的信息</li>
+<li><strong>Count per frame</strong>：显示标记每帧被调用次数平均总数的信息</li>
+<li><strong>Depths</strong>：显示标记在层级中所处位置的信息</li>
+<li><strong>Threads</strong>：显示标记所在线程的名称</li>
+</ul>
+
+<figure><figcaption>图 14：可以按线程或标记名称筛选，从而在 Marker details 窗格中聚焦特定的性能数据区域。</figcaption></figure>
+
+<figure><figcaption>图 15：用于自定义 Marker details 窗格所显示统计信息的 Marker 列预设。</figcaption></figure>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05-1.html"><span class="dir">← 上一节</span>Unity 性能分析与调试工具（1/5）</a>
+    <a href="ch-05-3.html"><span class="dir">下一节 →</span>Unity 性能分析与调试工具（3/5）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

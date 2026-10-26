@@ -1,0 +1,126 @@
+D E S I G N PAT T E R N S F O R 
+G A M E D E V E L O P M E N T
+
+36 of 99 | unity. com
+© 2022 Unity Technologies
+Once you understand the SOLID principles, you’ll want to dive deeper into 
+design patterns.
+Design patterns let you repurpose well-known solutions for everyday software 
+problems. A pattern, however, isn’t an off-the-shelf library or framework. Nor is 
+it an algorithm, which is a specific set of steps to achieve a result. 
+Instead, think of a design pattern more like a blueprint. It’s a general plan that 
+leaves the actual construction up to you. Two programs can follow the same 
+pattern but have very different code.
+When developers encounter the same problem in the wild, many of them 
+will inevitably come up with similar solutions. Once such a solution becomes 
+repeated enough, someone might “discover” a pattern and formally  
+give it a name.
+The Gang of Four
+Many of today’s software design patterns stem from the seminal work, Design 
+Patterns: Elements of Reusable Object-Oriented Software by Erich Gamma, 
+Richard Helm, Ralph Johnson, and John Vlissides. This book describes 23 such 
+patterns identified in a variety of day-to-day applications. 
+The original authors are often referred to as the “Gang of Four” (GoF), and you’ll 
+also hear the original patterns dubbed the GoF patterns. While the examples 
+cited are mostly in C++ (and Smalltalk), you can apply their ideas to any object-
+oriented language, such as C#. 
+Since the Gang of Four originally published Design Patterns in 1994,  
+developers have discovered dozens more object-oriented patterns in a variety 
+of fields. Many engineering specialities have well-established patterns.  
+Game development is no different.
+Learning design patterns
+While you can work as a game programmer without studying design patterns, 
+learning them will only help you become a better developer. After all, design 
+patterns are labeled as such because they’re common solutions to well-known 
+problems.
+Software engineers rediscover them all the time in the normal course of 
+development. You may have already implemented some of these patterns 
+unwittingly.
+Train yourself to look for them. Doing this can help you:
+	
+—
+Learn object-oriented programming: Design patterns aren’t secrets 
+buried in an esoteric StackOverflow post. They are common ways to 
+overcome everyday hurdles in development. They can inform you how 
+many other developers approached the same issue. Remember, even if 
+you aren’t using patterns, someone else is.
+
+37 of 99 | unity. com
+© 2022 Unity Technologies
+	
+—
+Talk to other developers: Patterns can serve as a shorthand when trying 
+to communicate as a team. Mention the “command pattern” or “object 
+pool” and experienced Unity developers will know exactly what you’re 
+trying to implement.
+	
+—
+Explore new frameworks: When you import a built-in package or 
+something from the Asset Store, inevitably you’ll stumble onto one or 
+more patterns discussed here. Recognizing design patterns will help you 
+understand how a new framework works and the thought process involved 
+in its creation.
+Of course, not all design patterns apply to every game application. Don’t go 
+looking for them with Maslow’s hammer; otherwise, you might only find nails. 
+ 
+Like any other tool, a design pattern’s usefulness depends on context. Each 
+one provides a benefit in certain situations and also comes with its share of 
+drawbacks. Every decision in software development comes with compromises.
+Are you generating a lot of GameObjects on the fly? Does it impact your 
+performance? Can restructuring your code fix that?
+Be aware of these design patterns and when the time is right, pull them from 
+your gamedev bag of tricks to solve the problem at hand. 
+Further reading 
+In addition to the Gang of Four’s Design Patterns: Elements of Reusable 
+Object-Oriented Software, another standout volume is Game Programming 
+Patterns by Robert Nystrom. The author details a variety of software 
+patterns in a no-nonsense manner. The web-based edition is available for 
+free at gameprogrammingpatterns. com.
+Patterns within Unity
+Unity already implements several established gamedev patterns, saving you  
+the trouble of writing them yourself. These include: 
+	
+—
+Game loop: At the core of all games is an infinite loop that must function 
+independently of clock speed, since the hardware that powers a game 
+application can vary greatly. To account for computers of different speeds, 
+game developers often need to use a fixed timestep (with a set frames-
+per-second) and a variable timestep where the engine measures how 
+much time has passed since the previous frame.
+
+38 of 99 | unity. com
+© 2022 Unity Technologies
+Unity takes care of this, so you don’t have to implement it yourself.  
+You only need to manage gameplay using MonoBehaviour methods  
+like Update, LateUpdate, and FixedUpdate.
+	
+—
+Update: In your game application, you’ll often update each object’s 
+behavior one frame at a time. While you can manually recreate this in 
+Unity, the MonoBehaviour class does this automatically. Simply use the 
+appropriate Update, LateUpdate, or FixedUpdate methods to modify  
+your GameObjects and components to one tick of the game clock.
+	
+—
+Prototype: Often you need to copy objects without affecting the original. 
+This creational pattern solves the problem of duplicating and cloning an 
+object to make other objects similar to itself. This way you avoid defining  
+a separate class to spawn every type of object in your game. 
+ 
+Unity’s Prefab system implements a form of prototyping for GameObjects. 
+This allows you to duplicate a template object, complete with its 
+components. Override specific properties to create Prefab Variants or nest 
+Prefabs inside other Prefabs to create hierarchies. Use a special  
+Prefab editing mode to edit Prefabs in isolation or in context.
+	
+—
+Component: Most people working in Unity know this pattern. Instead 
+of creating large classes with multiple responsibilities, build smaller 
+components that each do one thing. 
+ 
+If you use composition to pick and choose components, you combine them 
+for complex behavior. Add Rigidbody and Collider components for physics. 
+Add a MeshFilter and MeshRenderer for 3D geometry. Each GameObject is 
+only as rich and unique as its collection of components.
+Of course, Unity can’t do everything for you. Inevitably you’ll need other patterns 
+that aren’t built-in. Let’s explore a few of these in the next chapters.

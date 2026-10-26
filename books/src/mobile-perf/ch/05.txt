@@ -1,0 +1,207 @@
+24 of 80 | unity. com
+© 2023 Unity Technologies
+P R O G R A M M I N G A N D 
+CO D E A R C H I T E C T U R E
+The Unity PlayerLoop contains functions for interacting with the core of the 
+game engine. This tree-like structure includes a number of systems that 
+handle initialization and per-frame updates. All of your scripts will rely on this 
+PlayerLoop to create gameplay.
+When profiling, you’ll see all of your project’s user code under the PlayerLoop 
+(with Editor components under the EditorLoop).
+The Profiler will show your custom scripts, settings, and graphics in the context of the entire engine’s execution.
+
+25 of 80 | unity. com
+© 2023 Unity Technologies
+Get to know the PlayerLoop and the lifecycle of a script.
+
+26 of 80 | unity. com
+© 2023 Unity Technologies
+You can optimize your scripts with these tips and tricks.
+Understand the Unity PlayerLoop 
+Make sure you understand the execution order of Unity’s frame loop. Every 
+Unity script runs several event functions in a predetermined order. You should 
+understand the difference between Awake, Start, Update, and other functions 
+that create the lifecycle of a script. You can utilize the Low-Level API to add 
+custom logic to the player’s update loop.
+Refer to the Script Lifecycle Flowchart for event functions’ specific  
+order of execution.
+Minimize code that runs every frame 
+Consider whether code must run every frame. Move unnecessary logic out of 
+Update, LateUpdate, and FixedUpdate. These event functions are convenient 
+places to put code that must update every frame, but extract any logic that does 
+not need to update with that frequency. Whenever possible, only execute logic 
+when things change.
+If you do need to use Update, consider running the code every n frames. 
+This is one way of applying time slicing, a common technique of distributing 
+a heavy workload across multiple frames. In this example, we run the 
+ExampleExpensiveFunction once every three frames:
+private int interval = 3;
+ 
+void Update()
+{
+if (Time.frameCount % interval == 0)
+{
+       ExampleExpensiveFunction();
+}
+}
+Better yet, if ExampleExpensiveFunction performs some operation on a set 
+of data, consider using time slicing to operate on a different subset of that 
+data every frame. By doing 1/n of the work every frame rather than all of the 
+work every n frames, you end up with performance that is more stable and 
+predictable overall, rather than seeing periodic CPU spikes.
+
+27 of 80 | unity. com
+© 2023 Unity Technologies
+Avoid heavy logic in Start/Awake 
+When your first scene loads, these functions get called for each object:
+	
+—
+Awake
+	
+—
+OnEnable
+	
+—
+Start
+Avoid expensive logic in these functions until your application renders its first 
+frame. Otherwise, you may encounter longer loading times than necessary. 
+Refer to the order of execution for event functions for details  about the first 
+scene load.
+Avoid empty Unity events 
+Even empty MonoBehaviours require resources, so you should remove blank 
+Update or LateUpdate methods.
+Use preprocessor directives if you are using these methods for testing:
+#if UNITY_EDITOR
+void Update()
+{
+}
+#endif 
+Here, you can freely use the Update in the Editor for testing without 
+unnecessary overhead slipping into your build.
+Remove Debug Log statements 
+Log statements (especially in Update, LateUpdate, or FixedUpdate) can bog 
+down performance. Disable your Log statements before making a build.
+To do this more easily, consider making a Conditional attribute along with  
+a preprocessing directive. For example, create a custom class like this:
+public static class Logging
+{
+      [System.Diagnostics.Conditional(“ENABLE_LOG”)]
+      static public void Log(object message)
+      {
+             UnityEngine.Debug.Log(message);
+      }
+}
+
+28 of 80 | unity. com
+© 2023 Unity Technologies
+Generate your log message with your custom class. If you disable the  
+ENABLE_LOG preprocessor in the Player Settings, all of your Log statements 
+disappear in one fell swoop.
+The same thing applies for other use cases of the Debug Class, such as Debug.
+DrawLine and Debug. DrawRay. These are also only intended for use during 
+development and can significantly impact performance.
+Use hash values instead of string parameters 
+Unity does not use string names to address animator, material, and shader 
+properties internally. For speed, all property names are hashed into property 
+IDs, and these IDs are actually used to address the properties.
+When using a Set or Get method on an animator, material, or shader, harness 
+the integer-valued method instead of the string-valued methods. The string 
+methods simply perform string hashing and then forward the hashed ID to the 
+integer-valued methods.
+Use Animator. StringToHash for Animator property names and  
+Shader. PropertyToID for material and shader property names. Get these hashes 
+during initialization and cache them in variables for when they’re needed to pass 
+to a Get or Set method.
+Choose the right data structure
+Your choice of data structure can have a cumulative effect on efficiency or 
+inefficiency as you iterate many thousands of times per frame. Does it make 
+more sense to use a List, Array, or Dictionary for your collection? Follow the 
+MSDN guide to data structures in C# as a general guide to choosing the 
+correct structure.
+Avoid adding components at runtime 
+Invoking AddComponent at runtime comes with some cost. Unity must check for 
+duplicate or other required components whenever adding components at runtime. 
+Instantiating a Prefab with the desired components already set up is generally 
+more performant.
+Adding a custom preprocessor directive lets you partition your scripts.
+
+29 of 80 | unity. com
+© 2023 Unity Technologies
+Cache GameObjects and components 
+GameObject. Find, GameObject. GetComponent, and Camera. main (in versions 
+prior to 2020.2) can be expensive, so avoid calling them in Update methods. 
+Instead, call them in Start and cache the results. 
+For example, this demonstrates inefficient use of a repeated GetComponent call:
+void Update()
+{
+      Renderer myRenderer = GetComponent<Renderer>();
+      ExampleFunction(myRenderer);
+} 
+ 
+It’s more efficient to invoke GetComponent only once, as the result of the 
+function is cached. The cached result can be reused in Update without any 
+further calls to GetComponent.
+private Renderer myRenderer;
+void Start()
+{
+      myRenderer = GetComponent<Renderer>();
+}
+void Update()
+{
+      ExampleFunction(myRenderer);
+}
+ 
+Use object pools 
+Instantiate and Destroy can generate garbage and garbage collection (GC) 
+spikes and is generally a slow process. 
+In this example, the ObjectPool creates 20 PlayerLaser instances for reuse.
+
+30 of 80 | unity. com
+© 2023 Unity Technologies
+Create the reusable instances at a point in the game (e. g. , during a menu screen) 
+when a CPU spike is less noticeable. Track this “pool” of objects with a collection. 
+During gameplay, enable the next available instance when needed, disable 
+objects instead of destroying them, and return them to the pool. 
+ 
+This reduces the number of managed allocations in your project and can prevent 
+garbage collection problems. 
+Learn how to create a simple Object Pooling system in Unity here. You can also 
+see these code examples, from Unity, using Object pooling to inform your own 
+game development.
+The pool of PlayerLaser objects is inactive and ready to shoot.
+
+31 of 80 | unity. com
+© 2023 Unity Technologies
+Use ScriptableObjects 
+Store unchanging values or settings in a ScriptableObject instead of a 
+MonoBehaviour. The ScriptableObject is an asset that lives inside of the project 
+that you only need to set up once. It cannot be directly attached to a GameObject. 
+MonoBehaviours carry extra overhead since they require a GameObject – and 
+by default a Transform – to act as a host. That means you need to create a lot 
+of unused data before storing a single value. The ScriptableObject slims down 
+this memory footprint by dropping the GameObject and Transform. It also 
+stores the data at the project level, which is helpful if you need to access the 
+same data from multiple scenes.
+A common use case is having many GameObjects that rely on the same 
+duplicate data that does not need to change at runtime. Rather than having 
+this duplicate local data on each GameObject, you can funnel it into a 
+ScriptableObject. Then, each of the objects stores a reference to the shared 
+data asset, rather than copying the data itself. This can provide significant 
+performance improvements in projects with thousands of objects.
+Create fields in the ScriptableObject to store your values or settings, then 
+reference the ScriptableObject in your MonoBehaviours.
+In this example, a ScriptableObject called Inventory holds settings for various GameObjects.
+
+32 of 80 | unity. com
+© 2023 Unity Technologies
+Using those fields from the ScriptableObject can prevent unnecessary duplication 
+of data every time you instantiate an object with that MonoBehaviour.
+In software design, this is an optimization known as the flyweight pattern. 
+Restructuring your code in this way using ScriptableObjects avoids copying a lot 
+of values and reduces your memory footprint. 
+Watch this Introduction to ScriptableObjects devlog to see how ScriptableObjects 
+can benefit your project. You can also find relevant documentation here or our 
+technical guide Create modular game architecture in Unity with ScriptableObjects. 
+To learn more about using design patterns in Unity, see the e-book Level up 
+your code with game programming patterns to learn more about using design 
+patterns.

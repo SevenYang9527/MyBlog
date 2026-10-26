@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SubmitRenderRequest API · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">10 · SubmitRenderRequest API</div>
+    <div class="pager"><a href="ch-09.html">← 上一节</a><a href="ch-11-1.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>SubmitRenderRequest API</h2>
+
+<p>有时你可能希望把游戏渲染到用户屏幕之外的其他目标，而不是屏幕本身。SubmitRenderRequest API 正是为此目的而设计的。下面来看一个可能的使用场景。</p>
+
+<h3>编写屏幕截图（screengrab）功能</h3>
+
+<p>当用户点击屏幕上的 GUI 按钮时，下面的脚本会把游戏渲染到一张离屏的渲染纹理（RenderTexture）中。该脚本应挂载到主摄像机（Main Camera）上。渲染纹理在 Start 回调中创建，尺寸为 1920 x 1080 像素，位深度（bit depth）为 24。当用户按下“Render Request”按钮时，会调用 RenderRequest 方法。</p>
+
+<p>在 RenderRequest 方法中，首先获取对摄像机（Camera）组件的引用。然后创建一个 RenderPipeline.StandardRequest 实例，接着检查当前渲染管线（render pipeline）是否支持 RenderRequest 框架。如果支持，就把在 Start 回调中初始化的渲染纹理设置为该请求对象的目标（destination），并通过 RenderPipeline.SubmitRenderRequest 初始化渲染。该方法接收一个摄像机实例和一个请求对象。此时，Texture2D 中已经包含当前场景的渲染结果。要把它保存为文件，首先需要将渲染纹理转换为 Texture2D 实例。ToTexture2D 方法展示了一种可行的做法。得到 Texture2D 之后，就可以使用 Texture2D 实例的 EncodeToPNG 方法获取一个字节数组（byte array）。随后可以使用 System.IO.File 的 WriteAllBytes 方法把该字节数组保存到文件中。</p>
+
+<pre><code>using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+[RequireComponent(typeof(Camera))]
+public class StandardRenderRequest : MonoBehaviour
+{
+    [SerializeField]
+    RenderTexture texture2D;
+    private void Start()
+    {
+        texture2D = new RenderTexture(1920, 1080, 24);
+    }
+    // 当用户点击 GUI 按钮时，
+    // 会以各种输出纹理发送 Render Request，以渲染指定帧
+    private void OnGUI()
+    {
+        GUILayout.BeginVertical();
+        if (GUILayout.Button("Render Request"))
+        {
+            RenderRequest();
+        }
+        GUILayout.EndVertical();
+    }
+    void RenderRequest()
+    {
+        Camera cam = GetComponent&lt;Camera&gt;();
+        RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
+        if (RenderPipeline.SupportsRenderRequest(cam, request))
+        {
+            // 2D 纹理
+            request.destination = texture2D;
+            RenderPipeline.SubmitRenderRequest(cam, request);
+            SaveTexture(ToTexture2D(texture2D));
+        }
+    }
+    void SaveTexture(Texture2D texture)
+    {
+        byte[] bytes = texture.EncodeToPNG();
+        var dirPath = Application.dataPath + "/RenderOutput";
+        if (!System.IO.Directory.Exists(dirPath))
+        {
+            System.IO.Directory.CreateDirectory(dirPath);
+        }
+        System.IO.File.WriteAllBytes(dirPath + "/R_" + Random.Range(0, 100000) + ".png", bytes);
+        Debug.Log(bytes.Length / 1024 + "Kb was saved as: " + dirPath);
+        #if UNITY_EDITOR
+                UnityEditor.AssetDatabase.Refresh();
+        #endif
+    }
+    Texture2D ToTexture2D(RenderTexture rTex)
+    {
+        Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
+        RenderTexture.active = rTex;
+        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        tex.Apply();
+        Destroy(tex);// 防止内存泄漏
+        return tex;
+    }
+}</code></pre>
+
+<p>如果直接使用该脚本，屏幕截图会被保存到游戏 Assets 文件夹下新建的 RenderOutput 文件夹中。文件名由 R_ 加上一个 0 到 100,000 之间的随机整数构成。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-09.html"><span class="dir">← 上一节</span>相机堆叠</a>
+    <a href="ch-11-1.html"><span class="dir">下一节 →</span>与 URP 配套的工具（1/2）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

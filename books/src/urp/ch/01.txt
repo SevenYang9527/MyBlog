@@ -1,0 +1,64 @@
+This guide is intended to help experienced Unity developers and technical 
+artists migrate their projects from the Built-in Render Pipeline to the Universal 
+Render Pipeline (URP). Topics covered include how to:
+	
+—
+Set up URP for a new project, or convert an existing Built-in Render 
+Pipeline-based project to URP
+	
+—
+Update Built-in Render Pipeline-based lights, shaders, and special effects 
+for URP
+	
+—
+Understand callback differences between the two rendering pipelines,  
+performance optimization in URP, and more
+The limitations of the Built-in Render Pipeline have become apparent as the 
+number of platforms supported by Unity continues to grow. Each additional 
+platform and API adds complexity to modifying and maintaining Built-in Render 
+Pipeline architecture.
+In 2018, Unity released two new Scriptable Render Pipelines (SRPs): the 
+High Definition Render Pipeline (HDRP) and URP. These SRPs enable you to 
+customize the culling of objects, their drawing, and the post-processing of  
+the frame without having to use low-level programming languages like C++.  
+You can also create your own fully customized SRP.
+6 of 140 | unity. com
+© 2024 Unity Technologies
+Introduction
+
+7 of 140 | unity. com
+URP 3D Sample available in the Unity Hub
+The aim of SRP architecture is to provide deep flexibility and customization, 
+enhanced performance across the gamut of supported and future platforms, 
+and quick iteration to unleash your creativity.
+Multiplatform deployment is a key factor in the success of many games.  
+Players often play the same game on different devices, such as console and 
+mobile, meaning Unity developers require rendering options that scale up and 
+down for numerous devices, with as few steps and little complexity as possible.
+After several years of dedicated development, URP technology is now solid 
+and production-ready. This guide will help you leverage its benefits for the 
+successful development of your game.
+Author and contributors
+Nik Lever, the author of this e-book, has been creating real-time 3D content 
+since the mid-nineties and using Unity since 2006. For over 30 years he’s led  
+the small development company, Catalyst Pictures, and has provided courses 
+since 2018 with the aim of helping game developers expand their knowledge  
+in a rapidly evolving industry.
+© 2024 Unity Technologies
+
+8 of 140 | unity. com
+© 2024 Unity Technologies
+Unity contributors
+Felipe Lira is a senior manager of graphics and the URP. With over 13 years  
+of experience as a software engineer in the games industry, he specializes  
+in graphics programming and multiplatform game development.
+Ali Mohebali is the graphics product management lead for Unity Runtime and 
+Editor. Ali has 20 years of experience working in the games industry, and has 
+contributed to hit titles such as Fruit Ninja and Jetpack Joyride, both by Halfbrick 
+Studios.
+Steven Cannavan is a senior development consultant on the Accelerate 
+Solutions Games team, specializing in the Scriptable Rendering Pipelines.  
+He has over 15 years of experience in the game development industry.
+Important contributions were also made by Unity URP engineering and sample 
+project teams. 
+A scene made with URP

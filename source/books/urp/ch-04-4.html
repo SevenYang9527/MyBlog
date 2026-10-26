@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URP 中的光照（4/4） · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">04 · URP 中的光照</div>
+    <div class="pager"><a href="ch-04-3.html">← 上一节</a><a href="ch-05.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<p>在场景中移动时，它可以选取最近的反射探针（Reflection Probe），并将其作为自身反射的基础。你也可以设置场景在多个探针之间进行混合。</p>
+
+<p>要创建反射探针，请在 Hierarchy 窗口中右键单击，然后选择 Light &gt; Reflection Probe。</p>
+
+<figure><figcaption>图 1：创建反射探针</figcaption></figure>
+
+<p>然后摆放探针的位置并调整其设置。探针放置正确、设置调整完毕后，单击 Bake 生成立方体贴图（cubemap）。</p>
+
+<h3>反射探针设置</h3>
+
+<p>下图展示了 FPS Sample 中使用的两个反射探针：The Inspection，一个位于机库内部，另一个位于外部。</p>
+
+<figure><figcaption>图 2：FPS Sample 中使用的两个反射探针</figcaption></figure>
+
+<p>每个反射探针都会在其立方体贴图纹理中捕获周围环境的图像。</p>
+
+<h3>反射探针混合</h3>
+
+<p>混合（blending）是反射探针的一项出色功能。你可以通过 Renderer Asset Settings 面板启用混合。当选择 Forward+ 路径时，无论 Renderer Asset 中的设置如何，混合始终处于开启状态。</p>
+
+<p>当反射物体从一个区域穿行到另一个区域时，混合会逐渐淡出一个探针的立方体贴图，同时淡入另一个探针的立方体贴图。这种渐进过渡避免了物体跨越区域边界时，某个特征鲜明的物体突然“弹出”到反射中的情况。</p>
+
+<h3>盒体投影（Box Projection）</h3>
+
+<p>通常情况下，反射立方体贴图被假定位于距任意给定物体无限远的位置。随着物体转动，可以看到立方体贴图的不同角度，但物体无法靠近或远离被反射的周围环境。这在室外场景中效果良好，但在室内场景中就会显露出局限。房间的内墙显然不在无限远处，当物体靠近墙壁时，墙壁的反射应该变得更大。</p>
+
+<p>Box Projection 选项使你能在距探针有限的距离处创建反射立方体贴图，让物体根据自身与立方体贴图各面之间的距离显示不同大小的反射。周围立方体贴图的大小由探针的影响区域（zone of effect）决定，具体取决于其 Box Size 属性。例如，对于一个反射房间内部的探针，你应将大小设置为与房间的尺寸相匹配。</p>
+
+<h3>镜头光晕（Lens Flare）</h3>
+
+<p>URP 更新了创建镜头光晕的工作流程。配置它的第一步是创建 Lens Flare (SRP) Data 资源。在 Project 窗口中合适的 Assets 文件夹内右键单击，然后选择 Create &gt; Lens Flare (SRP)。</p>
+
+<figure><figcaption>图 3：创建 Lens Flare (SRP) Data 资源</figcaption></figure>
+
+<p>使用该资源来配置光晕的形状：将 Type 设置为 Circle、Polygon 或 Image 资源，并调整它们的 Tint 和 Intensity。</p>
+
+<figure><figcaption>图 4：添加并配置镜头光晕元素</figcaption></figure>
+
+<p>要渲染镜头光晕，请选择将产生光晕的光源，然后选择 Add Component &gt; Rendering &gt; Lens Flare (SRP)。</p>
+
+<figure><figcaption>图 5：为镜头光晕设置渲染</figcaption></figure>
+
+<p>在该组件的 Settings 面板中（见下图），将你创建的 Lens Flare Data 资源指定给 Lens Flare Data 属性。</p>
+
+<figure><figcaption>图 6：Lens Flare (SRP) 组件的设置</figcaption></figure>
+
+<p>该系统非常灵活。</p>
+
+<figure><figcaption>图 7：镜头光晕示例</figcaption></figure>
+
+<h3>光晕（Light Halos）</h3>
+
+<p>URP 中的光源不提供 Draw Halo 选项，但可以很容易地用公告板（billboard）来模拟。另一种选择是设置球体的 alpha 透明度。下面的第一张图展示了这种着色器的 Shader Graph，第二张图展示了结果。有关使用 Shader Graph 创建此着色器的更多信息，请参阅 Additional tools 一章。</p>
+
+<figure><figcaption>图 8：使用 Shader Graph 实现的菲涅耳透明度</figcaption></figure>
+
+<figure><figcaption>图 9：使用球体与上述 Shader Graph 着色器材质实现的光晕</figcaption></figure>
+
+<h3>屏幕空间环境光遮蔽（Screen Space Ambient Occlusion）</h3>
+
+<p>由于环境光默认不考虑几何体，较高的环境光水平可能导致渲染结果不真实。在现实世界中，两个物体之间的狭窄缝隙通常比宽阔得多的缝隙更暗。环境光遮蔽（Ambient Occlusion）可以帮助你在 Unity 项目中处理这个问题。要在 URP 中使用它，请选择 URP Asset 正在使用的 Renderer，转到 Add Renderer Feature，然后选择 Screen Space Ambient Occlusion (SSAO)。</p>
+
+<figure><figcaption>图 10：Add Renderer Feature</figcaption></figure>
+
+<p>可以使用 SSAO 的默认设置，也可以按需调整：</p>
+
+<figure><figcaption>图 11：SSAO 设置</figcaption></figure>
+
+<ul>
+<li><strong>Method</strong>：此属性定义 SSAO 效果使用的噪声类型。</li>
+<li><strong>Intensity</strong>：此属性定义变暗效果的强度。</li>
+<li><strong>Radius</strong>：当 Unity 计算环境光遮蔽值时，SSAO 效果会从当前像素出发，在该半径范围内对法线纹理采样。较低的 Radius 值可提升性能，因为 SSAO Renderer Feature 采样的像素更靠近源像素。</li>
+<li><strong>Falloff Distance</strong>：SSAO 不会应用于距摄像机远于此距离的物体。在包含许多远处物体的场景中，较低的值可以提升性能。</li>
+<li><strong>Direct Lighting Strength</strong>：此属性定义该效果在受直接光照照射区域的可见程度。</li>
+</ul>
+
+<figure><figcaption>图 12：仅使用环境光遮蔽纹理的场景，展示了不同的衰减距离</figcaption></figure>
+
+<p>SSAO 会为狭窄的缝隙添加明暗变化。让我们看看下面三张图。</p>
+
+<figure><figcaption>图 13：闹鬼房间截图，顶部无 SSAO，中间应用了 SSAO，底部为使用 SSAO 渲染的结果</figcaption></figure>
+
+<p>顶部的图像没有 SSAO。中间的图像显示了计算出的 SSAO，而底部的图像显示了 SSAO 的结果。请注意，研磨机和秤与桌面相接处的边缘更强。</p>
+
+<p>SSAO 是一种后处理技术，其细节将在本指南后面部分介绍。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-04-3.html"><span class="dir">← 上一节</span>URP 中的光照（3/4）</a>
+    <a href="ch-05.html"><span class="dir">下一节 →</span>贴花（Decals）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

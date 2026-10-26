@@ -1,0 +1,146 @@
+59 of 80 | unity. com
+© 2023 Unity Technologies
+U S E R I N T E R FA C E
+Unity offers two UI systems, the older Unity UI and the new UI Toolkit. UI Toolkit 
+is intended to become the recommended UI system. It’s tailored for maximum 
+performance and reusability, with workflows and authoring tools inspired by 
+standard web technologies, meaning UI designers and artists will find it familiar 
+if they already have experience designing web pages.
+However, as of Unity 2022 LTS, UI Toolkit does not have some features that 
+Unity UI and Immediate Mode GUI (IMGUI) support. Unity UI and IMGUI are more 
+appropriate for certain use cases and are required to support legacy projects. 
+See the Comparison of UI systems in Unity for more information.
+
+60 of 80 | unity. com
+© 2023 Unity Technologies
+UGUI performance optimization tips 
+Unity UI (UGUI) is often a source of performance issues. The Canvas 
+component generates and updates meshes for the UI elements and issues draw 
+calls to the GPU. Its functioning can be expensive, so keep the following factors in 
+mind when working with UGUI.
+Divide your Canvases
+If you have one large Canvas with thousands of elements, updating a single UI 
+element forces the whole Canvas to update, potentially generating a CPU spike. 
+Take advantage of UGUI’s ability to support multiple Canvases. Divide UI 
+elements based on how frequently they need to be refreshed. Keep static UI 
+elements on a separate Canvas, and keep dynamic elements that update at the 
+same time on smaller sub-canvases.
+Ensure that all UI elements within each Canvas have the same Z value, 
+materials, and textures. 
+Hide invisible UI elements 
+You may have UI elements that only appear sporadically in the game  
+(e. g. , a health bar that appears only when a character takes damage).  
+If your invisible UI element is active, it might still be using draw calls. Explicitly 
+disable any invisible UI components and re-enable them as needed.
+If you only need to turn off the Canvas’s visibility, disable the Canvas component 
+rather than the whole GameObject. This can prevent your game from having to 
+rebuild meshes and vertices when you reenable it.
+Limit GraphicRaycasters and disable Raycast Target 
+Input events like on-screen touches or clicks require the GraphicRaycaster 
+component. This simply loops through each input point on screen and checks if 
+it’s within a UI’s RectTransform. 
+Remove the default GraphicRaycaster from the top Canvas in the hierarchy. 
+Instead, add the GraphicRaycaster exclusively to the individual elements that 
+need to interact (buttons, scrollrects, and so on).
+Disable Ignore Reversed Graphics, which is active by default.
+
+61 of 80 | unity. com
+© 2023 Unity Technologies
+In addition, disable Raycast Target on all UI text and images that don’t need it. 
+If the UI is complex with many elements, all of these small changes can reduce 
+unnecessary computation.
+Avoid Layout Groups
+Layout Groups update inefficiently, so use them sparingly. Avoid them entirely 
+if your content isn’t dynamic, and use anchors for proportional layouts instead. 
+Alternately, create custom code to disable the Layout Group components after 
+they set up the UI.
+If you do need to use Layout Groups (Horizontal, Vertical, Grid) for your dynamic 
+elements, avoid nesting them to improve performance.
+Avoid large List and Grid views 
+Large List and Grid views are expensive. If you need to create a large List or 
+Grid view (e. g. , an inventory screen with hundreds of items), consider reusing 
+a smaller pool of UI elements rather than creating a UI element for every item. 
+Check out this sample GitHub project to see this in action.
+Disable Raycast Target if possible.
+Layout Groups can lower performance, especially when nested.
+
+62 of 80 | unity. com
+© 2023 Unity Technologies
+Avoid numerous overlaid elements
+Layering lots of UI elements (e. g. , cards stacked in a card battle game) creates 
+overdraw. Customize your code to merge layered elements at runtime into 
+fewer elements and batches.
+Use multiple resolutions and aspect ratios 
+With mobile devices now using very different resolutions and screen sizes, 
+create alternate versions of the UI to provide the best experience per device. 
+Use the Device Simulator to preview the UI across a wide range of supported 
+devices. You can also create virtual devices in XCode and Android Studio.
+When using a fullscreen UI, hide everything else 
+If your pause screen or start screen covers everything else in the scene, 
+disable the camera rendering the 3D scene. Likewise, disable any background 
+Canvas elements hidden behind the top Canvas. 
+Consider lowering the Application. targetFrameRate during a fullscreen UI, 
+since you should not need to update at 60 fps.
+Preview a variety of screen formats using the Device Simulator.
+
+63 of 80 | unity. com
+© 2023 Unity Technologies
+Assign the Camera to World Space and Camera Space Canvases 
+Leaving the Event or Render Camera field blank forces Unity to fill  
+in Camera. main, which is unnecessarily expensive. 
+Consider using Screen Space – Overlay for your Canvas RenderMode  
+if possible, since that does not require a camera. 
+UI Toolkit performance optimization tips 
+UI Toolkit offers improved performance over Unity UI, is tailored for  
+maximum performance and reusability, and provides workflows and authoring 
+tools inspired by standard web technologies. One of its key benefits is that  
+it uses a highly optimized rendering pipeline that is specifically designed for  
+UI elements.
+Here are some general recommendations for optimizing performance  
+of your UI with UI Toolkit:
+	
+—
+Use efficient layouts: Efficient layouts refer to using layout groups 
+provided by UI Toolkit, such as Flexbox, instead of manually positioning 
+and resizing UI elements. Layout groups handle the layout calculations 
+automatically, which can significantly improve performance. They ensure 
+that UI elements are arranged and sized correctly based on the specified 
+layout rules. By utilizing efficient layouts, you avoid the overhead of 
+manual layout calculations and achieve consistent and optimized UI 
+rendering.
+	
+—
+Avoid expensive operations in Update: Minimize the amount of work 
+performed in Update methods, especially heavy operations like UI element 
+creation, manipulation, or calculation. Perform these operations sparingly 
+or during initialization when possible, since the update method is called 
+once per frame.
+	
+—
+Optimize event handling: Be mindful of event subscriptions and unregister 
+them when no longer needed. Excessive event handling can impact 
+performance, so ensure you only subscribe to events that are necessary.
+When using World Space Render Mode, make sure to fill in the Event Camera.
+
+64 of 80 | unity. com
+© 2023 Unity Technologies
+	
+—
+Optimize style sheets: Be mindful of the number of style classes and 
+selectors used in your style sheets. Large style sheets with numerous 
+rules can impact performance. Keep your style sheets lean and avoid 
+unnecessary complexity.
+	
+—
+Profile and optimize: Use Unity’s profiling tools to identify performance 
+bottlenecks in your UI and spot areas that can be optimized further, such 
+as inefficient layout calculations or excessive redraws.
+	
+—
+Test on target platforms: Test your UI performance on target platforms 
+to ensure optimal performance across different devices. Performance can 
+vary based on hardware capabilities, so consider the target platform when 
+optimizing your UI.
+Remember, performance optimization is an iterative process. Continuously 
+profile, measure, and optimize your UI code to ensure it runs smoothly and 
+efficiently.

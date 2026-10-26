@@ -1,0 +1,266 @@
+O B J E C T P O O L
+
+46 of 99 | unity. com
+© 2022 Unity Technologies
+Object pooling is an optimization technique to relieve the CPU when creating 
+and destroying a lot of GameObjects. 
+The object pool pattern uses a set of initialized objects kept ready and waiting 
+in a deactivated “pool. ” When you need an object, your application doesn’t 
+instantiate it. Instead you request the GameObject from the pool and enable it.
+When done using it, you deactivate the object and return it to the pool instead 
+of destroying it.
+Object pools can reduce stuttering that may result from garbage collection 
+spikes. GC spikes often accompany creating or destroying a large number of 
+objects due to the allocation of memory. You can pre-instantiate your object 
+pool at an opportune time, such as during a loading screen, when the user won’t 
+notice the stutter.
+An object pool can help you shoot bullets without gameplay stutter.
+Example: Simple pool system
+Consider a simple pooling system with two defined MonoBehaviours:
+	
+—
+An ObjectPool that holds the collection of GameObjects to draw from
+	
+—
+A PooledObject component added to the Prefab. This helps each cloned 
+item keep a reference to the pool
+
+47 of 99 | unity. com
+© 2022 Unity Technologies
+public class ObjectPool : MonoBehaviour
+{
+    [SerializeField] private uint initPoolSize;
+    [SerializeField] private PooledObject objectToPool;
+    // store the pooled objects in a collection
+    private Stack<PooledObject> stack;
+    private void Start()
+    {
+        SetupPool();
+    }
+    // creates the pool (invoke when the lag is not noticeable)
+    private void SetupPool()
+    {
+        stack = new Stack<PooledObject>();
+        PooledObject instance = null;
+        for (int i = 0; i < initPoolSize; i++)
+        {
+            instance = Instantiate(objectToPool);
+            instance.Pool = this;
+            instance.gameObject.SetActive(false);
+            stack.Push(instance);
+        }
+    }
+The SetupPool method populates the object pool. Create a new stack of 
+PooledObjects and then instantiate copies of the objectToPool to fill it with  
+initPoolSize elements. Invoke SetupPool in Start to make sure that it runs 
+once during gameplay.
+In ObjectPool, you set up fields describing the size of the pool, the PooledObject 
+Prefab that you want to store, and a collection that will form the pool itself (a 
+stack in this example).
+
+48 of 99 | unity. com
+© 2022 Unity Technologies
+// returns the first active GameObject from the pool
+    public PooledObject GetPooledObject()
+    {
+        // if the pool is not large enough, instantiate a new PooledOb-
+jects
+        if (stack.Count == 0)
+        {
+            PooledObject newInstance = Instantiate(objectToPool);
+            newInstance.Pool = this;
+            return newInstance;
+        }
+        // otherwise, just grab the next one from the list
+        PooledObject nextInstance = stack.Pop();
+        nextInstance.gameObject.SetActive(true);
+        return nextInstance;
+    }
+    public void ReturnToPool(PooledObject pooledObject)
+    {
+        stack.Push(pooledObject);
+        pooledObject.gameObject.SetActive(false);
+    }
+}
+GetPooledObject creates a new PooledObject only if the pool is empty. 
+Otherwise, it simply returns the next available element. If the pool size is 
+sufficient, most of the time you should only get a reference to an existing 
+GameObject.
+The client calling GetPooledObject then needs to move/rotate the pooled 
+object into place.
+Each pooled element will have a small PooledObject component, just to 
+reference the ObjectPool:
+You’ll also need methods to retrieve a pooled item (GetPooledObject) and 
+return one to the pool (ReturnToPool):
+public class PooledObject : MonoBehaviour
+{
+    private ObjectPool pool;
+    public ObjectPool Pool { get => pool; set => pool = value; }
+    public void Release()
+    {
+        pool.ReturnToPool(this);
+    }
+}
+
+49 of 99 | unity. com
+© 2022 Unity Technologies
+Calling Release disables the GameObject and returns it to the pool queue.
+The accompanying project shows a basic usage example. Here, an ExampleGun 
+script is attached to a GameObject. That stores a reference to the object pool. 
+When the user shoots, the weapon script invokes its GetPooledObject method 
+instead of calling Object.Instantiate.
+On the projectile itself is an ExampleProjectile script and a PooledObject 
+script. The ExampleProjectile has a Deactivate method to disable each 
+fired bullet GameObject after a few seconds, returning it to the available pool. 
+Disable and reuse pooled objects
+This way, you can appear to fire hundreds of bullets offscreen when in reality, 
+you simply disable and recycle them. Just make sure your pool size is large 
+enough to show the concurrently active objects.
+If you need to exceed the pool size, the pool can instantiate extra objects. 
+However, most of the time it pulls from the existing inactive objects. 
+If you’ve used Unity’s ParticleSystem, then you have firsthand experience with 
+an object pool. The ParticleSystem component contains a setting for the max 
+number of particles. This simply recycles available particles, preventing the 
+effect from exceeding a maximum number. The object pool works similarly, but 
+with any GameObject of your choosing.
+Active pooled objects
+Inactive pooled objects
+
+50 of 99 | unity. com
+© 2022 Unity Technologies
+Improvements
+The example above is a simple one. When deploying an object pool for actual 
+projects, consider the following upgrades:
+	
+—
+Make it static or a singleton: If you need to generate pooled objects 
+from a variety of sources, consider making the object pool static. This 
+makes it accessible anywhere in your application but precludes use of the 
+Inspector. Alternatively, combine the object pool pattern with the singleton 
+pattern to make it globally accessible for ease of use.  
+	
+—
+Use a dictionary to manage multiple pools: If you have a number of 
+different Prefabs that you want to pool, store them in separate pools and 
+store a key-value pair so you know which pool to query (the InstanceID  
+of the Prefab can work as the unique key).
+	
+—
+Remove unused GameObjects creatively: Part of utilizing an object pool 
+effectively is hiding unused objects and returning them to the pool. Use 
+every opportunity to deactivate a pooled object (e. g. , offscreen, hidden by 
+explosions, etc. )
+	
+—
+Check for errors: Avoid releasing an object that is already in the pool. 
+Otherwise, it might result in an error at runtime.
+	
+—
+Add a maximum size/cap: Lots of pooled objects consume memory. You 
+may need to remove objects that exceed a certain limit so that the pool 
+doesn’t use too many resources.
+How you use object pools will vary by application. This pattern commonly 
+appears when a gun or weapon needs to fire multiple projectiles like in a bullet 
+hell shooter. 
+Every time you instantiate a large number of objects, you run the risk of causing 
+a small pause from a garbage-collection spike. An object pool alleviates this 
+issue to keep your gameplay smooth.
+If you’re using a version of Unity from 2021 and above, it includes a built-in 
+object pooling system, so there’s no need to create your own PooledObject or 
+ObjectPool classes like in the previous example.
+UnityEngine. Pool
+The object pool pattern is so ubiquitous that Unity 2021 now supports its own 
+UnityEngine. Pool API. This gives you a stack-based ObjectPool to track your 
+objects with the object pool pattern. Depending on your needs, you can also use 
+a CollectionPool (List, HashSet, Dictionary, etc. )
+In the sample project (see the scene), you no longer need the custom pool 
+components. Instead, update the gun script with a using UnityEngine.Pool; line 
+at the top. This allows you to create a projectile pool with the built-in ObjectPool:
+
+51 of 99 | unity. com
+© 2022 Unity Technologies
+using UnityEngine.Pool;
+public class RevisedGun : MonoBehaviour
+{
+    …
+    // stack-based ObjectPool available with Unity 2021 and above
+    private IObjectPool<RevisedProjectile> objectPool;
+    // throw an exception if we try to return an existing item, already 
+in the pool
+    [SerializeField] private bool collectionCheck = true;
+    // extra options to control the pool capacity and maximum size
+    [SerializeField] private int defaultCapacity = 20;
+    [SerializeField] private int maxSize = 100;
+    private void Awake()
+    {
+        objectPool = new ObjectPool<RevisedProjectile>(CreateProjec-
+tile,
+            OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject,
+            collectionCheck, defaultCapacity, maxSize);
+    }
+    // invoked when creating an item to populate the object pool
+    private RevisedProjectile CreateProjectile()
+    {
+        RevisedProjectile projectileInstance = Instantiate(projec-
+tilePrefab);
+        projectileInstance.ObjectPool = objectPool;
+        return projectileInstance;
+    }
+    // invoked when returning an item to the object pool
+    private void OnReleaseToPool(RevisedProjectile pooledObject)
+    {
+        pooledObject.gameObject.SetActive(false);
+    }
+    // invoked when retrieving the next item from the object pool
+    private void OnGetFromPool(RevisedProjectile pooledObject)
+    {
+        pooledObject.gameObject.SetActive(true);
+    }
+    // invoked when we exceed the maximum number of pooled items (i.e. 
+destroy the pooled object)
+    private void OnDestroyPooledObject(RevisedProjectile pooledObject)
+    {
+        Destroy(pooledObject.gameObject);
+    }
+    private void FixedUpdate()
+    {
+        …
+    }
+}
+
+52 of 99 | unity. com
+© 2022 Unity Technologies
+Much of the script works for the original ExampleGun script. The ObjectPool 
+constructor, however, now includes the helpful ability to set up some logic when:
+	
+—
+First creating a pooled item to populate the pool
+	
+—
+Taking an item from the pool
+	
+—
+Returning an item to the pool
+	
+—
+Destroying a pooled object (e. g. , if you hit a maximum limit)
+You must then define some corresponding methods to pass into the constructor. 
+Note how the built-in ObjectPool also includes options for a default pool size 
+and maximum pool size. Items exceeding the max pool size trigger an action to 
+self-destruct, keeping memory usage in check. 
+The projectile script gets a small modification to keep a reference to the 
+ObjectPool. This makes releasing the object back to the pool a little more 
+convenient.
+public class RevisedProjectile : MonoBehaviour
+{
+    …
+    private IObjectPool<RevisedProjectile> objectPool;
+    // public property to give the projectile a reference to its Ob-
+jectPool
+    public IObjectPool<RevisedProjectile> ObjectPool { set => object-
+Pool = value; }
+    
+   …
+}
+The UnityEngine. Pool API makes setting up object pools faster, now that you 
+don’t have to rebuild the pattern from scratch. That’s one less wheel to reinvent.

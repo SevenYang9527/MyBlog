@@ -1,0 +1,120 @@
+74 of 80 | unity. com
+© 2023 Unity Technologies
+W O R K F L O W A N D 
+CO L L A B O R AT I O N
+Building an application in Unity is a large endeavor that will often involve many 
+developers. Make sure that your project is set up optimally for your team. 
+Use version control 
+Everyone should be using some type of version control. Make sure your  
+Editor Settings have Asset Serialization Mode set to Force Text. 
+If you’re using an external version control system (such as Git) in  
+the Version Control settings, make sure the Mode is set to Visible Meta Files.
+
+75 of 80 | unity. com
+© 2023 Unity Technologies
+Unity also has a built-in YAML (a human-readable, data-serialization language) 
+tool specifically used for merging scenes and prefabs. For more information,  
+see Smart Merge in the Unity documentation.
+Version control is essential for working as part of a team. It can help you track 
+down bugs and bad revisions. Follow good practices like using branches  
+and tags to manage milestones and releases. 
+For further versioning support, check out Plastic SCM, our recommended 
+version control solution for Unity game development.
+Break up large Scenes 
+Large, single Unity scenes do not lend themselves well to collaboration. 
+Divide your levels into multiple smaller scenes so artists and designers can 
+collaborate effectively on a single level while minimizing the risk of conflicts.
+Note that, at runtime, your project can load scenes additively using 
+SceneManager. LoadSceneAsync passing the LoadSceneMode. Additive 
+parameter mode.
+Remove unused resources 
+Watch out for any unused assets that come bundled with third-party plug-ins and 
+libraries. Many include embedded test assets and scripts, which will become part 
+of your build if you don’t remove them. Strip out any unneeded resources left over 
+from prototyping.
+
+76 of 80 | unity. com
+© 2023 Unity Technologies
+Reach the next level with  
+industry-leading expertise from  
+Accelerate Solutions 
+Accelerate Solutions specializes in helping game studios hit their most 
+ambitious goals across several use cases, including: improving performance 
+and optimization, game planning and technical design, project acceleration, 
+improving player KPIs and monetization, and delivering on challenging ports 
+and migrations. The global team is made up of Unity’s most senior software 
+developers and technical artists, with hands-on knowledge across the Unity 
+engine, multiplayer, cloud, devops, AI/ML, and game design.
+The team’s expertise lies in helping you take your game to the next level, no 
+matter what stage of game development you’re in. Mainly, the optimizations 
+focus on identifying general and specific performance issues such as frame 
+rate, memory, and binary size to improve player experiences and/or iteration 
+times. 
+Services offered range from consulting to full game development.
+	
+—
+Consulting 
+During these engagements, the consultant will analyze your project or 
+workflows and provide guidance and recommendations to your team on 
+how to achieve your desired outcome.
+	
+—
+Codevelopment 
+Working alongside your team, a Unity developer and/or team will deep dive 
+into your project and achieve a desired outcome.
+	
+—
+Custom development 
+For these engagements, the Accelerate Solutions team will assign and 
+partner with an internal Unity team that will lead and execute a project on 
+your behalf, owning it from inception to completion.
+	
+—
+Full game development 
+As the name implies, these are engagements where Accelerate Solutions 
+assigns a highly experienced Unity game studio team that will lead and 
+execute a project on your behalf, owning it from inception to completion.
+To learn more about Accelerate Solutions, please reach out.
+
+77 of 80 | unity. com
+© 2023 Unity Technologies
+Remove roadblocks with Unity 
+Integrated Success 
+From strategic planning to unforeseen challenges, if you need personalized 
+attention, consider Unity Integrated Success. Integrated Success is our most 
+complete Success Plan for your most complex projects. Get insight, hands-on 
+guidance, and premium technical support to ensure your project’s success. 
+Guaranteed response times and prioritized bug handling allow you to quickly 
+overcome roadblocks. 
+Integrated Success also allows you to optionally add read and modification 
+access to Unity source code. This access is available for development teams 
+that want to deep dive into Unity source code to adapt and reuse it for other 
+applications. 
+Optimize your game with a Project Review 
+Project Reviews are an essential part of the Integrated Success package.  
+Learn how to optimize your project during this annual review. Senior engineers 
+perform an analysis of your work and provide insights and actionable advice 
+specific to your goals. The team familiarizes themselves with your projects and 
+then uses various profiling tools to detect performance bottlenecks, factoring in 
+existing requirements and design decisions. They also try to identify points where 
+performance could be optimized for greater speed, stability, and efficiency. 
+For well-architected projects that have low build times (modular scenes, heavy 
+usage of AssetBundles, etc. ), they’ll make adjustments and reprofile to uncover 
+new issues. In instances where the team is unable to solve problems immediately, 
+they’ll capture as much information as possible and conduct further investigation 
+internally, consulting specialized developers across R&D if necessary. 
+Though deliverables can vary depending on your needs, findings are 
+summarized with recommendations provided in a written report. The team’s goal 
+is to always provide the greatest value to you by helping to identify potential 
+blockers, assess risk, validate solutions, and ensure that best practices are 
+followed moving forward.
+Partner Relations Manager (PRM) 
+In addition to a Project Review, Unity Integrated Success also comes with  
+a Partner Relations Manager (PRM) – a strategic Unity advisor who acts as your 
+internal advocate and an extension of your team to help you get the most out  
+of Unity. They maintain clear lines of communication so you’re always informed 
+and working towards your goals. Your PRM provides you with the dedicated 
+technical and operational expertise required to preempt issues and keep your 
+projects running smoothly, up to and following launch.
+To learn more about our Integrated Success packages, Project Reviews,  
+and PRMs, please reach out.

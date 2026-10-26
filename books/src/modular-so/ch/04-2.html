@@ -1,0 +1,104 @@
+<p>重构代码架构有几点好处：</p>
+
+<ul>
+<li><strong>设计师可以更独立于软件开发人员工作：</strong>把数据和逻辑都放在同一个 MonoBehaviour 上，会让开发人员与游戏设计师有互相踩到对方工作的风险。如果两个人改动了同一个 Prefab 或场景中不同的部分，就会产生合并冲突（merge conflict）。解决这类问题既耗时又令人沮丧。把共享数据拆分到更小的文件和资源中，可以减少这些问题。用 ScriptableObject 来设计架构，可以让设计师不必事事依赖程序员就能搭建玩法——结果就是所有人都更开心。只是在共享数据时，要准备好为团队之间定义清晰的工作流程。良好的沟通并划定一些边界，有助于避免此类问题。此外，可能还需要额外的错误检查或数据校验（例如使用 Range 特性或 OnValidate 来防止出现错误的值）。</li>
+<li><strong>编辑共享数据更快、也更不容易出错：</strong>现在对共享数据的改动会一次性全部生效。例如，如果你需要修改 NPC 的某项设置，只需要在一个位置调整，就能让每个场景中所有受影响的组件一并更新。这就减少了手动批量编辑大量单独 GameObject 时可能出现的错误。把数据卸载到 ScriptableObject 中还有助于版本控制，并在队友同时处理同一个场景或 Prefab 时避免合并冲突。</li>
+<li><strong>在 Play 模式下保存玩法调整：</strong>编辑器中的 Play 模式是设计师试验玩法和设置的好机会。但是，对 MonoBehaviour 所做的任何修改都会在退出 Play 模式时丢失，因为 Unity 会丢弃场景的临时副本。由于 ScriptableObject 是资源（asset），无论 Unity 是否处于 Play 模式，对其值的修改都会被更新。如果你想在运行时进行调整，这一点很有用。不过，如果你想要还原这些修改，它也可能成为隐患。只需记得依靠 Unity Version Control（原名为 PlasticSCM）、Git 或其他版本控制系统，这样在需要时你总能恢复自己的工作。更多信息请参阅我们的《版本控制与项目组织最佳实践》指南。</li>
+<li><strong>缩短场景加载时间：</strong>保存场景或 Prefab 时，Unity 会序列化其中的所有内容。这包括每个 GameObject、附加到这些 GameObject 上的每个组件，以及每个公共字段。Unity 在做这件事时并不会检查数据是否重复。把数据移到 ScriptableObject 中可以减小场景和 Prefab 的体积。由于磁盘 I/O 仍然相对较慢，这会明显影响加载和保存的速度。</li>
+</ul>
+
+<h2>ScriptableObject 变量</h2>
+
+<p>你可以用一个只表示单个值的 ScriptableObject，让共享数据容器变得更加细粒度。例如，你可以创建一个名为 IntVariable 的 ScriptableObject 类，其中只包含一个名为 value 的公共字段：</p>
+
+<pre><code>using UnityEngine;
+[CreateAssetMenu(menuName = "Variables/Int", order = 1)]
+public class IntVariableSO : ScriptableObject
+{
+    public int value;
+}</code></pre>
+
+<p>随后，你就可以在 MonoBehaviour 中使用这个 IntVariable。这样，PlayerHealth 类的结构就会像下面这样：</p>
+
+<pre><code>public class PlayerHealth : MonoBehaviour
+{
+    public IntVariableSO health;
+}</code></pre>
+
+<p>虽然我们通常认为 ScriptableObject 保存的是不会变化的值，但你可以为它们添加方法，在运行时更新这些数据（并在退出 Play 模式时重置为初始值）。这样一来，你就能让 ScriptableObject 实质上充当变量的角色——保存整数、浮点数、布尔值等等。</p>
+
+<p>这样，你的设计师就可以为游戏逻辑预留数据，而不必每次都需要软件开发人员介入。不过，要想成功，这需要提前规划。与你的设计师一起决定如何划分玩法数据的制作职责，并为协作方式划定一些边界。例如，编程团队可以先完成供物品栏系统（inventory system）使用的 ScriptableObject 初始搭建，然后由设计团队用它们来填写每个物品在游戏中的属性或行为。</p>
+
+<p>再写一些编辑器脚本（Editor scripting），这几乎可以变成无缝的体验。另一种可能是让 Inspector 中的字段在「使用 ScriptableObject 的共享值」和「使用常量」之间切换。这样游戏设计团队就能更自由地按实例覆盖 ScriptableObject 中的数据。</p>
+
+<figure><figcaption>图 1：来自开源项目 Unity Atoms 的一个基于 ScriptableObject 的 IntVariable 示例，展示只保存单个值的变量资源在 Inspector 中的样子。</figcaption></figure>
+
+<p>关于如何在你自己的项目中实现这种行为，请参阅 Unite Austin 上题为「Game architecture with ScriptableObjects」的演讲。你也可以下载开源的 Unity Atoms 项目，查看 ScriptableObject 变量的可用实现。</p>
+
+<h2>双重序列化（Dual serialization）</h2>
+
+<p>你可以在 Unity 中混合使用不同的数据序列化方式。这样，你可以在编辑器中用 ScriptableObject 工作，但把它们的数据存储到另一个位置，例如 JSON 或 XML 文件。这让你能够发挥每种格式各自的优势。</p>
+
+<p>像 JSON 和 XML 这样的文件格式在编辑器中可能不太好用，但在 Unity 之外用任意文本编辑器都很容易修改。</p>
+
+<p>相比之下，ScriptableObject 在编辑器中很好用，可以通过一次拖放操作快速替换。但是，它们不容易在 Unity 之外修改，也不容易在玩家社区中分享。</p>
+
+<p>混用序列化格式可以为你的游戏带来新的可能性，例如关卡编辑或模组制作（modding）。在构建时，脚本可以把其他文件转换为 ScriptableObject，其加载速度比纯文本更快。</p>
+
+<p>虽然你会希望把一些敏感数据安全地存放在服务器上（例如虚拟货币、账户信息），但把部分游戏数据开放给社区可能会提升玩法体验。如果你开放一个沙盒关卡（sandbox level）供用户试验，你可能会惊讶于玩家能搭建出什么样的关卡并在网上分享。</p>
+
+<p>想象有一个定义游戏关卡布局的 ScriptableObject。它可能只是包含若干 Transform，用来定义 Prefab 的位置、起始配置等等。你的游戏脚本会使用这些数据来组装每个关卡。</p>
+
+<p>想象一个游戏的墙壁和起始位置都存储在一个 ScriptableObject 中：</p>
+
+<pre><code>[CreateAssetMenu(fileName ="LevelLayout")]
+public class LevelLayout : ScriptableObject
+{
+    public Vector3[] wallPositions = new Vector3[2];
+    public Vector3[] playerPositions = new Vector3[2];
+    public Vector3[] goalPositions = new Vector3[2];
+    public Vector3 ballPosition;
+}</code></pre>
+
+<p>它定义了你如何搭建关卡。你的关卡管理脚本可以从 LevelLayout 对象中读取数据，然后在正确的位置实例化（instantiate）你的 Prefab。</p>
+
+<p>自定义脚本可以使用 JsonUtility 把这份数据导出到磁盘。这样就会在编辑器之外生成一个文本文件，你的用户可以用外部工具修改它。</p>
+
+<p>要加载一个自定义的模组关卡，可以用 ScriptableObject.CreateInstance 在运行时生成一个 ScriptableObject。然后从 JSON 文件中读取文本，填充到这个 ScriptableObject 中。下面这个 LoadLevelFromJson 示例方法演示了具体做法：</p>
+
+<pre><code>using System.IO;
+public class LevelManager : MonoBehaviour
+{
+    public ScriptableObject levelLayout;
+    public void LoadLevelFromJson(string jsonFile)
+    {
+        if (levelLayout == null)
+        {
+            levelLayout = ScriptableObject.CreateInstance&lt;LevelLayout&gt;();
+        }
+        var importedFile = File.ReadAllText(jsonFile);
+        JsonUtility.FromJsonOverwrite(importedFile, levelLayout);
+    }
+}</code></pre>
+
+<p>你的自定义数据会替换掉这个 ScriptableObject 的内容，让你可以像使用游戏中的其他任何关卡一样使用这个外部模组关卡。应用程序对此毫无察觉。</p>
+
+<p>一定要在示例项目（sample project）中亲自看看它的效果。如果我们加载一个修改过的 JSON 文件，这个自定义关卡会覆盖 ScriptableObject 上的默认关卡数据。</p>
+
+<h2>保护你的数据</h2>
+
+<p>这个简单的模组示例展示了 ScriptableObject 的一种可能用法。但是，在开放游戏数据供人修改时，你应当谨慎行事，避免玩家篡改应用程序的其他部分。</p>
+
+<p>以下是保护你不希望被模改的内容的常见方法：</p>
+
+<ul>
+<li><strong>加密（Encryption）：</strong>使用加密来保护数据文件，使其不易被读取或修改。这可以提高用户改动关键数据的难度。</li>
+<li><strong>数字签名（Digital signatures）：</strong>你可以使用指纹算法（fingerprint algorithm）来验证数据文件是否被篡改过。</li>
+<li><strong>服务器端校验（Server-side validation）：</strong>如果你的游戏依赖存储在服务器上的数据，请先在使用这些数据之前于服务器上进行检查，并拒绝任何看起来被操纵过的数据。</li>
+</ul>
+
+<p>没有任何单一方法是无懈可击的，通常最好将这些技术组合使用，这样你的玩家就不会把任何缺陷或安全漏洞（vulnerability）引入你的游戏。</p>
+
+<h3>混用序列化格式以获得更多灵活性</h3>
+
+<p>注意：使用 JsonUtility 把 JSON 反序列化（deserialize）到 ScriptableObject 时，你必须使用 FromJsonOverwrite 方法。JsonUtility 不会创建一个新对象再把 JSON 数据载入其中，而是把 JSON 数据载入一个已存在的对象。这样可以在不产生任何内存分配（allocation）的情况下更新存储在类或对象中的值。</p>

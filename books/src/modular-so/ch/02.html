@@ -1,0 +1,66 @@
+<h2>什么是 ScriptableObject？</h2>
+
+<p>ScriptableObject 是一种不属于任何 GameObject 实例的 Unity 对象。你可以用它创建带有自身变量和方法的自定义类，而它的开销比 MonoBehaviour 更小。</p>
+
+<p>ScriptableObject 不继承自 MonoBehaviour，而是继承自 ScriptableObject。你不能把它直接挂到 GameObject 上使用；不过，CreateAssetMenu 特性（attribute）会为你在菜单中增加一个额外操作。</p>
+
+<p>前往 Assets &gt; Create &gt; MyScriptableObject（或者在 Project 窗口中右键单击），就能从你的 ScriptableObject 类实例化出一个自定义资源（asset）。</p>
+
+<p>ScriptableObject 没有 Transform，也不存在于场景层级（Scene Hierarchy）中。它作为资源存在于项目层级，和材质（material）或 3D 模型很像。</p>
+
+<p>你可以这样声明一个 ScriptableObject：</p>
+
+<h3>创建一个 ScriptableObject</h3>
+
+<pre><code>[CreateAssetMenu(fileName="MyScriptableObject")]
+public class MyScriptableObject: ScriptableObject
+{
+    public int someVariable;
+}
+</code></pre>
+
+<p>对于任何不需要在运行时发生变化的内容，ScriptableObject 都特别有用。</p>
+
+<p>因为 Unity 把 ScriptableObject 当作一等对象（first-class object）对待，所以你可以：</p>
+
+<ul>
+  <li>把它们存储在变量中</li>
+  <li>在运行时动态创建或销毁它们</li>
+  <li>把它们作为参数传递</li>
+  <li>从方法中返回它们</li>
+  <li>把它们包含在数据结构中</li>
+  <li>对它们进行序列化（serialize）与反序列化（deserialize）</li>
+</ul>
+
+<p>最后一点突出了 ScriptableObject 的一项关键特性：能够出现在 Inspector 中。这意味着它的字段在编辑器里易于读取和修改。</p>
+
+<p>在运行时修改 ScriptableObject 中的值，你的游戏应用会立即更新。退出 Play 模式后，这些值仍会保留在原处。这让它对需要在不必编写代码的情况下平衡游戏设置的关卡设计师（game designer）很有用。此外，ScriptableObject 往往能在应用运行期间保存改动。</p>
+
+<p>相比只使用 MonoBehaviour，这带来了若干优势。用 ScriptableObject 重构项目，可以帮助团队更好地协作，或者改善内存占用。</p>
+
+<p>之后，任何其他脚本都可以通过一个字段，从任意场景引用这个 ScriptableObject 资源：</p>
+
+<pre><code>public class MyMonoBehaviour : MonoBehaviour
+{
+    public ScriptableObject soInstance;
+}
+</code></pre>
+
+<h3>序列化</h3>
+
+<p>序列化（Serialization）是自动把数据结构或对象状态转换成一种更便于稍后存储和重建的格式的过程。Unity 的序列化后端会把散落在内存各处的数据取出来，然后按顺序依次排列。</p>
+
+<p>这个重新组织后的数据流随后可以存储到数据库、文件或内存中。「反序列化」（Deserialization）则是相反的过程。</p>
+
+<p>序列化是把对象转换成字节流的过程，以便存储该对象，或把它传输到内存、数据库或文件中。</p>
+
+<p>尽管在 C# 开发中内存布局很容易被忽视，但我们应当了解 Unity 中若干使用序列化的内置功能：</p>
+
+<ul>
+  <li>保存与加载：如果你用文本编辑器打开一个 .unity 场景文件，并且已把 Unity 设置为「force text serialization」，那么序列化程序就会以 YAML 后端运行。</li>
+  <li>Inspector 窗口：这个界面并不会调用 C# API 去查明它所检视对象的各个值。相反，它要求对象把自己序列化，然后显示序列化后的数据。</li>
+  <li>预制件（Prefab）：在内部，预制件是 GameObject 和组件的序列化数据流。预制件实例则是一份修改列表，这些修改应当叠加在序列化数据之上进行。</li>
+  <li>实例化（Instantiation）：当你实例化一个预制件（或一个存在于场景中的 GameObject）时，你会先序列化该对象，创建一个新对象，然后把数据反序列化到新对象上。</li>
+</ul>
+
+<p>有关 Unity 中序列化的更多信息，请参阅这篇博文，或观看「How Unity's Serialization system works」。</p>

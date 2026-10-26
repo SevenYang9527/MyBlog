@@ -1,0 +1,271 @@
+T H E S O L I D 
+P R I N C I P L E S
+
+8 of 99 | unity. com
+© 2022 Unity Technologies
+Before charging into the patterns themselves, let’s look at some design 
+principles that influence how they work.
+SOLID is a mnemonic acronym for five core fundamentals of software design:
+	
+—
+Single responsibility
+	
+—
+Open-closed
+	
+—
+Liskov substitution
+	
+—
+Interface segregation
+	
+—
+Dependency inversion
+Let’s examine each concept and see how they help you make your code more 
+understandable, flexible, and maintainable.
+Single-responsibility principle
+A class should have one reason to change, just its single responsibility.
+The first and most important SOLID principle is the single-responsibility principle 
+(SRP), which states that each module, class, or function is responsible for one 
+thing and encapsulates only that part of the logic.
+Assemble your projects from many smaller ones instead of building monolithic 
+classes. Shorter classes and methods are easier to explain, understand, and 
+implement.
+If you’ve worked in Unity for a while, you’re likely already familiar with this 
+concept. When you create a GameObject, it holds a variety of smaller 
+components. For example, it might come with:
+	
+—
+A MeshFilter that stores a reference to the 3D model
+	
+—
+A Renderer that controls how the model surface appears onscreen
+	
+—
+A Transform component that stores scale, rotation, and position
+	
+—
+A Rigidbody if it needs to interact with the physics simulation
+Each component does one thing and does it well. You build an entire scene from 
+GameObjects. The interaction between their components is what makes a game 
+possible.
+You’ll construct your scripted components in the same way. Design them so 
+each one can be clearly understood. Then have them work in concert to make 
+complex behavior.
+
+9 of 99 | unity. com
+© 2022 Unity Technologies
+If you ignore single responsibility, you might create a custom component that 
+does this:
+A Player script with multiple responsibilities
+public class UnrefactoredPlayer : MonoBehaviour
+{
+    [SerializeField] private string inputAxisName;
+    [SerializeField] private float positionMultiplier;
+    private float yPosition;
+    private AudioSource bounceSfx;
+    private void Start()
+    {
+        bounceSfx = GetComponent<AudioSource>();
+    }
+    private void Update()
+    {
+        float delta = Input.GetAxis(inputAxisName) * Time.deltaTime;
+        yPosition = Mathf.Clamp(yPosition + delta, -1, 1);
+        transform.position = new Vector3(transform.position.x, yPosi-
+tion * positionMultiplier, transform.position.z);
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        bounceSfx.Play();
+    }
+}
+
+10 of 99 | unity. com
+© 2022 Unity Technologies
+This UnrefactoredPlayer class has a mishmash of responsibilities. It plays a 
+sound when a player collides with something, manages input, and handles 
+movement. Even if the class is relatively short at the moment, it will become 
+tricky to maintain as your project evolves. Consider breaking the Player class 
+into smaller classes.
+[RequireComponent(typeof(PlayerAudio), typeof(PlayerInput), 
+typeof(PlayerMovement))]
+public class Player : MonoBehaviour
+{
+    [SerializeField] private PlayerAudio playerAudio;
+    [SerializeField] private PlayerInput playerInput;
+    [SerializeField] private PlayerMovement playerMovement;
+    private void Start()
+    {
+        playerAudio = GetComponent<PlayerAudio>();
+        playerInput = GetComponent<PlayerInput>();
+        playerMovement = GetComponent<PlayerMovement>();
+    }
+}
+public class PlayerAudio : MonoBehaviour
+{
+    …
+}
+public class PlayerInput : MonoBehaviour
+{
+    …
+}
+public class PlayerMovement : MonoBehaviour
+{
+    …
+}
+The Player, refactored into classes with single responsibilities
+
+11 of 99 | unity. com
+© 2022 Unity Technologies
+A Player script can still manage the other scripted components but each class 
+does only one thing. This design makes it more approachable to revise the code, 
+especially as the requirements for your project change over time. 
+On the other hand, however, you need to balance the single-responsibility 
+principle with a good dose of common sense. Don’t oversimplify to the  
+extreme by creating classes with just one method.
+Keep these objectives in mind when working with the single-responsibility 
+principle:
+	
+—
+Readability: Short classes are easier to read. There is no hard and fast rule 
+but many developers set a limit of 200-300 lines. Determine for yourself 
+or as a team what constitutes “short. ” When you exceed this threshold, 
+decide if you can refactor it into smaller parts.
+	
+—
+Extensibility: You can inherit from small classes more easily.  
+Modify or replace them without fear of breaking unintended features.
+	
+—
+Reusability: Design your classes to be small and modular so that you can 
+reuse them for other parts of your game.
+When refactoring, consider how rearranging code will improve the quality of life 
+for yourself or other team members. Some extra effort at the beginning can save 
+you a lot of trouble later.
+Simple is not easy
+Simplicity is often talked about in software design and is a prerequisite 
+for reliability. Can your software design handle changes in production? 
+Can you extend and maintain your application over time? 
+Many of the design patterns and principles presented in this guide help 
+you enforce simplicity. In doing so, they make your code more scalable, 
+flexible, and readable. However, they require some extra work and 
+planning. “Simple” does not equate to “easy. ” 
+Though you can create the same functionality without the patterns (and 
+often more quickly), something fast and easy doesn’t necessarily result 
+in something simple. Making something simple means making it focused. 
+Design it to do one thing, and don’t overcomplicate it with other tasks.
+Check out Rich Hickey’s lecture, Simple Made Easy, to understand how 
+simplicity can help you build better software.
+
+12 of 99 | unity. com
+© 2022 Unity Technologies
+Open-closed principle
+The open-closed principle (OCP) in SOLID design says that classes must be 
+open for extension but closed for modification. Structure your classes so that 
+you can create new behavior without modifying the original code.
+A classic example of this is calculating the area of a shape. You can make a 
+class called AreaCalculator with methods to return the area of a rectangle 
+and circle. 
+For the sake of calculating area, a Rectangle class has a Width and Height.  
+A Circle only needs a Radius and the value of pi. 
+public class AreaCalculator 
+{
+    public float GetRectangleArea(Rectangle rectangle)
+    {
+        return rectangle.width * rectangle.height;
+    }
+    public float GetCircleArea(Circle circle)
+    {
+        return circle.radius * circle.radius * Mathf.PI;
+    }
+}
+public class Rectangle
+{
+     public float width;
+     public float height;
+}
+public class Circle
+{
+    public float radius;
+}
+This works well enough, but if you want to add more shapes to your 
+AreaCalculator, you’ll need to create a new method for each new shape. 
+Suppose you want to pass it a pentagon or an octagon later? What if you need 20 
+more shapes? The AreaCalculator class would quickly balloon out of control. 
+You could make a base class called Shape and create one method to process 
+the shapes. However, doing so would require multiple if statements inside  
+the logic to handle each type of shape. That won’t scale well.
+You want to open the program for extension (the ability to use new shapes) without 
+modifying the original code (the internals of the AreaCalculator). Though it’s 
+functional, the current AreaCalculator violates the open-closed principle.
+
+13 of 99 | unity. com
+© 2022 Unity Technologies
+How do we design the AreaCalculator to take new shapes?
+Instead, consider defining an abstract Shape class:
+public abstract class Shape
+{
+    public abstract float CalculateArea();
+}
+public class Rectangle : Shape
+{
+    public float width;
+    public float height;
+    public override float CalculateArea()
+    {
+        return width * height;
+    }
+}
+public class Circle : Shape
+{
+    public float radius;
+    public override float CalculateArea()
+    {
+        return radius * radius * Mathf.PI;   
+    }
+}
+This includes an abstract method called CalculateArea. If you then make 
+Rectangle and Circle inherit from Shape, each shape can calculate its own 
+area and return the following result:
+
+14 of 99 | unity. com
+© 2022 Unity Technologies
+The AreaCalculator can simplify into this:
+The revised AreaCalculator class can now get the area of any shape that 
+properly implements the abstract Shape class. You can then extend the 
+AreaCalculator functionality without changing any of its original source. 
+public class AreaCalculator 
+{
+    public float GetArea(Shape shape)
+    {
+        return shape.CalculateArea();
+    }
+}
+Revising the classes for the open-closed principle
+Every time you need a new polygon, simply define a new class that inherits from 
+Shape. Each subclassed shape then overrides the CalculateArea method to 
+return the correct area.
+This new design makes debugging easier. If a new shape introduces an 
+error, you don’t have to revisit the AreaCalculator. The old code remains 
+unchanged, so you only need to examine new code for any faulty logic.
+Take advantage of interfaces and abstraction when creating new classes in 
+Unity. This helps to avoid unwieldy switch or if statements in your logic that 
+will be difficult to extend later. Once you get accustomed to setting up your 
+classes to respect OCP, adding new code in the long term becomes simpler.
+
+15 of 99 | unity. com
+© 2022 Unity Technologies
+Liskov substitution principle
+The Liskov substitution principle (LSP) states that derived classes must be 
+substitutable for their base class. Inheritance in object-oriented programming 
+allows you to add functionality through subclasses. However, this can lead to 
+unnecessary complexity if you’re not careful.
+The Liskov substitution principle, the third pillar of SOLID, tells you how to  
+apply inheritance to make your subclasses more robust and flexible.
+Imagine your game requires a class called Vehicle. This will be the base class 
+of a vehicle subclass that you will create for your application. For example, you 
+might need a car or truck.
+Everything inherits from Vehicle.
+Everywhere you can use the base class (Vehicle), you should be able to use a 
+subclass like Car or Truck without breaking the application.

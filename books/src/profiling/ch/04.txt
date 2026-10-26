@@ -1,0 +1,200 @@
+M E M O RY 
+P R O F I L I N G
+3
+
+30 of 75 | unity. com
+© 2022 Unity Technologies
+Memory profiling is largely unrelated to runtime performance. It’s useful 
+for testing against hardware platform memory limitations or if your game is 
+crashing. It can also be relevant if you want to improve CPU/GPU performance 
+by making changes that actually increase memory usage. 
+There are two ways of analyzing memory usage in your application in Unity.
+The Memory Profiler module: This is a built-in profiler module that gives you 
+basic information on where your application uses memory.
+The Memory Profiler package: This is a Unity package that you can add to your 
+project. It adds an additional Memory Profiler window to the Unity Editor, which 
+you can then use to analyze memory usage in your application in even more 
+detail. You can store and compare snapshots to find memory leaks, or see the 
+memory layout to find memory fragmentation issues.
+With these built-in tools, you can monitor memory usage, locate areas of an 
+application where memory usage is higher than expected, and find and improve 
+memory fragmentation. 
+This section provides a brief introduction of memory profiling tools in Unity. For 
+a detailed explanation of them see the Unity profiling and debug tools section.
+Understand and define a memory budget
+Understanding and budgeting for the memory limitations of your target devices 
+are critical for multiplatform development. When designing scenes and levels, 
+stick to the memory budget that’s set for each target device. By setting limits 
+and guidelines, you can ensure that your application works well within the 
+confines of each platform’s hardware specification.
+You can find device memory specifications in developer documentation. For 
+example, the Xbox One console is limited to 5 GB of maximum available memory 
+for games running in the foreground, according to documentation.
+It can also be useful to set content budgets around mesh and shader 
+complexity, as well as for texture compression. These all play into how much 
+memory is allocated. These budget figures can be referred to during the 
+project’s development cycle.
+Determine physical RAM limits
+Each target platform has a memory limit, and once you know it, you can set a 
+memory budget for your application. Use the Memory Profiler to look at a capture
+
+31 of 75 | unity. com
+© 2022 Unity Technologies
+snapshot. The Hardware Resources (see image below) shows Physical Random 
+Access Memory (RAM) and Video Random Access Memory (VRAM) sizes. This 
+figure doesn’t account for the fact that not all of that space might be available to 
+use. However, it provides a useful ballpark figure to start working with.
+It’s a good idea to cross reference hardware specifications for target platforms, 
+as figures displayed here might not always show the full picture. Developer kit 
+hardware sometimes has more memory, or you may be working with hardware 
+that has a unified memory architecture.
+Determine the lowest specification to support for each target platform 
+Identify the hardware with the lowest specification in terms of RAM for each 
+platform you support, and use this to guide your memory budget decision. 
+Remember that not all of that physical memory might be available to use. For 
+example, a console could have a hypervisor running to support older games 
+which might use some of the total memory. Think about a percentage (e. g. , 
+80% of total) to use. For mobile platforms, you might also consider splitting into 
+multiple tiers of specifications to support better quality and features for those 
+with higher-end devices.
+Consider per-team budgets for larger teams
+Once you have a memory budget defined, consider setting memory budgets per 
+team. For example, your environment artists get a certain amount of memory 
+to use for each level or scene that is loaded, the audio team gets memory 
+allocation for music and sound effects, and so on. 
+It’s important to be flexible with the budgets as the project progresses. If one 
+team comes in way under budget, assign the surplus to another team if it can 
+improve the areas of the game they’re developing. 
+Once you decide on and set memory budgets for your target platforms, the next step 
+is to use profiling tools to help you monitor and track memory usage in your game.
+Hardware Resources shows the 
+device RAM and VRAM figures the 
+snapshot was captured on.
+
+32 of 75 | unity. com
+© 2022 Unity Technologies
+Simple and detailed views with Memory Profiler module 
+The Memory Profiler module provides two views: Simple and Detailed. Use the 
+Simple view to get a high-level view of memory usage for your application. 
+When necessary, switch to the Detailed view to drill down further.
+Simple
+The Total Used Memory figure is the “Total Tracked by Unity Memory.” It doesn’t 
+include memory that Unity has reserved (that figure is the Total Reserved Memory).
+The System Used Memory figure is what the OS considers as being in use by 
+your application. If this figure ever displays 0, be aware this indicates the Profiler 
+counter is not implemented on the platform you are profiling. In this case, the best 
+indicator to rely on is Total Reserved Memory. It’s also recommended to switch to 
+a native platform profiling tool for detailed memory information in these cases.
+Detailed
+To look into how much memory is used by your executable, DLLs, and the Mono 
+Virtual Machine, frame-by-frame memory figures will not cut it. Use a Detailed 
+snapshot capture to dig into this kind of a memory breakdown.
+Use the Memory Profiler module to quickly gather information relating to Asset and Scene object memory allocation.
+Use a captured sample to examine Detailed information such as Executable and DLL memory usage.
+
+33 of 75 | unity. com
+© 2022 Unity Technologies
+To determine at a high level when memory usage begins to approach platform 
+budgets, use the following “back of the napkin” calculation:
+System Used Memory (or Total Reserved Memory if System Used shows 0) 
++ ballpark buffer of untracked memory / Platform total memory
+When this figure starts approaching 100% of your platform’s memory budget, 
+use the Memory Profiler package to figure out why.
+In-depth analysis with Memory Profiler package
+The Memory Profiler package is useful for even more detailed memory analysis. 
+Use it to store and compare snapshots to find memory leaks or see the memory 
+layout of your application to find areas for optimization.
+One great benefit of the Memory Profiler package is that, as well as capturing 
+native objects (like the Memory Profiler module does), it also allows you to 
+view Managed Memory, save and compare snapshots, and explore the memory 
+contents in even more detail, with visual breakdowns of your memory usage.
+Note: The reference tree in the Detailed view of the Memory Profiler module 
+only shows Native references. References from objects of types inheriting 
+from UnityEngine. Object might show up with the name of their managed 
+shells. However, they might show up only because they have Native Objects 
+underneath them. You won’t necessarily see any managed type. Let’s take as 
+an example an object with a Texture2D in one of its fields as a reference. Using 
+this view, you won't see which field holds that reference, either. For this kind of 
+detail. use the Memory Profiler Package.
+The Memory Profiler main window view
+
+34 of 75 | unity. com
+© 2022 Unity Technologies
+Read more about the Memory Profiler in the Unity profiling and debug tools section.
+Alternatively, you can use the Detailed view in the Memory Profiler module to drill 
+down into the highest memory trees to find out what is using the most memory.
+Many of the features of the Memory Profiler module have been superseded by 
+the Memory Profiler package, but you can still use the module to supplement 
+your memory analysis efforts. 
+For example:
+	
+—
+To spot GC allocations: Although these show up in the module, they are 
+easier to track down using Project Auditor.
+	
+—
+To quickly look at the Used/Reserved size of the heap: Newer versions of 
+the Memory Profiler module show this information.
+	
+—
+Shader memory analysis: This is now reported in newer versions of the 
+Memory Profiler module.
+As stated earlier in this section, remember to profile on the device that has the 
+lowest specs for your overall target platform when setting a memory budget. 
+Closely monitor memory usage, keeping your target limits in mind.
+You’ll usually want to profile using a powerful developer system with lots of 
+memory available (space for storing large memory snapshots or loading and 
+saving those snapshots quickly is important).
+Memory profiling is a different beast compared with CPU and GPU profiling 
+in that it can incur additional memory overhead itself. You may need to profile 
+memory on higher-end devices (with more memory), but specifically watch out 
+for the memory budget limit for the lower-end target specification.
+The Memory Profiler module allows you to drill down through Assets and Scene objects to easily find those with the 
+highest utilization.
+
+35 of 75 | unity. com
+© 2022 Unity Technologies
+Points to consider when profiling for memory usage:
+	
+—
+Settings such as quality levels, graphics tiers, and AssetBundle variants 
+may have different memory usage on more powerful devices. For example:
+	
+—
+The Quality Level and Graphics settings could affect the size of 
+RenderTextures used for shadow maps. 
+	
+—
+Resolution scaling could affect the size of the screen buffers, 
+RenderTextures and post-processing effects.
+	
+—
+Texture quality setting could affect the size of all Textures.
+	
+—
+The maximum LOD could affect Models and more.
+	
+—
+If you have AssetBundle variants like an HD (High Definition) and an 
+SD (Standard Definition) version and choose which one to use based 
+on the device specifications, you also might get different asset sizes 
+based on which device you are profiling on.
+	
+—
+The Screen Resolution of your target device will affect the size of 
+RenderTextures used for post-processing effects.
+	
+—
+The supported Graphics API of a device might affect the size of Shaders 
+based on which variants of them are supported or not by the API. 
+	
+—
+Having a tiered system that uses different Quality Settings, Graphic Tier 
+settings and Asset Bundle variations is a great way to be able to target 
+a wider range of devices, e. g. , by loading a High Definition version of an 
+AssetBundle on a 4GB mobile device, and a Standard Definition version 
+on a 2GB device. However, take the above variations in memory usage in 
+mind and make sure to test both types of devices, as well as devices with 
+different screen resolutions or supported graphics APIs.
+Note: The Unity Editor will generally always show a larger memory footprint due 
+to additional objects that are loaded from the Editor and Profiler.

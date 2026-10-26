@@ -1,0 +1,73 @@
+<h2>性能分析入门</h2>
+
+<p>在深入探讨如何在 Unity 中分析游戏性能的细节之前，让我们先总结一些关键概念和性能分析原则。</p>
+
+<p>性能分析器（Profiler）是开发者工具箱中最有用的工具之一，可用于识别代码中的内存和性能瓶颈。</p>
+
+<p>把 Profiler 看作侦探工具，帮助你揭开谜团：为什么应用程序的性能会变得迟滞，或者为什么代码会分配多余的内存。它们帮助你理解 Unity 引擎底层正在发生什么。</p>
+
+<p>Unity 自带多种性能分析工具，可用于在编辑器中以及硬件上分析和优化代码。此外，还建议使用各个目标平台原生的性能分析工具，例如 Arm、Apple、PlayStation 和 Xbox 提供的工具。</p>
+
+<h3>理解 Unity 中的性能分析</h3>
+
+<p>Unity 的性能分析工具可在编辑器中以及通过 Package Manager 获取。</p>
+
+<ul>
+  <li>Unity Profiler：测量 Unity 编辑器、Play 模式下的应用程序的性能，或连接到以开发模式运行应用程序的设备</li>
+  <li>Profiling Core 包：提供可用于向 Unity Profiler 捕获数据添加上下文信息的 API</li>
+  <li>Memory Profiler：提供深入的内存性能分析的工具</li>
+  <li>Profile Analyzer：将两个性能分析数据集进行比较，以分析你所做的更改如何影响应用程序的性能</li>
+</ul>
+
+<p>“Unity profiling and debug tools”一节更详细地介绍了如何使用这些工具，以及 Frame Debugger。</p>
+
+<h3>采样式与插桩式性能分析</h3>
+
+<p>分析游戏性能有两种常用方法：</p>
+
+<ul>
+  <li>采样式性能分析（sample-based profiling）</li>
+  <li>插桩式性能分析（instrumentation profiling）</li>
+</ul>
+
+<p>采样式性能分析是指收集并分析应用程序中所执行工作的统计数据。</p>
+
+<p>采样式分析器每隔“n”纳秒探测一次调用栈，并利用调用栈信息来确定函数在何时被调用（以及被哪些函数调用），以及调用了多长时间。使用更高的采样频率可以提高这种分析方法的准确度，因为较短的函数调用不会被调用栈遗漏。不过，这也会带来更高的开销。</p>
+
+<h4>插桩式分析器</h4>
+
+<p>插桩式性能分析通过添加 Profiler 标记（marker）来“插桩”代码，这些标记记录每个标记内代码执行所需时间的详细计时信息。这种分析器会捕获每个标记的 Begin 和 End 事件流。这种方法不会丢失任何信息，但它确实依赖于标记被正确放置才能捕获到分析数据。</p>
+
+<p>Unity Profiler 是基于插桩的。通过在 Unity API 的大部分接口中设置标记，它在细节与开销之间取得了良好的平衡。重要的原生功能和脚本代码库消息调用都经过了插桩，以便在不产生过多开销的情况下捕获最重要的“大致轮廓”。</p>
+
+<p>这让你能够探究代码的性能、轻松定位性能问题，并发现可快速见效的优化点，同时还可以选择通过添加自定义 Profiler 标记或使用深度性能分析（deep profiling）进一步深入。</p>
+
+<p>深度性能分析会自动在每个脚本方法调用中插入 Begin 和 End 标记，包括 C# 的 getter 和 setter 属性。该系统在脚本侧提供完整的分析细节，但它会带来相关开销，根据捕获的分析作用域内的调用数量，这些开销可能会使报告的计时数据偏大。</p>
+
+<h4>Unity 中的插桩式性能分析</h4>
+
+<p>上文提到的脚本代码库消息调用（默认被显式插桩）通常包括从 Unity 原生代码调用到你的托管代码的第一次调用栈深度。例如，Start()、Update()、FixedUpdate() 等常见的 MonoBehaviour 方法都包含在内。</p>
+
+<figure><figcaption>图 1：对一个示例脚本进行性能分析时，可以看到 Update() 方法调用了 Unity 的 Instantiate() 方法</figcaption></figure>
+
+<p>你还可以在 Profiler 中看到托管脚本代码回调 Unity API 的子样本。不过有一点需要注意：所涉及的 Unity API 代码本身必须带有插桩的 Profiler 标记。大多数带有性能开销的 Unity API 都已插桩。例如，使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记。在查看捕获的性能分析数据集时，了解不同标记的含义很有帮助。使用这份常见 Profiler 标记列表可以了解更多。</p>
+
+<figure><figcaption>图 2：使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记</figcaption></figure>
+
+<h4>使用 Profiler 标记提高分析细节</h4>
+
+<p>默认情况下，Unity Profiler 会分析被 Profiler 标记显式包裹的代码计时。在代码的关键函数中手动插入 Profiler 标记，是提高分析运行细节水平的一种高效方法，且不会产生完整的深度性能分析开销。</p>
+
+<h3>Profiler 模块</h3>
+
+<p>Profiler 捕获每帧的性能指标，帮助你识别瓶颈。通过使用 Profiler 中包含的 Profiler 模块（例如 CPU Usage、GPU、Rendering、Memory、Physics 等）深入查看细节。</p>
+
+<figure><figcaption>图 3：主 Profiler 窗口视图，左侧显示各模块，底部显示详细信息面板</figcaption></figure>
+
+<p>Profiler 窗口会在视图底部的面板中列出当前所选 Profiler 模块捕获的详细信息。例如，CPU Usage Profiler 模块会以时间线或层级视图显示 CPU 的工作内容，以及具体的耗时。</p>
+
+<p>使用 Unity Profiler 评估应用程序的性能，并深入探究特定区域和问题。默认情况下，Profiler 会连接到 Unity 编辑器 Player 实例。</p>
+
+<p>请注意，在编辑器中分析性能与对独立构建版本进行分析之间会存在很大的性能差异。将 Profiler 连接到直接在目标硬件上运行的独立构建版本始终是更好的选择，因为这样可以获得最准确的结果，且没有编辑器开销。</p>
+
+<figure><figcaption>图 4：CPU Usage 模块的时间线视图，显示 Main 和 Render Thread 标记的详细信息</figcaption></figure>

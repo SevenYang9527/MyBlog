@@ -1,0 +1,217 @@
+<h2>状态模式（State Pattern）</h2>
+
+<p>想象一下，你正在构建一个可操控的角色。某一时刻，角色站在地面上。移动控制器，它看起来会奔跑或行走。按下跳跃键，角色会腾空跃起。几帧之后，它落地并重新回到站立待机的姿态。</p>
+
+<h3>状态与状态机</h3>
+
+<p>游戏是交互式的，这迫使我们去追踪许多在运行时发生变化的系统。如果你画一张图来表示角色的各种状态，可能会得到类似下面这样的结果：</p>
+
+<figure><figcaption>图 1：一张简单的状态图，用若干状态和它们之间的转换箭头描述角色从待机、行走、奔跑、跳跃到落地的状态流转</figcaption></figure>
+
+<p>它看起来像流程图，但有几处不同：</p>
+
+<ul>
+<li>该图由若干状态组成（待机／站立 Idling/Standing、行走 Walking、奔跑 Running、跳跃 Jumping 等等），并且在任意时刻只有一个当前状态处于激活状态。</li>
+<li>每个状态都可以根据运行时的条件触发向另一个状态的转换。</li>
+<li>当转换发生时，输出的状态就成为新的激活状态。</li>
+</ul>
+
+<p>这张图描述的东西叫作有限状态机（finite-state machine，FSM）。在游戏开发中，一个典型的用例是追踪游戏角色或场景道具的内部状态。</p>
+
+<p>要在代码中描述一个基本的 FSM，你可能会用枚举加 switch 语句这种朴素的做法。</p>
+
+<pre><code>public enum PlayerControllerState
+{
+    Idle,
+    Walk,
+    Jump
+}
+public class UnrefactoredPlayerController : MonoBehaviour
+{
+    private PlayerControllerState state;
+    private void Update()
+    {
+        GetInput();
+        switch (state)
+        {
+            case PlayerControllerState.Idle:
+                Idle();
+                break;
+            case PlayerControllerState.Walk:
+                Walk();
+                break;
+            case PlayerControllerState.Jump:
+                Jump();
+                break;
+        }
+    }
+    private void GetInput()
+    {
+        // 处理行走与跳跃输入
+    }
+    private void Walk()
+    {
+        // 行走逻辑
+    }
+    private void Idle()
+    {
+        // 待机逻辑
+    }
+    private void Jump()
+    {
+        // 跳跃逻辑
+    }
+}</code></pre>
+
+<p>这样写确实能跑起来，但 PlayerController 脚本很快会变得一团糟。每增加更多状态和复杂度，我们都得回头重新审视 PlayerController 脚本的内部实现。</p>
+
+<h3>示例：简单的状态模式</h3>
+
+<p>幸运的是，状态模式可以帮你重新组织这些逻辑。按照最初的“四人组”（Gang of Four）的说法，状态模式解决两个问题：</p>
+
+<ul>
+<li>对象应当在其内部状态改变时改变自身的行为。</li>
+<li>与特定状态相关的行为被独立地定义。添加新状态不会影响已有状态的行为。</li>
+</ul>
+
+<p>虽然上面示例中的 UnrefactoredPlayerController 类能够追踪状态变化，但它并不满足第二个问题。你希望在添加新状态时，对已有状态的影响降到最低。为此，你可以把状态封装成一个对象。</p>
+
+<p>想象把每个状态组织成下面这样：</p>
+
+<figure><figcaption>图 2：封装后的状态包含 Entry、Exit 与 Update 三部分，其中 Entry 处理从上一状态转入，Update 每帧求值，Exit 处理向下一状态转出</figcaption></figure>
+
+<p>在这里，你进入某个状态，并每帧循环执行，直到某个条件导致控制流退出。要实现这个模式，先创建一个接口 IState：</p>
+
+<p>游戏中每个具体状态都会实现 IState 接口：</p>
+
+<ul>
+<li>Entry（进入）：这段逻辑在首次进入该状态时执行。</li>
+<li>Update（更新）：这段逻辑每帧运行（有时也叫 Execute 或 Tick）。你可以像 MonoBehaviour 那样进一步细分 Update 方法，例如用 FixedUpdate 处理物理、用 LateUpdate 等等。Update 中的任何功能都会每帧运行，直到检测到触发状态切换的条件为止。</li>
+<li>Exit（退出）：这里的代码在离开该状态、转换到新状态之前运行。</li>
+</ul>
+
+<p>你需要为每个实现 IState 的状态创建一个类。在示例项目中，已经分别为 WalkState、IdleState 和 JumpState 建立了独立的类。</p>
+
+<pre><code>public interface IState
+{
+    public void Enter()
+    {
+        // 首次进入该状态时运行的代码
+    }
+    public void Update()
+    {
+        // 每帧逻辑，包含转换到新状态的条件
+    }
+    public void Exit()
+    {
+        // 退出该状态时运行的代码
+    }
+}</code></pre>
+
+<p>另一个类 StateMachine 则负责管理控制流如何进入和退出这些状态。以三个示例状态为例，StateMachine 可以写成这样：</p>
+
+<p>按照该模式，StateMachine 为其管理的每个状态引用一个公共对象（在本例中是 walkState、jumpState 和 idleState）。由于 StateMachine 不继承自 MonoBehaviour，因此要用构造函数来初始化每个实例：</p>
+
+<pre><code>[Serializable]
+public class StateMachine
+{
+    public IState CurrentState { get; private set; }
+    public WalkState walkState;
+    public JumpState jumpState;
+    public IdleState idleState;
+    public void Initialize(IState startingState)
+    {
+        CurrentState = startingState;
+        startingState.Enter();
+    }
+    public void TransitionTo(IState nextState)
+    {
+        CurrentState.Exit();
+        CurrentState = nextState;
+        nextState.Enter();
+    }
+    public void Update()
+    {
+        if (CurrentState != null)
+        {
+            CurrentState.Update();
+        }
+    }
+}</code></pre>
+
+<pre><code>public StateMachine(PlayerController player)
+{
+    this.walkState = new WalkState(player);
+    this.jumpState = new JumpState(player);
+    this.idleState = new IdleState(player);
+}</code></pre>
+
+<p>你可以把任何需要的参数传入构造函数。在示例项目中，每个状态都引用了一个 PlayerController，然后用它来逐帧更新各个状态（参见下面的 IdleState 示例）。</p>
+
+<p>关于 StateMachine，请注意以下几点：</p>
+
+<ul>
+<li>Serializable 特性让我们能在 Inspector 中显示 StateMachine（及其公共字段）。之后另一个 MonoBehaviour（例如 PlayerController 或 EnemyController）就可以把 StateMachine 当作字段来使用。</li>
+<li>CurrentState 属性是只读的。StateMachine 自身不会显式设置这个字段。像 PlayerController 这样的外部对象可以调用 Initialize 方法来设置默认状态。</li>
+<li>每个状态对象自行决定调用 TransitionTo 方法以切换当前激活状态的条件。在创建 StateMachine 实例时，你可以向每个状态传入任何必要的依赖（包括状态机自身）。在示例项目中，PlayerController 已经包含了对 StateMachine 的引用，因此你只需传入一个 player 参数。</li>
+</ul>
+
+<p>每个状态对象都会管理自己的内部逻辑，你可以根据 GameObject 或组件的需要创建任意多的状态。每个状态都有自己的类来实现 IState。遵循 SOLID 原则，增加更多状态对之前创建的任何状态影响都很小。</p>
+
+<p>下面是 IdleState 的一个示例：</p>
+
+<pre><code>public class IdleState : IState
+{
+    private PlayerController player;
+    public IdleState(PlayerController player)
+    {
+        this.player = player;
+    }
+    public void Enter()
+    {
+        // 首次进入该状态时运行的代码
+    }
+    public void Update()
+    { 
+        // 在这里添加逻辑，检测是否存在
+        // 转换到另一个状态的条件
+        …
+    }
+    public void Exit()
+    {
+        // 退出该状态时运行的代码
+    }
+}</code></pre>
+
+<p>同样，用构造函数传入 PlayerController 对象。在这个示例中，player 包含了对 StateMachine 的引用，以及 Update 逻辑所需的一切。idleState 会监视 Character Controller 的速度或跳跃状态，然后相应地调用 StateMachine 的 TransitionTo 方法。</p>
+
+<p>也请查看示例项目中 WalkState 和 JumpState 的实现。与其用一个庞大的类来切换行为，不如让每个状态拥有自己的更新逻辑。这样一来，各个状态就能彼此独立地运作。</p>
+
+<h3>优点与缺点</h3>
+
+<p>在为对象搭建内部逻辑时，状态模式可以帮助你遵循 SOLID 原则。每个状态都相对较小，只负责追踪转换到另一个状态的条件。遵循开闭原则，你可以在不影响已有状态的情况下添加更多状态，并避免冗长的 switch 或 if 语句。</p>
+
+<p>另一方面，如果你只需要追踪少数几个状态，这层额外的结构就可能显得过度设计。只有当你预期状态会增长到一定复杂度时，这个模式才可能是有意义的。</p>
+
+<h3>状态模式示例</h3>
+
+<h4>可改进之处</h4>
+
+<p>示例项目中的胶囊体会改变颜色，UI 也会随玩家的内部状态更新。在真实项目中，你可以为状态变化配上复杂得多的效果：</p>
+
+<ul>
+<li>添加事件：要把状态变化传达给外部对象，你可能想添加事件（参见观察者模式）。在进入或退出某个状态时触发事件，可以通知相关的监听者，让它们在运行时做出响应。</li>
+<li>添加层级：当你开始用状态模式描述更复杂的实体时，可能想实现层级状态机。有些状态不可避免地会相似；例如，如果玩家或游戏角色处于着地状态，那么无论是在 WalkingState 还是 RunningState 中，它都可以下蹲或跳跃。</li>
+<li>将状态模式与动画结合：状态模式的一个常见应用是动画。玩家或敌人角色在宏观层面通常用图元（胶囊体）表示。然后，你可以让带动画的几何体响应内部状态变化，于是游戏角色就能表现出奔跑、跳跃、游泳、攀爬等动作。</li>
+<li>实现简单的 AI：有限状态机在生成基础的敌人 AI 时也很有用。用 FSM 方式构建 NPC 大脑可能如下所示：</li>
+</ul>
+
+<p>如果你用过 Unity 的 Animator 窗口，就会注意到它的工作流与状态模式配合得很好。每个动画片段占据一个状态，同一时刻只有一个状态处于激活状态。</p>
+
+<figure><figcaption>图 3：Animator 状态图示例，可将其结构与 StateMachine 对照比较</figcaption></figure>
+
+<p>下面这张图再次展示了状态模式的应用，只不过换成了完全不同的场景。每个状态代表一个动作，例如攻击、逃跑或巡逻。同一时刻只有一个状态处于激活状态，每个状态自行决定如何转换到下一个状态。</p>
+
+<figure><figcaption>图 4：基于状态模式的简单 AI，包含受伤、血量低、恢复、发现玩家、玩家离开视野等状态之间的转换关系</figcaption></figure>
+
+<p>如果你实现一个 SuperState（超状态），就可以把共同行为放在一起。然后借助继承，你可以覆盖子状态中任何特定的行为。例如，你可以先声明一个 GroundedState，再从中继承出 RunningState 或 WalkingState。</p>

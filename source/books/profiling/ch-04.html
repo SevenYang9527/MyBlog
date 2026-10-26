@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>内存分析 · Unity 游戏性能分析终极指南</title>
+<meta name="description" content="Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 游戏性能分析终极指南</div>
+    <div class="book-en">Ultimate Guide to Profiling Unity Games</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析入门</a></li>
+      <li><a href="ch-03-1.html">性能分析工作流（1/3）</a></li>
+      <li><a href="ch-03-2.html">性能分析工作流（2/3）</a></li>
+      <li><a href="ch-03-3.html">性能分析工作流（3/3）</a></li>
+      <li><a href="ch-04.html">内存分析</a></li>
+      <li><a href="ch-05-1.html">Unity 性能分析与调试工具（1/5）</a></li>
+      <li><a href="ch-05-2.html">Unity 性能分析与调试工具（2/5）</a></li>
+      <li><a href="ch-05-3.html">Unity 性能分析与调试工具（3/5）</a></li>
+      <li><a href="ch-05-4.html">Unity 性能分析与调试工具（4/5）</a></li>
+      <li><a href="ch-05-5.html">Unity 性能分析与调试工具（5/5）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 75 页 · 共 5 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">04 · 内存分析</div>
+    <div class="pager"><a href="ch-03-3.html">← 上一节</a><a href="ch-05-1.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>内存性能分析（Memory Profiling）</h2>
+
+<p>内存性能分析在很大程度上与运行时性能无关。它适用于针对硬件平台内存限制的测试，或者在游戏发生崩溃时使用。如果你想通过一些实际上会增加内存占用的改动来提升 CPU/GPU 性能，它也可能会派上用场。</p>
+
+<p>在 Unity 中，有两种分析应用程序内存占用的方式。</p>
+
+<ul>
+<li><strong>Memory Profiler 模块（Memory Profiler module）</strong>：这是一个内置的性能分析器模块，可提供关于应用程序在何处使用内存的基本信息。</li>
+<li><strong>Memory Profiler 包（Memory Profiler package）</strong>：这是一个可以添加到项目中的 Unity 包。它会向 Unity 编辑器额外添加一个 Memory Profiler 窗口，你可以用它更细致地分析应用程序的内存占用。你可以存储并比较快照以查找内存泄漏，或查看内存布局以发现内存碎片问题。</li>
+</ul>
+
+<p>借助这些内置工具，你可以监控内存占用、定位应用程序中内存占用高于预期的区域，并发现和改善内存碎片。</p>
+
+<p>本节简要介绍 Unity 中的内存性能分析工具。关于它们的详细说明，请参阅 Unity 性能分析与调试工具部分。</p>
+
+<h3>理解并定义内存预算</h3>
+
+<p>理解目标设备的内存限制并据此制定预算，对于多平台开发至关重要。在设计场景和关卡时，要遵守为每种目标设备设定的内存预算。通过设定限制和指导原则，你可以确保应用程序在每个平台的硬件规格范围内良好运行。</p>
+
+<p>你可以在开发者文档中找到设备的内存规格。例如，根据文档，Xbox One 主机在前台运行游戏时，最大可用内存被限制为 5 GB。</p>
+
+<p>围绕网格与着色器的复杂程度，以及纹理压缩来设定内容预算同样很有用。这些都会影响内存的分配量。这些预算数值可以在项目的开发周期中随时参考。</p>
+
+<h3>确定物理内存上限</h3>
+
+<p>每个目标平台都有内存上限，一旦你了解了它，就可以为应用程序设定内存预算。使用 Memory Profiler 查看一次捕获的快照。Hardware Resources 面板（见下图）会显示物理随机存取内存（Physical Random Access Memory，RAM）和视频随机存取内存（Video Random Access Memory，VRAM）的容量。这个数值并没有考虑并非所有空间都可供使用的情况。不过，它提供了一个有用的粗略数值，可作为工作的起点。</p>
+
+<figure><figcaption>图 1：Hardware Resources 显示快照采集时所使用设备的 RAM 与 VRAM 数值。</figcaption></figure>
+
+<p>最好将这里显示的数值与目标平台的硬件规格相互参照，因为此处显示的数字未必总能反映全貌。开发机硬件有时拥有更多内存，或者你所使用的硬件采用了统一内存架构。</p>
+
+<h3>确定每个目标平台要支持的最低规格</h3>
+
+<p>针对你所支持的每个平台，找出内存（RAM）规格最低的硬件，并用它来指导内存预算的决策。请记住，并非所有物理内存都可供使用。例如，主机上可能运行着用于支持旧款游戏的管理程序（hypervisor），它会占用总内存的一部分。可以考虑按一定百分比（例如总内存的 80%）来使用。对于移动平台，你还可以考虑划分多个规格层级，以便为高端设备用户提供更好的画质与功能。</p>
+
+<h3>为较大的团队考虑按团队划分预算</h3>
+
+<p>一旦定义了内存预算，就可以考虑为每个团队设定内存预算。例如，你的环境美术师在每个加载的关卡或场景上拥有一定的内存额度，音频团队则获得用于音乐和音效的内存分配，依此类推。</p>
+
+<p>随着项目推进，预算保持灵活很重要。如果某个团队的实际用量远低于预算，就把盈余分配给另一个团队——前提是这能改善该团队正在开发的游戏内容。</p>
+
+<p>一旦你确定并设定了目标平台的内存预算，下一步就是使用性能分析工具来帮助你监控和跟踪游戏中的内存占用。</p>
+
+<h3>Memory Profiler 模块的简单视图与详细视图</h3>
+
+<p>Memory Profiler 模块提供两种视图：简单视图（Simple）与详细视图（Detailed）。使用简单视图可以获得应用程序内存占用的高层概览。必要时，切换到详细视图进一步深入查看。</p>
+
+<h4>简单视图</h4>
+
+<p>Total Used Memory 数值即“Total Tracked by Unity Memory”。它不包含 Unity 已预留的内存（该数值为 Total Reserved Memory）。</p>
+
+<p>System Used Memory 数值是操作系统认为你的应用程序正在使用的内存量。如果该数值显示为 0，请注意，这表明 Profiler 计数器并未在你正在分析的平台上实现。在这种情况下，最值得依赖的指标是 Total Reserved Memory。此时也建议改用平台原生的性能分析工具来获取详细的内存信息。</p>
+
+<h4>详细视图</h4>
+
+<p>要查明可执行文件、DLL 和 Mono 虚拟机占用了多少内存，逐帧的内存数值是不够的。请使用详细快照捕获来深入分析这类内存构成。</p>
+
+<figure><figcaption>图 2：使用 Memory Profiler 模块快速收集与资产（Asset）和场景对象内存分配相关的信息。</figcaption></figure>
+
+<figure><figcaption>图 3：使用捕获的样本查看可执行文件与 DLL 内存占用等详细信息。</figcaption></figure>
+
+<p>要在高层面上判断内存占用何时开始逼近平台预算，可以使用下面这个“餐巾纸背面”式的粗略计算：</p>
+
+<pre><code>System Used Memory（若 System Used 显示为 0，则改用 Total Reserved Memory）
++ 未跟踪内存的粗略缓冲量 / 平台总内存</code></pre>
+
+<p>当这个数值开始逼近平台内存预算的 100% 时，就该使用 Memory Profiler 包来查明原因了。</p>
+
+<h3>使用 Memory Profiler 包进行深入分析</h3>
+
+<p>Memory Profiler 包可用于更细致的内存分析。你可以用它存储并比较快照以查找内存泄漏，或查看应用程序的内存布局以找到可优化的区域。</p>
+
+<p>Memory Profiler 包的一大优势在于：它不仅能像 Memory Profiler 模块那样捕获原生对象（native object），还允许你查看托管内存（Managed Memory）、保存并比较快照，并通过可视化的内存占用细分图表，更细致地探查内存内容。</p>
+
+<p><strong>注意：</strong>Memory Profiler 模块详细视图中的引用树（reference tree）只显示原生引用（Native references）。类型继承自 UnityEngine.Object 的对象引用，可能会以其托管外壳（managed shell）的名称出现。不过，它们之所以出现，可能仅仅是因为其下存在原生对象。你不一定会看到任何托管类型。以某个引用字段中包含 Texture2D 的对象为例：使用这个视图，你也看不到究竟是哪个字段持有该引用。若需要这类细节，请使用 Memory Profiler 包。</p>
+
+<figure><figcaption>图 4：Memory Profiler 主窗口视图。</figcaption></figure>
+
+<p>在 Unity 性能分析与调试工具部分可以了解更多关于 Memory Profiler 的内容。</p>
+
+<p>或者，你可以使用 Memory Profiler 模块中的详细视图，深入查看内存占用最高的树状结构，找出占用内存最多的对象。</p>
+
+<p>Memory Profiler 模块的许多功能已经被 Memory Profiler 包所取代，但你仍然可以使用该模块来补充你的内存分析工作。</p>
+
+<p>例如：</p>
+
+<ul>
+<li>要发现 GC 分配：尽管这些分配会显示在该模块中，但使用 Project Auditor 更容易追踪它们。</li>
+<li>要快速查看堆的 Used/Reserved 大小：较新版本的 Memory Profiler 模块会显示这一信息。</li>
+<li>着色器内存分析：现在较新版本的 Memory Profiler 模块会报告这一信息。</li>
+</ul>
+
+<figure><figcaption>图 5：Memory Profiler 模块允许你逐层深入资产与场景对象，轻松找到内存占用最高的对象。</figcaption></figure>
+
+<p>正如本节前面所述，在设定内存预算时，请记住要在整体目标平台中规格最低的设备上进行性能分析。密切监控内存占用，始终将目标限制放在心上。</p>
+
+<p>你通常希望使用一台内存充裕的高性能开发机来进行性能分析（能够存储大型内存快照，或快速加载与保存这些快照，这很重要）。</p>
+
+<p>与 CPU 和 GPU 性能分析相比，内存性能分析是另一种不同的挑战，因为它本身就会带来额外的内存开销。你可能需要在内存更大的高端设备上分析内存，但要特别注意低端目标规格的内存预算限制。</p>
+
+<p>进行内存占用性能分析时需要考虑的几点：</p>
+
+<ul>
+<li>质量级别、图形层级和 AssetBundle 变体等设置，在性能更强的设备上可能产生不同的内存占用。例如：
+<ul>
+<li>Quality Level 和 Graphics 设置可能影响用于阴影贴图的 RenderTextures 的大小。</li>
+<li>分辨率缩放可能影响屏幕缓冲区、RenderTextures 和后处理效果的大小。</li>
+<li>纹理质量设置可能影响所有 Textures 的大小。</li>
+<li>最大 LOD 可能影响 Models 等资源。</li>
+<li>如果你有 AssetBundle 变体，例如 HD（High Definition）和 SD（Standard Definition）两个版本，并根据设备规格选择使用哪一个，那么你在不同设备上进行性能分析时，也可能得到不同的资产大小。</li>
+<li>目标设备的屏幕分辨率（Screen Resolution）会影响用于后处理效果的 RenderTextures 的大小。</li>
+<li>设备支持的图形 API（Graphics API）可能影响 Shaders 的大小，具体取决于该 API 支持哪些变体。</li>
+</ul>
+</li>
+<li>采用分级系统来使用不同的 Quality Settings、Graphic Tier 设置和 Asset Bundle 变体，是覆盖更广泛设备的好方法，例如在 4GB 的移动设备上加载高清晰度版本的 AssetBundle，在 2GB 的设备上加载标准清晰度版本。不过，请留意上述内存占用的差异，并确保同时测试这两类设备，以及屏幕分辨率不同或支持图形 API 不同的设备。</li>
+</ul>
+
+<p><strong>注意：</strong>由于编辑器与 Profiler 会加载额外的对象，Unity 编辑器通常总会显示出更大的内存占用。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-03-3.html"><span class="dir">← 上一节</span>性能分析工作流（3/3）</a>
+    <a href="ch-05-1.html"><span class="dir">下一节 →</span>Unity 性能分析与调试工具（1/5）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

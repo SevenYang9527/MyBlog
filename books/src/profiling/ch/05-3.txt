@@ -1,0 +1,200 @@
+52 of 75 | unity. com
+© 2022 Unity Technologies
+Profile Analyzer views
+Single view
+The Single view displays information about a single set of captured profile data. 
+Use it to analyze how profile markers perform across frames. This view is divided 
+into several panels, which contain information on timings, as well as min, max, 
+median, mean, and lower/upper quartile values for frames, threads, and markers.
+The Single view is an essential part of any profiling toolkit that provides many 
+useful insights. Here are some tips for diving deeper into the data it presents.
+The Single view shows profile marker statistics and timings for a single or range of frames.
+Profile Analyzer tips 
+	
+—
+Drill into user scripts (ignoring Unity Engine API levels) by selecting 
+a Depth level of 4. After filtering to this level and looking at the Unity 
+Profiler in timeline mode, you can correlate the call stack depth to make 
+a selection here – Monobehaviour scripts will appear in blue and are at 
+the fourth level down. This is a quick way to see if your specific logic and 
+gameplay scripts are taxing by themselves without any other “noise. ”
+	
+—
+Filter data in the same way for other areas of the Unity engine, such as 
+animators or engine physics.
+	
+—
+On the right side in the Frame Summary section, you’ll find the highlighted 
+method’s performance range histogram. Hover over the Max Frame 
+number (the exact frame in which max timing was found) to get a clickable 
+link to view the frame selection in the Unity Profiler. Use this view to 
+analyze other factors that potentially contribute to the high maximum 
+frame time.
+
+53 of 75 | unity. com
+© 2022 Unity Technologies
+Compare view
+The Compare view is where Profile Analyzer really starts to shine. In this view, you 
+can load two data sets that the Profile Analyzer displays in two different colors.
+Start by locating a specific area of your game or application to test. One way of doing 
+this is by running a prerecorded or scripted gameplay session that can be executed 
+multiple times. Capturing multiple session playthroughs manually also works.
+Load profile session data into Profile Analyzer with the “Pull Data” method:
+	
+—
+Open Profile Analyzer via Window > Analysis > Profile Analyzer.
+	
+—
+Profile the deterministic session before optimization work using the Unity 
+Profiler.
+	
+—
+In Profile Analyzer, switch to the Compare tab, then click the first Pull Data 
+button to load the current capture from the Profiler.
+	
+—
+Apply your code and performance improvements, then clear and profile a 
+new session again.
+	
+—
+Click the second Pull Data button to load the new session data.
+Use the Marker Comparison pane to view differences in timings of markers 
+between the first and second data sets (left and right). The columns marked 
+with < and > show the difference if the left or right data sets are larger in value. 
+Adjusting the Marker Columns filter will change the values that are compared 
+accordingly.
+Refer to the Compare View entry page for more details on each Marker 
+Comparison column.
+Comparing the median and longest frames from a capture
+Note: If you select the Load option, the data must be in the Profile Analyzer’s .
+pdata file format. If you have data from the Profiler in the . data file format, open 
+it in the Profiler first, then click the Pull Data button in Profile Analyzer. Be sure 
+to save your Profiler . data file before pulling it in so that you have a copy in this 
+format, too.
+
+54 of 75 | unity. com
+© 2022 Unity Technologies
+Comparing median and longest frames
+Compare the median and longest frames within a single Profiler capture to 
+pinpoint things happening in the latter that do not appear in the former, or to see 
+what is taking longer than average to complete.
+Open the Profile Analyzer Compare view and load the same data set for both 
+the left and right sides. You can also load a data set in the Single view, then 
+switch to Compare.
+Right-click the top Frame Control graph, and choose Select Median Frame. 
+Right-click the bottom graph, and choose Select Longest Frame.
+The Profile Analyzer Marker Comparison panel updates to display the differences.
+Another trick to compare data here 
+is to sort both graphs by frame 
+duration (Right-click > Order By 
+Frame Duration), then select a 
+range in each set, either focusing 
+on or excluding the outlier frames 
+(frames that are disproportionately 
+long or short).
+Comparing the median and longest frames from a capture
+Ordering Frames by Duration and selecting an outlier range
+
+55 of 75 | unity. com
+© 2022 Unity Technologies
+This allows a comparison between the most ordinary and extraordinary frames. 
+The data can then be analyzed in the filtered table called Marker Comparison for 
+the currently selected range. 
+Take a look at the following resources to learn more about the Profiler Analyzer:
+	
+—
+CPU performance analysis with Unity’s Profile Analyzer
+	
+—
+Introduction to profiling 
+Memory Profiler
+The Memory Profiler is an add-on package available in the Unity Package 
+Manager. Use the Memory Profiler to snapshot memory, either in the Editor or 
+running in a player.
+A snapshot shows memory allocations in the engine, allowing you to quickly 
+identify the causes of excessive or unnecessary memory usage, track down 
+memory leaks, or see heap fragmentation.
+After installing the Memory Profiler package, open it by clicking Window > 
+Analysis > Memory Profiler.
+The Memory Profiler’s top menu bar allows you to change the player selection 
+target and capture or import snapshots.
+On the left of the Memory Profiler window is the Workbench area. Use this to 
+manage and open or close saved memory snapshots. You can also use this area 
+to switch between Single and Compare Snapshots views.
+Change player selection and capture or import memory snapshots
+Note: Profile memory on target hardware by connecting the Memory Profiler 
+to the remote device with the Target selection dropdown. Profiling in the Unity 
+Editor will give you inaccurate figures due to overheads added by the Editor and 
+other tooling.
+
+56 of 75 | unity. com
+© 2022 Unity Technologies
+Similar to Profile Analyzer, the Memory Profiler allows you to load two data sets 
+(memory snapshots) to compare them. This is especially useful when looking at 
+how memory usage grew over time or between scenes and when searching for 
+memory leaks.
+Memory Profiler has a number of tabs in the main window that allow you to 
+dig into memory snapshots including Summary, Objects and Allocations, and 
+Fragmentation. Let’s look at each of these options in detail.
+The Summary view
+Choose this view when you want to get a quick overview of a project’s memory 
+usage. It also contains useful and important memory related figures for the 
+captured memory snapshot in question. It’s perfect for a quick glance at what’s 
+going on at the point in time when a snapshot was taken.
+The Workbench pane is used to manage memory snapshots.
+The Summary view displays an overview of memory at the time the snapshot was captured.
+
+57 of 75 | unity. com
+© 2022 Unity Technologies
+The Summary view also displays a breakdown of the memory usage as a 
+graphical Tree Map that you can drill into to discover those areas that consume 
+the most memory. 
+Below the Tree Map view is a filtered table that updates to display the list of 
+objects in the selected grid cells.
+The Tree Map shows memory attributed to Objects, either Native or Managed. 
+Managed Object memory tends to be dwarfed by Native Object memory, 
+making it harder to spot in the map view. You can zoom in on the tree map to 
+look at these, but for inspecting smaller objects, tables usually provide a better 
+overview. Clicking cells in the Tree Map will filter the table below it to the type 
+of the section and/or select the specific object of interest in the Objects and 
+Allocations view.
+You can track down which items reference objects in this list and possibly which 
+Managed class fields these references reside in by selecting the table row or the 
+Tree Map grid cell that represents it, then checking the References Section in 
+the Details side panel. If the side is hidden, you can make it visible via a toggle 
+button in the window’s top right hand part of the toolbar. 
+The Summary view also displays a Tree Map of memory usage for the time the snapshot was captured.
+A filtered table of objects in the memory snapshot updates to show those in the currently selected Tree Map grid cell
+The Details panel, containing References and 
+Selection Details sections. The Reference section 
+shows the references to the Object selected in the 
+Tree Map or table. The Selection Details section 
+contains details about that Object or any Object 
+selected in the References section.
+
+58 of 75 | unity. com
+© 2022 Unity Technologies
+This results from the fact that not all native memory is tied to Objects. It can 
+also consist of non-Object-associated Native Allocations such as executables 
+and DLLs, NativeArrays, and so on. Even more abstract concepts such as 
+“Reserved but unused memory space” can play into the Native Allocations total.
+Objects and Allocations
+The Objects and Allocations view shows a table that can be switched to filter 
+based on ready-made selections, such as All Objects, All Native Objects, All 
+Managed Objects, All Native Allocations, and more.
+You can switch the bottom table to display the Objects, Allocations, or Memory 
+Regions in the selected range. 
+Use this to your advantage when optimizing memory usage and aiming to pack 
+memory more efficiently for hardware platforms where memory budgets are limited.
+Memory profiling techniques and workflows
+Load a Memory Profiler snapshot and go through the Tree Map view to inspect 
+the categories, ordered from largest to smallest in memory footprint size.
+Project assets are often the highest consumers of memory. Using the Table 
+view, locate Texture objects, Meshes, AudioClips, RenderTextures, shader 
+variants, and preallocated buffers. These are all good candidates for memory 
+optimization.
+Note: The Tree Map only shows Objects in memory. It’s not a full representation 
+of tracked memory. This is important to understand in case you notice that the 
+Memory Usage Overview numbers are not the same as the Tracked Memory total.
+The Objects and Allocations table can be filtered at many levels, allowing you to drill down into captured snapshot 
+memory usage with high granularity.

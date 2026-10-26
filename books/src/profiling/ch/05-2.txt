@@ -1,0 +1,258 @@
+44 of 75 | unity. com
+© 2022 Unity Technologies
+Remote Frame Debugging
+It’s possible to attach the Frame Debugger to a player remotely on supported 
+platforms (WebGL is not supported). For Desktop platforms, enable Run In 
+Background for builds. 
+To set up remote frame debugging:
+	
+—
+Create a standard build of the project to your target platform (select 
+Development Player).
+	
+—
+Run the player.
+	
+—
+Open the Frame Debug window from the Editor.
+	
+—
+Click the Player selection dropdown and choose the active player that is 
+running.
+	
+—
+Click Enable.
+You can now step through draw calls and events in the Frame Debug list 
+hierarchy and observe the results in the active player.
+Render target display options
+The Frame Debug window has a toolbar which lets you isolate the red, green, 
+blue, and alpha channels for the current state of the Game view.
+Isolate areas of the view according to brightness levels using the Levels slider 
+to the right of the channel buttons. These controls are enabled when rendering 
+into a RenderTexture.
+When rendering into multiple render targets at once you can select which one to 
+display in the Game view using the RenderTarget dropdown list.
+The Frame Debug window 
+attached to a remote 
+player build.
+The Frame Debug render target depth channel controls.
+
+45 of 75 | unity. com
+© 2022 Unity Technologies
+The dropdown list also has a Depth option to show the contents of the depth buffer.
+Viewing the depth buffer contents with the Frame Debug window
+Five rendering optimizations for common pitfalls
+Use these tips and tricks to optimize common rendering performance issues 
+that can be identified using the Frame Debugger and other render debug tools.
+Identify your performance bottlenecks first
+To begin, locate a frame with a high GPU load. The majority of platforms provide 
+solid tools for analyzing your project’s performance on both the CPU and the 
+GPU. Examples include Arm Mobile Studio for Arm hardware / Mali GPUs, PIX for 
+Microsoft Xbox, Razor for Sony PlayStation, and Xcode Instruments for Apple iOS. 
+Use your respective native profiler to break down the frame cost into its specific 
+parts. This is your starting point to improve graphics performance.
+This view was GPU-bound on a PS4 Pro at roughly 45 ms per frame.
+
+46 of 75 | unity. com
+© 2022 Unity Technologies
+Draw call optimization
+PC and current generation console hardware can push a lot of draw calls, but 
+the overhead of each call is still high enough to warrant trying to reduce them. 
+On mobile devices, draw call optimization is vital. You can achieve this with 
+draw call batching.
+Use the Frame Debugger to help identify draw calls that can be reorganized for 
+optimal group and batch. The tool also helps to identify why certain draw calls 
+can’t be batched.
+Techniques to help reduce draw call batches include:
+	
+—
+Occlusion Culling: Remove objects hidden behind foreground objects and 
+reduce overdraw. Be aware this requires additional CPU processing, so 
+use the Profiler to ensure moving work from the GPU to CPU is beneficial. 
+	
+—
+GPU instancing: This can reduce your batches if you have many objects 
+that share the same mesh and material. A limited number of models in 
+your scene can improve performance. If it’s done artfully, you can build a 
+complex scene without making it look repetitive.
+	
+—
+The SRP Batcher: This can reduce the GPU setup between draw calls by 
+batching Bind and Draw GPU commands. To benefit from SRP batching, 
+use as many Materials as needed, but restrict them to a small number of 
+compatible shader variants, e. g. , Lit and Unlit Shaders in the Universal 
+Render Pipeline (URP) and High Definition Render Pipeline (HDRP), with as 
+few variations between keyword combinations as possible.
+Optimize fill rate by reducing overdraw
+Overdraw can indicate an application is trying to draw more pixels per frame 
+than the GPU can cope with. Not only is performance at risk, but thermals 
+and battery life on mobile devices suffer too. You can combat overdraw by 
+understanding how Unity sorts objects before rendering them.
+The Built-In Render Pipeline sorts GameObjects according to their Rendering 
+Mode and renderQueue. Each object’s shader places it in a render queue, which 
+often determines its draw order. 
+Objects rendering on top of one another 
+create overdraw. If you’re using the Built-
+In Render Pipeline, use the Scene view 
+control bar to visualize overdraw. Switch 
+the draw mode to Overdraw.
+Overdraw in the Scene view control bar
+
+47 of 75 | unity. com
+© 2022 Unity Technologies
+Bright pixels indicate objects drawing on top of one another, while dark pixels 
+mean less overdraw. 
+The HDRP controls the render queue slightly differently. Read the section on 
+Renderer and Material Priority to understand this approach in greater detail.
+HDRP includes tooling that can identify overdraw. To find overdraw in your 
+HDRP game use the Render Pipeline Debug tool via Window > Render Pipeline 
+> Render Pipeline Debug.
+Go to the Rendering section, and change Fullscreen Debug Mode to 
+TransparencyOverdraw.
+This debug option displays each pixel as a heat map, ranging from black, which 
+represents no transparent pixels, through to blue and then red, the latter color 
+indicating the Max Pixel Cost number of transparent pixels.
+With this mode enabled, you can play through scenes and areas of your 
+application, taking note of areas with significant overdraw. 
+Enable TransparencyOverdraw for Fullscreen Debug Mode to help locate overdraw in scenes.
+A Scene in standard Shaded view
+The same Scene in Overdraw view – overlapping geometry 
+is often a source of overdraw.
+
+48 of 75 | unity. com
+© 2022 Unity Technologies
+There are many more tools available to help with frame debugging and analysis. 
+Take a look at the profiling and debug tools index for further inspiration.
+To learn more about about the Unity Frame Debugger, check out the 
+following resources:
+	
+—
+Unity Frame Debugger documentation
+	
+—
+Working with the Frame Debugger
+	
+—
+Profiling Rendering 
+Examine your most expensive shaders
+This is a deep topic, but in general, aim to reduce shader complexity where 
+possible. Some easy wins here involve reducing precision where possible, i. e. , 
+use half precision floating point variables if you can. You can also learn about 
+wavefront occupancy for your target platform and how to use GPU profiling 
+tools to assist in getting a healthy occupancy.
+Multi-core optimization for rendering
+Enable Graphics Jobs in Player Settings > Other Settings to take advantage of 
+the multi-core processors in PlayStation and Xbox. Graphics Jobs allows Unity 
+to spread the rendering work across multiple CPU cores, removing pressure 
+from the render thread. See the Multithreaded Rendering and Graphics Jobs 
+tutorial for details.
+Profile post-processing effects
+Ensure that your post-processing assets are optimized for your target platform. 
+Tools from the Asset Store that were originally authored for PC games might 
+consume more resources than necessary on consoles or mobile devices. Profile 
+your target platform using its native profiler tools. When authoring your own post-
+processing effects for mobile or console targets, keep them as simple as possible.
+Visualizing overdraw with HDRP and the Fullscreen Debug Mode
+
+49 of 75 | unity. com
+© 2022 Unity Technologies
+Profile Analyzer
+While the standard Unity Profiler allows you to do single-frame analysis, the 
+Profile Analyzer can aggregate and visualize profiling marker data captured from 
+a set of Unity Profiler frames.
+To get started with the Profile Analyzer:
+	
+—
+Install the Profile Analyze Package via Window > Package Manager.
+When using the Profile Analyzer, a good approach is to save profiling sessions to 
+compare before and after performance optimization work.
+Profile Analyzer pulls a set of frames captured in the Unity Profiler and performs 
+statistical analysis on them. This data is then displayed, generating useful 
+performance timing information for each function, such as Min, Max, Mean, and 
+Median timings.
+It can help you answer problem and optimization questions during development. 
+Use it for A/B testing of a game scenario for performance differences, to 
+compare before and after profiling data for code refactoring and optimization, 
+new features, or even Unity version upgrades.
+Install Profile Analyzer from the 
+Package Manager.
+A great companion to the Unity Profiler, the Profile Analyzer can be used to aggregate and compare multiple frames 
+captured in profiling sessions.
+
+50 of 75 | unity. com
+© 2022 Unity Technologies
+Using aggregated data views in the Single view of the Profile Analyzer can also 
+answer high-level performance-over-time questions up front. This can be a 
+better way of looking at data, rather than viewing only one frame at a time. For 
+example, in a 300-frame (10-second) gameplay capture or a 20-second loading 
+sequence:
+	
+—
+What are the biggest CPU costs on the main and render thread?
+	
+—
+What is the mean/median/total cost of each of those markers?
+The answers to such questions can be essential for pinpointing where the 
+biggest problems are and what should be prioritized when optimizing.
+The statistics and detail available with Profile Analyzer allow you to delve deeper 
+into the performance characteristics of your code when running across multiple 
+frames, or even compared with previous profile capture sessions.
+Profile Analyzer has multiple views and approaches for analyzing profiling data. 
+It’s divided into panels for selecting, sorting, viewing, and comparing sets of 
+profiling data.
+The Frame Control panel is used to 
+select a frame or range of frames. 
+When selected, the Marker Details 
+pane updates to show aggregated data 
+for the selection with a sortable list of 
+markers containing useful statistics. 
+The Marker Summary pane displays in-
+depth information on selected markers. 
+Each marker in the list is an aggregation 
+of all the instances of that marker, 
+across all filtered threads in the range 
+of selected frames.
+The Profile Analyzer main window overview
+The Marker Summary panel contains detailed information 
+about each marker aggregation selected in the Marker 
+Details panel.
+
+51 of 75 | unity. com
+© 2022 Unity Technologies
+Use Filters to include or exclude markers by name, or filter by specific threads. This 
+is useful when looking through ranged selections for Time or Count statistic values.
+When adjusting filters, the Marker details pane can be customized to display 
+different sets of statistics for your profile data. Use the Marker column 
+dropdown to select a preset, or choose your own custom selection.
+The presets are:
+	
+—
+Time and count: Displays information on the average timings and number 
+of times the markers were called
+	
+—
+Time: Displays information on the average timings of the markers
+	
+—
+Totals: Displays information about the total amount of time the markers 
+took on the whole data set
+	
+—
+Time with totals: Displays information about both the average and total 
+times of the markers
+	
+—
+Count totals: Displays information about the total number of times the 
+markers were called
+	
+—
+Count per frame: Displays information on the average total per frame the 
+markers were called
+	
+—
+Depths: Displays information on where the markers are in the Hierarchy
+	
+—
+Threads: Displays the name of the thread that the markers appear on
+You can filter by threads or marker names to focus down on specific areas of performance data in the Marker details pane.
+Marker column presets to customize the Marker details pane’s displayed statistics

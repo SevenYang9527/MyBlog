@@ -1,0 +1,255 @@
+DATA CO N TA I N E R S
+
+16 of 75 | unity. com
+© 2023 Unity Technologies
+The most common use for ScriptableObjects is as data containers for shared 
+data, particularly for static game configuration data that doesn’t change at 
+runtime.
+Typical use cases of ScriptableObjects may include:
+	
+—
+Inventories
+	
+—
+Enemy, player, or item statistics
+	
+—
+Audio collections
+At runtime, you could store this data on MonoBehaviours, but doing so can be 
+inefficient. As you saw in the previous comparison, MonoBehaviours carry extra 
+overhead since they require a GameObject – and by default a Transform – to 
+act as a host. That means that you need to create a lot of unused data before 
+storing a single value.
+To see for yourself, generate a new GameObject with an otherwise empty 
+MonoBehaviour. Then, open the serialized object in a text editor:
+A new GameObject with a barebones MonoBehaviour
+GameObject:
+m_ObjectHideFlags: 0
+m_CorrespondingSource0bject: {fileID: 0}
+m_PrefabInstance: {fileID: 0} m_PrefabAsset: {fileID: 0}
+serializedVersion: 6 
+m_Component:
+– component: {fileID: 7467558130563611466}
+– component: {fileID: 2006805663113952451}
+m_Layer: 0
+m_Name: GameObject
+m_TagString: Untagged
+m_Icon: {fileID: 0}
+m_NavMeshLayer: 0
+m_StaticEditorFlags: 0
+m_IsActive: 1
+––– !u!4 &7467558130563611466
+Transform:
+m_ObjectHideFlags: 0
+m_CorrespondingSource0bject: {fileID: 0}
+m_PrefabInstance: {fileID: 0}
+m_PrefabAsset: {fileID: 0}
+m_GameObject: {fileID: 338842853706088653) m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+m_LocalPosition: {x: -1.1780801, y: -2.6573246, z: -0.01486098} 
+m_LocalScale: {x: 1, y: 1, z: 1}
+m_ConstrainProportionsScale: 0
+m_Children: []
+m_Father: {fileID: 0}
+m_RootOrder: 0
+m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+––– !u!114 &2006805663113952451
+MonoBehaviour:
+m_ObjectHideFlags: 0
+m_CorrespondingSource0bject: {fileID: 0}
+m_PrefabInstance: {fileID: 0}
+
+Compare that with an empty ScriptableObject:
+A ScriptableObject reduces overhead for storing data.
+The ScriptableObject slims down this memory footprint and drops the 
+GameObject and Transform. It also stores the data at the project level. That can 
+be helpful, especially if you need to access the same data from multiple scenes.
+MonoBehaviour:
+m_ObjectHideFlags: 0
+m_CorrespondingSource0bject: {fileID: 0}
+m_PrefabInstance: {fileID: 0}
+m_PrefabAsset: {fileID: 0}
+m_GameObject: {fileID: 0} m_Enabled: 1
+m_EditorHideFlags: 0
+m_Script: {fileID: 11500000, guid: a2d85be56c1ae45d69604547c4544ba5,
+m_Name: PlayerID m_EditorClassIdentifier:
+
+18 of 75 | unity. com
+© 2023 Unity Technologies
+The extra data from a MonoBehaviour might not impact your application’s 
+performance at first, but as your game grows and has more objects, it will 
+become noticeable.
+   ScriptableObject data versus persistent data
+When ScriptableObjects are referred to as data containers, this usually refers .
+to data that does not need to change at runtime. 
+While changes to ScriptableObject data do persist within the Editor (much 
+like changing values on a material asset), they won’t save at runtime in an 
+application build.
+Persistent data that needs to be saved from one session and then loaded 
+into another is typically stored in a different file format (e. g. , JSON, XML, 
+MessagePack, Protocol Buffers, and so on). See Dual Serialization below for 
+more details.
+It’s possible to change ScriptableObject data at runtime (e. g. , ScriptableObject 
+variables and Runtime Sets) in the game build, but these changes are temporary. 
+Starting a new game session will revert the ScriptableObject data back to its 
+original state at build time.
+Think of ScriptableObject data as “read-only” relative to persistent data, which 
+is “read-write” and saved in an external file.
+Reducing duplicate data
+Imagine you have a thousand GameObjects with custom MonoBehaviours, each 
+with several fields.
+If each component has its own copy of those member variables, that means you 
+might be carrying around a lot of duplicate data.
+Many objects with duplicate, local data leads to performance inefficiencies.
+
+19 of 75 | unity. com
+© 2023 Unity Technologies
+Some data does not necessarily need to change at runtime, so this is a little 
+inefficient. Instead, you can funnel that data into a ScriptableObject. Then, each 
+of the thousand objects can point to this shared data asset. Each object stores 
+a reference to the data rather than copying the data itself.
+   Design patterns
+Design patterns can help developers create more maintainable and flexible 
+code, which can be useful in the often-changing world of game development.
+Read Level up your code with game programming patterns for more about 
+SOLID principles and design patterns.
+A reference to the ScriptableObject (instead of a full copy of the data) is 
+comparatively small. As you scale up, the memory savings from not duplicating 
+data can become significant.
+Many objects sharing data via a ScriptableObject
+In software design, this is an optimization known as the flyweight pattern. 
+Restructuring your code in this way avoids copying a lot of values and reduces 
+your memory footprint.
+
+20 of 75 | unity. com
+© 2023 Unity Technologies
+The Memory Profiler compares memory usage of duplicate (A) versus shared data (B).
+You can store large quantities of shared data in this manner. Consider 
+ScriptableObjects for:
+	
+—
+Saving and storing data during an Editor session
+	
+—
+Saving data as an Asset for use at runtime
+Unlike MonoBehaviours, ScriptableObjects can’t be attached to a GameObject. 
+Instead, you save them as assets in your project. This is especially useful if you 
+have a Prefab that uses unchanging data in its MonoBehaviours.
+Refactoring example
+Consider a MonoBehaviour that controls an NPC’s health. You might define its 
+class like this:
+public class NPCHealthUnrefactored : MonoBehaviour
+{
+    [Range(10, 100)]
+    public int maxHealth;
+    [Range(10, 100)]
+    public int healthThreshold;
+    public NPCAIStateEnum goodHealthAi;
+    public NPCAIStateEnum lowHealthAi;
+    public int currentHealth;
+}
+
+21 of 75 | unity. com
+© 2023 Unity Technologies
+This works, but you have data that you won’t expect to change at runtime. If you 
+have many objects with NPCHealthUnrefactored attached, this can lead to a 
+lot of unnecessarily duplicated data.
+An NPCHealth MonoBehaviour before refactoring
+Any data that does not need to change can move it into a ScriptableObject:
+Use the CreateAssetMenu attribute to configure the menu action. You can 
+optionally specify the default fileName or menu item order.
+[CreateAssetMenu(fileName="NPCConfig")]
+public class NPCConfigSO : ScriptableObject
+{
+    [Range(10, 100)]
+    public int maxHealth;
+    [Range(10, 100)]
+    public int healthThreshold;
+    public NPCAIStateEnum goodHealthAi;
+    public NPCAIStateEnum lowHealthAi;
+}
+
+22 of 75 | unity. com
+© 2023 Unity Technologies
+   Code conventions in this guide
+Many of the code samples in this guide are simplified for illustrative purposes 
+and easier readability (e. g. , public fields). 
+In production, use private fields and public properties for additional 
+encapsulation and flexibility. Apply the SerializeField attribute to private 
+fields to make them appear in the Editor’s Inspector.
+A naming convention can also help differentiate scripts for ScriptableObjects 
+from MonoBehaviours. One way to achieve this is to add a “Data” or “SO” suffix 
+at the end of the class name. While this isn’t necessary, it can help keep your 
+project organized and reduce ambiguity.
+It’s recommended that you maintain and follow a code style guide as your 
+codebase grows. See Create a C# style guide for more information.
+Then the refactored NPCHealth component simplifies to this:
+public class NPCHealth: MonoBehaviour
+{
+    // Reference to our ScriptableObject
+    public NPCConfigSO config;
+    public int currentHealth;
+}
+
+23 of 75 | unity. com
+© 2023 Unity Technologies
+Refactoring splits data between a MonoBehaviour and ScriptableObject
+   Custom Inspectors
+When separating data into a ScriptableObject, you have data contained in two 
+places, the ScriptableObject asset and the MonoBehaviour referencing it.
+To make your MonoBehaviours easier to navigate, consider creating a custom 
+editor. Below is an example for the NPCHealth.
+A custom Inspector shows the ScriptableObject’s variables in the MonoBehaviour.
+The MonoBehaviour now contains a reference to this new ScriptableObject. In 
+the Inspector, everything after refactoring looks similar, except the data is split.
+
+24 of 75 | unity. com
+© 2023 Unity Technologies
+This allows you to inspect the NPCConfig’s variables alongside the other 
+properties in the MonoBehaviour. If you select the original NPCHealth Prefab, 
+you can easily edit values in both objects.
+A custom editor requires only a few lines of code:
+	
+—
+Derive a new class from Editor, and store this in a folder named “Editor. ” 
+Apply the CustomEditor attribute with the NPCHealth type. 
+	
+—
+Reserve a temporary editor for the NPCConfig ScriptableObject.
+	
+—
+In OnInspectorGUI, create the editor for the NPCHealth component.
+	
+—
+Draw the inspectors from the base class and new custom Inspector.
+using UnityEditor;
+[CustomEditor(typeof(NPCHealth))]
+public class NPCHealthEditor : Editor
+{
+    private Editor editorInstance;
+    private void OnEnable()
+    {
+// reset the editor instance
+editorInstance = null; 
+    }
+    public override void OnInspectorGUI()
+    {
+// the inspected target component
+NPCHealth npcHealth = (NPCHealth)target;
+if (editorInstance == null)
+editorInstance = Editor.
+CreateEditor(npcHealth.config);
+// show the variables from the MonoBehaviour  
+base.OnInspectorGUI();
+// draw the ScriptableObjects inspector
+editorInstance.DrawDefaultInspector();
+    }
+}
+You can expand on this example with custom property drawers and editor 
+attributes. This can even make for a better user experience when working with 
+ScriptableObjects.
+
+Architectural benefits
+With ScriptableObjects, you can cleanly separate shared data and unshared data. 
+Anything unique to the GameObject instance remains inside the MonoBehaviour, 
+while the shared data appears in the ScriptableObject. Architecture with 
+ScriptableObjects, however, goes beyond just saving memory.

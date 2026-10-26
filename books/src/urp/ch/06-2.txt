@@ -1,0 +1,220 @@
+73 of 140 | unity. com
+© 2024 Unity Technologies
+Shader helper functions are fundamental for shader coding. They not only 
+save you time, but are highly optimized implementations of commonly used 
+calculations. This include contains many helper functions related to:
+	
+—
+Platforms-specific functions
+	
+—
+Common math functions
+	
+—
+Texture utilities
+	
+—
+Texture format sampling
+	
+—
+Depth encoding/decoding
+	
+—
+Space transformations
+	
+—
+Terrain/brush heightmap encoding/decoding and miscellaneous utilities 
+Some of them are listed in the table below. The type real is set in the file; 
+depending on various flags, it could be a half or a float.
+Helper function
+Helper function
+real DegToRad(real deg)
+real RadToDeg(real rad)
+bool IsPower2(uint x)
+real FastACosPos(real inX)
+real FastASin(real x)
+real FastATan(real x)
+uint FastLog2(uint x)
+real3 Orthonormalize(real3 tangent, 
+real3 normal)
+real Pow4(real x)
+float4x4 Inverse(float4x4 m)
+float ComputeTextureLOD(float2 
+uv, float bias = 0.0)
+float Linear01Depth(float depth, 
+float4 zBufferParam)
+Preprocessor macros
+Preprocessor macros are handy and regularly used. When porting the  
+Built-in Render Pipeline shaders to new URP shaders, you’ll need to replace  
+the Built-in Render Pipeline macros with their URP equivalents.
+This table highlights a few examples.
+Built-in Render Pipeline
+URP
+UNITY_PROJ_COORD(a)
+Replace with a.xy/a.w
+UNITY_INITIALIZE_OUTPUT(type, 
+name)
+ZERO_INITIALIZE(type, name)
+
+74 of 140 | unity. com
+© 2024 Unity Technologies
+Notes for table: 
+* Shadow mapping macros need this shadow include.
+** The _PARAM are macros that can be used to declare functions with texture 
+and sampler arguments. Check out this document for more information.
+*** For Built-in Render Pipeline texture/sampler declaration, read this 
+documentation. 
+Shadow mapping*
+UNITY_DECLARE_SHADOWMAP(tex)
+TEXTURE2D_SHADOW_PARAM(textureName, 
+samplerName)**
+UNITY_SAMPLE_SHADOW(tex, uv)
+SAMPLE_TEXTURE2D_
+SHADOW(textureName, samplerName, 
+coord3)
+UNITY_SAMPLE_SHADOW_PROJ(tex, 
+uv)
+SAMPLE_TEXTURE2D_
+SHADOW(textureName, samplerName, 
+coord4.xyz/coord4.w)
+Texture/sampler declaration***
+UNITY_DECLARE_TEX2D(name)
+TEXTURE2D(textureName); 
+SAMPLER(samplerName);
+UNITY_DECLARE_TEX2D_
+NOSAMPLER(name)
+TEXTURE2D(textureName);
+UNITY_SAMPLE_TEX2D_SAMPLER( 
+name,samplername,uv)
+SAMPLE_TEXTURE2D(textureName, 
+samplerName, coord2)
+LightMode tags
+The LightMode tag defines the role of Pass in the lighting pipeline. In the Built-in 
+Render Pipeline, most shaders that need to interact with lighting are written as 
+Surface Shaders with all the necessary details taken care of. However, custom 
+shaders in the Built-in Render Pipeline need to use the LightMode tag to 
+specify how the Pass is considered in the lighting pipeline.
+The table below indicates the correspondence between the LightMode tags 
+used in the Built-in Render Pipeline and the tags that URP expects. Several 
+legacy Built-in Render Pipeline tags are not supported in URP: PrepassBase, 
+PrepassFinal, Vertex, VertexLMRGBM, and VertexLM. At the same time, 
+there are other tags in URP with no equivalent in the Built-in Render Pipeline. 
+When writing a shader for URP, it’s a good idea to look at the provided shaders 
+and the Passes they use. The following code example shows some of the code 
+from the Lit Shader. The complete shader is here.
+
+75 of 140 | unity. com
+© 2024 Unity Technologies
+Built-in Render 
+Pipeline (read 
+more here)
+Description
+URP (read more here)
+Always
+Always rendered; no lighting applied
+-
+ForwardBase
+Used in Forward rendering; Ambient, 
+main Directional light, vertex/SH lights, 
+and lightmaps applied
+UniversalForward
+ForwardAdd
+Used in Forward rendering; Additive 
+per-pixel lights applied, one Pass per 
+light
+UniversalForward
+Deferred
+Used in Deferred Shading; renders 
+G-buffer
+UniversalGBuffer
+ShadowCaster
+Renders object depth into the shadow 
+map or a depth texture
+ShadowCaster
+MotionVectors
+Used to calculate per-object motion 
+vectors
+MotionVectors
+URP uses this tag value in the Forward 
+Rendering Path; the Pass renders 
+object geometry and evaluates all light 
+contributions.
+UniversalForwardOnly
+-
+URP uses this tag value in the 2D 
+Renderer; the Pass renders objects and 
+evaluates 2D light contributions.
+Universal2D
+-
+The Pass renders only depth 
+information from the perspective of a 
+Camera into a depth texture.
+DepthOnly
+-
+This Pass is executed only when baking 
+lightmaps in the Unity Editor; Unity 
+strips this Pass from shaders when 
+building a Player.
+Meta
+-
+Use this tag value to draw an extra 
+Pass when rendering objects; it is valid 
+for both the Forward and Deferred 
+Rendering Paths. 
+ 
+URP uses this tag value as the default 
+value when a Pass does not have a 
+LightMode tag.
+SRPDefaultUnlit
+The UniversalForward and ShadowCaster Passes involve many pragmas and 
+two include files. Examining the code in the include files will help you create the 
+custom version that suits your needs.
+
+76 of 140 | unity. com
+© 2024 Unity Technologies
+//  Forward pass. Shades all light in a single pass. GI + emission + 
+Fog 
+Pass 
+{ 
+   // Lightmode matches the ShaderPassName set in
+   // UniversalRenderPipeline.cs. SRPDefaultUnlit and passes with
+   // no LightMode tag are also rendered by Universal Render Pipeline
+   Name "ForwardLit"
+   Tags{"LightMode" = "UniversalForward"}
+   Blend[_SrcBlend][_DstBlend], [_SrcBlendAlpha][_DstBlendAlpha]
+   ZWrite[_ZWrite]
+   Cull[_Cull] 
+   AlphaToMask[_AlphaToMask]
+   HLSLPROGRAM
+   #pragma exclude_renderers gles gles3 glcore
+   #pragma target 4.5
+   …
+   #pragma vertex LitPassVertex
+   #pragma fragment LitPassFragment
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-
+Input.hlsl"
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-
+ForwardPass.hlsl"
+   ENDHLSL
+}
+Pass
+{
+   Name "ShadowCaster"
+   Tags{"LightMode" = "ShadowCaster"}
+   ZWrite On
+   ZTest LEqual
+   ColorMask 0
+   Cull[_Cull]
+   HLSLPROGRAM
+   #pragma exclude_renderers gles gles3 glcore
+    …
+   #pragma vertex ShadowPassVertex
+   #pragma fragment ShadowPassFragment
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-
+Input.hlsl"
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/
+ShadowCasterPass.hlsl"
+   ENDHLSL
+}
+Note: A great resource for users planning to write shaders for URP  
+is this tutorial by Cyanilux.

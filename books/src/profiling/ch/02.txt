@@ -1,0 +1,123 @@
+P R O F I L I N G 1 0 1
+1
+
+8 of 75 | unity. com
+© 2022 Unity Technologies
+Profiling 101
+Before diving into the details of how to profile a game in Unity, let’s summarize 
+some key concepts and profiling principles.
+Profilers are some of the most useful tools to have in your developer toolbelt for 
+identifying memory and performance bottlenecks in your code.
+Think of profilers as detective tools that help you unravel the mysteries of why 
+performance in your application is lagging or why code is allocating excess 
+memory. They help you understand what is going on under the hood of the 
+Unity Engine.
+Unity ships with a variety of profiling tools for analyzing and optimizing your 
+code, both in the Editor and on hardware. It’s also recommended to use native 
+profiling tools for each target platform, such as those available from Arm, Apple, 
+PlayStation, and Xbox.
+Understanding profiling in Unity
+Unity’s profiling tools are available in the Editor and via the Package Manager. 
+	
+—
+Unity Profiler: Measures the performance of the Unity Editor, your 
+application in Play mode, or connect to a device running your application in 
+development mode
+	
+—
+Profiling Core package: Provides APIs that you can use to add contextual 
+information to Unity Profiler captures
+	
+—
+Memory Profiler: A tool that provides in-depth memory performance 
+analysis
+	
+—
+Profile Analyzer: Compare two profiling datasets together to analyze how 
+your changes affect your application’s performance
+The section “Unity profiling and debug tools” provides more details on how to 
+use these tools, along with the Frame Debugger. 
+Sample-based vs instrumentation profiling
+There are two common methods of profiling game performance: 
+	
+—
+Sample-based profiling
+	
+—
+Instrumentation profiling
+Sample-based profiling is when statistical data about the work that is being 
+done in the application is collected and then analyzed.
+
+9 of 75 | unity. com
+© 2022 Unity Technologies
+Sample-based profilers probe the call stack every “n” nanoseconds and 
+use call stack information to figure out when functions were called (and by 
+which functions), as well as for how long. Accuracy with this profiling method 
+increases by using higher sampling rate frequencies because shorter calls to 
+functions are not missed in the call stack. However, it leads to higher overhead.
+Instrumentation-based profiler
+Instrumentation-based profiling involves “instrumenting” the code by adding 
+Profiler markers, which record detailed timing information about how long the 
+code in each marker takes to execute. This profiler captures a stream of Begin 
+and End events for each marker. This method doesn’t lose any information, but it 
+does rely on markers being placed in order for profiling data to be captured.
+The Unity Profiler is instrumentation-based. A good balance of detail vs 
+overhead is struck by markers being set in most of the Unity API surface. 
+Important native functionality and scripting code base message calls are 
+instrumented to capture the most important “broad strokes” without incurring 
+too much overhead.
+This allows you to explore the performance of your code, locate performance 
+issues easily, and spot quick optimization wins, with the option of going even 
+deeper by adding custom Profiler markers or using deep profiling. 
+Deep profiling automatically inserts Begin and End markers in every scripting 
+method call, including C# Getter and Setter properties. This system gives full 
+profiling detail on the scripting side, but it comes with an associated overhead 
+that can inflate the reported timing data based on how many calls are within the 
+captured profiling scopes.
+Instrumentation-based profiling in Unity
+The scripting code base message calls mentioned above (instrumented 
+explicitly by default) usually include the first call stack depth of invocations from 
+Unity native code to your managed code. For example, common MonoBehaviour 
+methods such as Start(), Update(), FixedUpdate(), and others are included.
+Profiling an example script shows Update() method calls to the Unity Instantiate() method
+
+10 of 75 | unity. com
+© 2022 Unity Technologies
+You can also see child samples of your managed scripting code that call back 
+into Unity’s API in the Profiler. However, one caveat is the Unity API code in 
+question needs to have instrumentation Profiler markers itself. Most Unity 
+APIs that carry performance overheads are instrumented. For example, using 
+Camera. main will result in a FindMainCamera marker appearing in a profile 
+capture. When examining a captured profiling dataset, it is useful to know what 
+the different markers mean. Use this list of common Profiler markers to learn 
+more about them.
+Increase profiling detail with Profiler markers
+By default, the Unity Profiler will profile code timings that are explicitly wrapped 
+in Profiler markers. Manually inserting Profiler Markers into key functions in the 
+code can be an efficient way to increase the detail level of profiling runs without 
+incurring the full deep profiling overhead.
+Profiler modules
+The Profiler captures per-frame performance metrics to help you identify 
+bottlenecks. Drill down into details by using the Profiler modules included in the 
+Profiler, such as CPU Usage, GPU, Rendering, Memory, Physics, and so on.
+Using Camera. main results in a FindMainCamera marker appearing in a profile capture.
+The main Profiler 
+window view, showing 
+the modules to the left 
+and details panel at the 
+bottom
+
+11 of 75 | unity. com
+© 2022 Unity Technologies
+The Profiler window lists details captured with the currently selected Profiler 
+module in a panel at the bottom of the view. The CPU Usage Profiler module, 
+for instance, displays a timeline or hierarchy view of the work of the CPU, along 
+with specific times.
+Use the Unity Profiler to assess your application’s performance and dig into 
+specific areas and issues. By default, the Profiler will connect to the Unity Editor 
+Player instance. 
+Be aware that you will see a large difference in performance between profiling 
+in the Editor and profiling a standalone build. Connecting the Profiler to a 
+standalone build running directly on your target hardware is always preferable 
+since this yields the most accurate results without Editor overhead.
+The CPU Usage module Timeline view, showing Main and Render Thread marker detail

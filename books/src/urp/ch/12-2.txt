@@ -1,0 +1,142 @@
+125 of 140 | unity. com
+© 2024 Unity Technologies
+You can see occlusion culling in action using the Visualization tab. Select the 
+Camera in the scene and use the Occlusion Culling pop-up window in the Scene 
+view to configure the visualization. The pop-up might be hidden behind the small 
+Camera view window. Right-click the double-line icon and choose Collapse if this is 
+the case. Move the pop-up, then restore the Camera view using right-click expand.
+Visualization tab and Occlusion Culling pop-up
+As you move the Camera, you should see objects popping on and off.
+The effect of occlusion culling off in the left image, and on in the right image
+Pipeline settings
+While the effects of changing the settings for the URP Asset and using different 
+Quality tiers were previously covered, here are some additional tips  
+for experimenting with Quality tiers to get the best results for your project:
+	
+—
+Reduce Shadow Resolution and distance for performance gains.
+	
+—
+Disable features that your project does not require, such as depth texture 
+and opaque texture.
+	
+—
+Enable the SRP Batcher to use the new batching method. The SRP Batcher 
+will automatically batch together meshes that use the same shader 
+variant, thereby reducing draw calls. If you have numerous dynamic 
+objects in your scene, this can be a useful way to gain performance.  
+If the SRP Batcher checkbox is not visible, then click the three vertical 
+dots icon (  ) and select Show Additional Properties.
+
+126 of 140 | unity. com
+© 2024 Unity Technologies
+Frame Debugger
+Use the Frame Debugger to gain a better understanding of what’s happening 
+during rendering. To view additional information in the Frame Debugger window, 
+adjust the Debug Level using the URP Asset. As with the SRP Batcher checkbox, 
+this is only visible in the Inspector with Show Additional Properties enabled.
+Enabling additional properties for the URP Asset Inspector
+Setting the Debug Level
+Adjusting the Debug Level can affect performance. Always turn it off when the 
+Frame Debugger is not in use.
+The Frame Debugger shows a list of all the draw calls made before rendering 
+the final image and can help you pinpoint why certain frames are taking a long 
+time to render. It can also identify why your scene’s draw call count is so high.
+Open the Frame Debugger by going to Window > Analysis > Frame Debugger. 
+When your game is playing, select the Enable button. This will pause the game 
+and let you examine the draw calls.
+
+127 of 140 | unity. com
+© 2024 Unity Technologies
+Frame Debugger detail
+Clicking a stage in the render pipeline (left pane) will show a preview of this 
+stage in Game view.
+The Frame Debugger shows every step of the rendering process in the Game View – in this case, the SSAO generation step.
+Unity Profiler
+Like the Frame Debugger, the Profiler is a great way to determine how long 
+it takes to complete a frame cycle in your project. It provides an overview of 
+rendering, memory, and scripting. You can identify scripts that take a long time 
+to complete, helping you to pinpoint potential bottlenecks in your code.
+Open the Profiler via Window > Analysis > Profiler. When in Play Mode, the 
+window provides an overview of the overall performance of your game. You can 
+also pause the live view and use the Hierarchy Mode to get a breakdown of the 
+time taken to complete a single frame. The Profiler will show you each call Unity 
+has made during the frame.
+
+128 of 140 | unity. com
+© 2024 Unity Technologies
+For an even more detailed analysis, use the low-level native plug-in Profiler API. 
+You can use this Profiler API to extend the Profiler, and profile the performance 
+of native plug-in code, or to prepare profiling data to send to third-party 
+profiling tools such as Razor for Sony Playstation, PIX for Microsoft (Windows 
+and Xbox), as well as Chrome Tracing, ETW, ITT, VTune, or Telemetry.
+The Profiler window using the low-level native plug-in Profiler API
+#include <IUnityInterface.h>
+#include <IUnityProfiler.h>
+ 
+static IUnityProfiler* s_UnityProfiler = NULL;
+static const UnityProfilerMarkerDesc* s_MyPluginMarker = NULL;
+static bool s_IsDevelopmentBuild = false;
+ 
+static void MyPluginWorkMethod()
+{
+	
+if (s_IsDevelopmentBuild)
+    	
+s_UnityProfiler->BeginSample(s_MyPluginMarker);
+ 
+	
+// Code I want to see in Unity Profiler as "MyPluginMethod".
+	
+// ...
+ 
+	
+if (s_IsDevelopmentBuild)
+    	
+s_UnityProfiler->EndSample(s_MyPluginMarker);
+}
+ 
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPlugin-
+Load(IUnityInterfaces* unityInterfaces)
+{
+	
+s_UnityProfiler = unityInterfaces->Get<IUnityProfiler>();
+	
+if (s_UnityProfiler == NULL)
+    	
+return;
+	
+s_IsDevelopmentBuild = s_UnityProfiler->IsAvailable() != 0;
+	
+s_UnityProfiler->CreateMarker(&s_MyPluginMarker, "MyPluginMethod", 
+kUnityProfilerCategoryOther, kUnityProfilerMarkerFlagDefault, 0);
+}
+ 
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUn-
+load()
+{
+	
+s_UnityProfiler  = NULL;
+}
+On the left is an example of 
+using the low-level native 
+plug-in Profiler API 
+Additional resources
+If you’re interested in building 
+advanced profiling skills in 
+Unity, start by downloading 
+the free e-book, Ultimate 
+guide to profiling Unity 
+games. This guide brings 
+together advanced advice and 
+knowledge on how to profile 
+an application in Unity, manage 
+its memory, and optimize its 
+power consumption from start 
+to finish.
+A couple of other useful 
+resources recommended by Nik 
+include Measuring Performance 
+by Catlike Coding, and Unity 
+Draw Call Batching by The 
+Gamedev Guru.

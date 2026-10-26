@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unity 性能分析与调试工具（5/5） · Unity 游戏性能分析终极指南</title>
+<meta name="description" content="Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 游戏性能分析终极指南</div>
+    <div class="book-en">Ultimate Guide to Profiling Unity Games</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析入门</a></li>
+      <li><a href="ch-03-1.html">性能分析工作流（1/3）</a></li>
+      <li><a href="ch-03-2.html">性能分析工作流（2/3）</a></li>
+      <li><a href="ch-03-3.html">性能分析工作流（3/3）</a></li>
+      <li><a href="ch-04.html">内存分析</a></li>
+      <li><a href="ch-05-1.html">Unity 性能分析与调试工具（1/5）</a></li>
+      <li><a href="ch-05-2.html">Unity 性能分析与调试工具（2/5）</a></li>
+      <li><a href="ch-05-3.html">Unity 性能分析与调试工具（3/5）</a></li>
+      <li><a href="ch-05-4.html">Unity 性能分析与调试工具（4/5）</a></li>
+      <li><a href="ch-05-5.html">Unity 性能分析与调试工具（5/5）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 75 页 · 共 5 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">05 · Unity 性能分析与调试工具</div>
+    <div class="pager"><a href="ch-05-4.html">← 上一节</a></div>
+  </div>
+      <article class="content">
+<h2>应使用哪些性能分析工具，以及何时使用？</h2>
+
+<p>性能分析（profiling）在项目生命周期开始时启动，收益最大。尽早开始，你就可以建立基线（baseline），这些基线在游戏与应用开发更靠后的检查点（checkpoint）上用于对比时非常有用。了解该从「性能分析工具箱」（profiling tool belt）中选用哪种工具、以及何时使用它，非常重要。</p>
+
+<h3>在低配硬件上进行深度分析</h3>
+
+<p>较低规格的硬件内存与性能有限，这会影响你进行深度分析（Deep Profile）的能力。Unity 的 Profiler 采样存储在环形缓冲区（ring buffer）中，在较慢的设备上使用 Deep Profile 设置时，这个缓冲区可能被填满。如果发生这种情况，Unity 会显示一条错误消息。</p>
+
+<p>你可以通过设置 Profiler.maxUsedMemory 属性（单位为字节）为这些缓冲数据分配更多内存给 Profiler。Player 的默认值为 128 MB，Editor 的默认值为 512 MB。如果在深度分析时遇到问题，请在较慢设备的 Player 构建中按需增大该值。</p>
+
+<p>如果你需要在一台因深度分析带来的额外开销而运行过慢（或者根本跑不起来）的硬件上更细致地分析代码，你可以用自己的标记（marker）做更深入的分析。</p>
+
+<p>不要启用 Deep Profile 设置，而是在代码中你关心的特定区域添加 Profiler 标记。查看 CPU Usage 模块时，这些标记会出现在 Profiler 的 Timeline 或 Hierarchy 中。</p>
+
+<figure><figcaption>图 1：当深度分析带来过多开销时，添加 Profiler 标记以分析更深层的代码。</figcaption></figure>
+
+<p>一旦你理解了每种工具的用途与优势，就更容易知道何时该用它们。请务必在 Unity 性能分析与调试工具（Unity profiling and debug tools）章节中了解 Unity 提供的每一种性能分析工具。</p>
+
+<p>为了帮助回答「何时」这个问题，下面列出了项目生命周期中一些检查点的思路，在规划性能分析策略时可供参考。</p>
+
+<ul>
+  <li>
+    <p><strong>原型制作（prototyping）</strong>：在项目的原型阶段，性能分析对于降低风险很重要。如果游戏设计文档要求屏幕上出现 10,000 个敌人，你就需要能够构建并分析一个原型，证明这件事在目标平台上可行。如果不可行，你就得修改设计。</p>
+  </li>
+  <li>
+    <p><strong>项目早期阶段</strong>：在一批目标设备硬件上为项目性能建立基线。使用 Memory Profiler 大致了解内存使用情况，并确保项目的范围规划没有朝着这样的方向发展：到了后期，目标硬件上的内存上限会成为问题。</p>
+  </li>
+  <li>
+    <p><strong>冲刺结束（end of sprint）</strong>：如果你在敏捷（Agile）团队中按冲刺工作，那么冲刺末的发布候选版本（RC）就是运行一套标准化性能分析工具的绝佳时机。确保你有记录结果与指标的标准化格式，例如数据库或电子表格。使用 Unity Profiler 执行以下性能分析活动与数据采集：</p>
+    <ul>
+      <li>CPU Usage</li>
+      <li>GPU Usage</li>
+      <li>Memory Usage</li>
+      <li>Rendering</li>
+      <li>Physics</li>
+    </ul>
+    <p>进一步深入，并使用这些工具记录结果与关键差异指标（与之前的冲刺发布做差分对比）：</p>
+    <ul>
+      <li>Profile Analyzer：加载之前发布的性能分析数据采集，对比并记录差异。</li>
+      <li>Memory Profiler：对比之前发布候选版本构建的内存快照，记录内存增长或减少的差异。</li>
+    </ul>
+  </li>
+</ul>
+
+<h3>自动化关键性能与性能分析指标</h3>
+
+<p>通过自动化常见且重复的任务，提升你的项目性能分析与数据采集水平。这会为你节省时间，而且你能受益于始终最新的指标。</p>
+
+<p>指标可以绘制成图表并加入项目仪表板（dashboard），让团队看到性能在何处急剧下滑（例如新加入的功能或 bug），或者在优化与缺陷修复冲刺之后何处有所改善。</p>
+
+<p>绘制项目在所有游戏关卡上的整体内存使用情况随时间变化的曲线。通过用 Memory Profiler 采集内存快照，并对所有关卡的数据取平均值，你可以记录每个目标设备／平台、每个冲刺或每个发布周期的内存占用。</p>
+
+<figure><figcaption>图 2：自动化采集的每周构建性能分析数据，在 Grafana 仪表板中可视化。</figcaption></figure>
+
+<p>使用 Unity DevOps 工具（例如 Cloud Build）来自动化性能分析工作流。</p>
+
+<p>如果你想记录高层级的性能分析统计信息，可以使用 ProfilerRecorder 记录诸如 Total Reserved Memory 或 System Used Memory 之类的指标，并把它们输出到 CI（持续集成），再将它们导向图表或绘图工具，例如 Grafana。</p>
+
+<p>使用 Unity DevOps 工具（例如 Cloud Build）来自动化发布构建的创建，并把这一过程与自动化的设备性能分析工作流集成起来。</p>
+
+<h3>一个自动化性能分析流水线示例</h3>
+
+<p>自动化有助于确保你的团队获得分析构建带来的收益，而不必担心这个流程会因时间限制而被降低优先级。</p>
+
+<p>下面这个示例工作流展示了如何利用自动化来确保构建分析频繁且准确地发生。</p>
+
+<ul>
+  <li>
+    <p>使用 Unity Cloud Build 创建自动化的发布构建。</p>
+  </li>
+  <li>
+    <p>每次发布后，使用脚本启动构建好的播放器，并采集 2000 帧的原始性能分析数据：</p>
+    <pre><code>AngryBots2.exe -profiler-enable -profiler-log-file profile1.raw -profiler-capture-frame-count 2000</code></pre>
+    <p>要了解更多关于命令行参数的信息，请查看 Unity 文档。</p>
+    <p>注意：这里的另一个选项是使用脚本每 300–2000 帧切换到一个新的日志文件（例如 profile_&lt;N+1&gt;.raw），或者在应用测试周期的关键点（自动化关卡试玩中的检查点）进行分析。如果之后在仪表板图表中发现问题区域，就可以回头引用这些存储的数据。</p>
+  </li>
+</ul>
+
+<figure><figcaption>图 3：ProfileReader 的 Editor 界面。</figcaption></figure>
+
+<ul>
+  <li>
+    <p>性能分析数据被采集到 profile1.raw 文件中，现在可以解析出有价值的指标。</p>
+  </li>
+  <li>
+    <p>下一步使用 ProfileReader（一个用于解析原始性能分析数据并转换为 CSV 格式的工具）把原始性能分析数据转换为更易读的 CSV 格式。</p>
+  </li>
+  <li>
+    <p>ProfileReader 可以在命令行中使用，因此流水线的这一阶段将是一个执行它的脚本：</p>
+    <pre><code>Unity.exe -batchMode -projectPath "AngryBots2" -logFile .\Editor.log -executeMethod UTJ.ProfilerReader.CUIInterface.ProfilerToCsv -PH.inputFile "profile1.raw" -PH.timeout 2400 -PH.log</code></pre>
+  </li>
+  <li>
+    <p>数据从 CSV 解析出来之后，自动化流水线会为你的每夜、每周或冲刺发布把数据上传到 Grafana 之类的工具进行可视化。</p>
+  </li>
+</ul>
+
+<p>数据被自动可视化并更新后，你的团队可以轻松发现图表何时出现尖峰，从而更快地定位问题。他们还可以查看一项性能优化任务的结果，或者关卡设计团队在游戏各个关卡上进行的一轮内存优化所产生的结果。</p>
+
+<figure><figcaption>图 4：在 Grafana 仪表板中可视化自动化的性能分析数据。在这张截图中，看起来有人让一个物理对象创建相关的 bug 溜进了构建。</figcaption></figure>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05-4.html"><span class="dir">← 上一节</span>Unity 性能分析与调试工具（4/5）</a>
+    <span class="empty"></span>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

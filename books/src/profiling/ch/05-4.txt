@@ -1,0 +1,222 @@
+59 of 75 | unity. com
+© 2022 Unity Technologies
+Locating memory leaks
+A memory leak typically happens when:
+	
+—
+An object is not released manually from memory through the code
+	
+—
+An object stays in memory because of an unintentional reference
+The Memory Profiler Diff view can help find memory leaks by comparing two 
+snapshots over a specific timeframe.
+A common memory leak scenario in Unity games can occur after unloading a scene.
+The Memory Profiler package has a workflow that guides you through the 
+process of discovering these types of leaks using the Diff view.
+Locating recurring memory allocations over application lifetime
+Through differential comparison of multiple memory snapshots, you can identify 
+the source of continuous memory allocations during application lifetime.
+Memory Profiler module
+The Memory Profiler module in the 
+Unity Profiler represents managed 
+allocations per frame with a red line. 
+This should be 0 most of the time, 
+so any spikes in that line indicate 
+frames you should investigate for 
+managed allocations.
+Timeline view in the CPU Usage 
+Profiler module
+The Timeline view in the CPU Usage Profiler module shows allocations, 
+including managed ones, in pink, making them easy to see and hone in on.
+Managed allocations appear as pink-
+colored markers in the Timeline view.
+Any spikes seen for GC Allocated In Frame give you pointers 
+to investigate for managed allocations.
+
+60 of 75 | unity. com
+© 2022 Unity Technologies
+Allocation Call Stacks
+Allocation call stacks provide a quick way to discover managed memory 
+allocations in your code. These will provide the call stack detail you need at less 
+overhead compared to what deep profiling would normally add, and they can be 
+enabled on the fly using the standard Profiler.
+Allocation call stacks are disabled by default in the Profiler. To enable them, 
+click the Call Stacks button in the main toolbar of the Profiler window. Change 
+the Details view to Related Data.
+Note: If you’re using an older version of Unity (prior to Allocation call stack 
+support), then deep profiling is a good way to get full call stacks to help 
+find managed allocations.
+GC. Alloc samples selected in the Hierarchy or Raw Hierarchy will now contain 
+their call stacks. You can also see the call stacks of GC. Alloc samples in the 
+selection tool-tip in Timeline.
+Enabling Allocation call stacks in the Profiler will allow you to follow the call stack back to the source for managed allocations.
+The Related Data panel in the Hierarchy view will also reveal allocation call stack details.
+
+61 of 75 | unity. com
+© 2022 Unity Technologies
+The Hierarchy view in the CPU Usage Profiler module
+The Hierarchy view in the CPU Usage Profiler module lets you click on column 
+headers to use them as the sorting criteria. Sorting by GC Alloc is a great way to 
+focus on those.
+Project Auditor
+Project Auditor is an experimental static analysis tool. It does a lot of useful 
+things, several of which are outside the scope of this guide, but it can produce a 
+list of every single line of code in a project which causes a managed allocation, 
+without ever having to run the project. It’s a very efficient way to find and 
+investigate these sorts of issues. 
+Using the Hierarchy view in the CPU Usage Profiler module is a great way to filter and focus on managed allocations.
+Memory and GC optimizations
+Reduce the impact of garbage collection (GC)
+Unity uses the Boehm-Demers-Weiser garbage collector, which stops running 
+your program code and only resumes normal execution once its work is complete. 
+Be aware of unnecessary heap allocations that can cause GC spikes. 
+	
+—
+Strings: In C#, strings are reference types, not value types. This means 
+that every new string will be allocated on the managed heap, even if it’s 
+only used temporarily. Reduce unnecessary string creation or manipulation. 
+Avoid parsing string-based data files such as JSON and XML, and store 
+data in ScriptableObjects or formats like MessagePack or Protobuf instead. 
+Use the StringBuilder class if you need to build strings at runtime.
+	
+—
+Unity function calls: Some Unity API functions create heap allocations, 
+particularly ones which return an array of managed objects. Cache 
+references to arrays rather than allocating them in the middle of a 
+loop. Also, take advantage of certain functions that avoid generating 
+garbage. For example, use GameObject. CompareTag instead of manually 
+comparing a string with GameObject. tag (as returning a new string 
+creates garbage).
+
+62 of 75 | unity. com
+© 2022 Unity Technologies
+	
+—
+Boxing: Avoid passing a value-typed variable in place of a reference-
+typed variable. This creates a temporary object, and the potential garbage 
+that comes with it implicitly converts the value type to a type object (e. g. , 
+int i = 123; object o = i). Instead, try to provide concrete overrides with 
+the value type you want to pass in. Generics can also be used for these 
+overrides. 
+	
+—
+Coroutines: Though yield does not produce garbage, creating a new 
+WaitForSeconds object does. Cache and reuse the WaitForSeconds object 
+rather than creating it in the yield line.
+	
+—
+LINQ and Regular Expressions: Both of these generate garbage from 
+behind-the-scenes boxing. Avoid LINQ and Regular Expressions if 
+performance is an issue. Write for loops and use lists as an alternative to 
+creating new arrays.
+	
+—
+Generic Collections and other managed types: Don’t declare and 
+populate a List or collection every frame in Update (for example, a list of 
+enemies within a certain radius of the player). Instead, make the List a 
+member of the MonoBehaviour and initialize it in Start. Simply empty the 
+collection with Clear every frame before using it.
+Time garbage collection whenever possible
+If you are certain that a garbage collection freeze won’t affect a specific point in 
+your game, you can trigger garbage collection with System. GC. Collect.
+See Understanding Automatic Memory Management for examples of how to use 
+this to your advantage.
+Use the Incremental Garbage Collector to split the GC workload
+Rather than creating a single, long interruption during your program’s execution, 
+incremental garbage collection uses multiple, shorter interruptions that 
+distribute the workload over many frames. If garbage collection is causing an 
+irregular frame rate, try this option to see if it can reduce the problem of GC 
+spikes. Use the Profile Analyzer to verify its benefit to your application.
+Note that using the GC in Incremental mode adds read-write barriers to some 
+C# calls, which comes with some overhead that can add up to ~1 ms per frame 
+of scripting call overhead. For optimal performance, it’s ideal to have no GC 
+Allocs in the main gameplay loops so that you don’t need the Incremental GC for 
+a smooth frame rate and can hide the GC. Collect where a user won’t notice it, 
+for example when opening the menu or loading a new level.
+
+63 of 75 | unity. com
+© 2022 Unity Technologies
+To learn more about the Memory Profiler check out the following resources:
+	
+—
+Memory Profiler documentation
+	
+—
+Improve memory usage with the Memory Profiler in Unity tutorial
+	
+—
+Memory Profiler: The Tool for Troubleshooting Memory-related Issues 
+Unite session
+	
+—
+Working with the Memory Profiler Unity Learn session
+Deep profiling
+As mentioned in the Profiling 101 section, by default Unity only profiles code 
+that’s explicitly wrapped in Profiler markers. This includes the first call stack 
+depth of managed code invoked by the engine’s native code.
+Enabling Deep Profiling will result in the insertion of Profiler markers at the 
+beginning and end of each function call. This allows a great deal of detail to be 
+captured. Use the Deep Profile setting to work out what’s happening inside long 
+Profiler markers that don’t show enough of their call stacks.
+This granular approach to measuring game performance can be preferable to 
+snapshot-based profiling (sample profiling), which has the potential to miss 
+detail in captures.
+When to use deep profiling
+You should only enable the Deep Profile setting once you have identified the 
+specific part of your application or managed code that needs to be examined 
+in greater detail. Deep profiling is resource-intensive and consumes a lot of 
+memory. Your application will run slower when it’s enabled.
+Deep profiling allows you to traverse down the call tree in detail and spot 
+inefficiencies or problems in your code.
+Be sure to check out the ProfileMarker API as a way to manually instrument 
+problematic areas of code.
+They can have a much lower performance impact than deep profiling. 
+Sometimes it’s even quicker to add a ProfileMarker and rebuild your game than it 
+is to get to the part of the game you want to test with Deep Profiling enabled.
+Another alternative to get full call stacks on a device build is to run a native CPU 
+profiler. In some cases, this is easier and less intrusive to performance than 
+deep profiling.
+
+64 of 75 | unity. com
+© 2022 Unity Technologies
+Using deep profiling
+To use deep profiling with player builds, you’ll need to enable it via File > Build 
+Settings > Deep Profiling Support. 
+Once support is enabled, you can easily toggle Deep Profiling on or off for your 
+build whenever you want in the Profiler window.
+A Deep Profile button that’s faded out when attached to the player indicates 
+that Deep Profiling Support was not enabled for your build. 
+ 
+Deep profiling opens up a huge amount of detail when you need to trace and understand specific issues.
+Note: Support for Deep Profiling in both the Mono and IL2CPP backends was 
+added from Unity 2019. 3 onward, which is great news for platforms where 
+IL2CPP is mandatory, such as iOS.
+Enabling Deep Profiling Support
+
+65 of 75 | unity. com
+© 2022 Unity Technologies
+Deep profiling reveals much more information about the performance and timing of your application code. It shows the 
+full method call tree, helping you dig into where managed allocations are happening.
+Deep profiling tips 
+Top-to-bottom approach
+When profiling your application, start at a high level and try to locate areas 
+where performance can be improved without using deep profiling. As you 
+need more information, you can enable Deep Profiling in the Profiler to dig 
+in at a more granular level. Using this approach will help to keep the level of 
+information being displayed in the Profiler Hierarchy to a minimum, allowing you 
+to focus on the goal at hand.
+Deep profile only when absolutely necessary
+In general, it’s best to use deep profiling when you need to get much lower-level 
+detail about the performance of your code. While leaving the Deep Profiling 
+flag enabled for builds will not affect performance without actually toggling the 
+feature to enabled, when it is enabled, it causes your application to run slowly.
+If you are only interested in finding the source of managed allocations in your 
+code, remember that Unity 2019. 3 and onward allows you to do this without the 
+need to enable Deep Profiling. Use the Call Stacks toggle and Calls dropdown in 
+the Profiler to help locate managed allocations.
+Deep profiling in automated processes
+To toggle Deep Profiling on when profiling from the command line, add the 
+-deepprofiling argument to your build executable. For Android / Mono scripting 
+backend builds use the adb command line argument like this: adb shell am 
+start -n com. company. game/com. unity3d. player. UnityPlayerActivity -e 'unity' 
+'-deepprofiling'

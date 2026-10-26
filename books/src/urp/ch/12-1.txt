@@ -1,0 +1,127 @@
+120 of 140 | unity. com
+© 2024 Unity Technologies
+Performance
+Performance is highly dependent on the project you’re working on. Always 
+profile and test your game throughout the development cycle. Open the Profiler 
+via Window > Analysis > Profiler, and follow the suggestions in this chapter.
+The Profiler window
+This section looks at seven ways to improve the performance of your games:
+	
+—
+Managing your lighting
+	
+—
+Light Probes
+	
+—
+Reflection Probes
+	
+—
+Camera settings
+	
+—
+Pipeline settings
+	
+—
+Frame Debugger
+	
+—
+Profiler
+
+121 of 140 | unity. com
+© 2024 Unity Technologies
+These optimizations are also covered in this tutorial.
+Optimizing lighting and rendering in URP
+URP is built with optimized real-time lighting in mind. The URP Forward Renderer 
+supports up to eight real-time lights per object and up to 256 real-time lights 
+per camera for desktop games, plus 32 real-time lights per camera for mobile 
+and other handheld platforms. URP also allows for configurable per-object Light 
+settings inside the Pipeline Asset for refined control over lighting.
+As explained in the Lighting chapter, baked lighting is one of the best ways to 
+improve the performance of your scene. Real-time lighting can be expensive, 
+whereas baking lights can help you gain back performance, assuming the lights 
+in your scene are static. The baked lighting textures are batched into a single 
+draw call, without needing to be continuously calculated. This is especially 
+useful if your scene uses multiple lights. Another great reason to bake your 
+lighting is that it allows you to render bounced or indirect lighting in your  
+scene and improve the visual quality of the render.
+Global Illumination is similarly covered in the Lighting section. This process 
+simulates rays of light bouncing around the environment and illuminating other 
+nearby objects with the bounced light. The figure below shows three lighting 
+setups for the same scene: with no baked light data, with baked lighting, and 
+with post-processing applied.
+From left to right: no lighting data, baked lighting, post-processing added
+When baked, areas of shadow in a scene receive the bounced light and are 
+illuminated. It can be subtle, but this technique spreads the light around a  
+scene more realistically and improves its overall appearance.
+In the previous image, you can see that the specular highlights on the ground 
+are lost when baking. Baked lights only contain diffuse lighting. Whenever 
+possible, compute the direct lighting contribution from real-time, and have 
+Global Illumination come from Image Based Lighting (IBL)/shadow maps/Probes.
+The effect of light baking on shadows: before baking on the left, and after baking on the right
+
+122 of 140 | unity. com
+© 2024 Unity Technologies
+Use the lowest possible Lightmap Resolution and Lightmap Size when baking 
+your lights; go to Window > Rendering > Lighting > Scene. This helps to lower 
+the texture memory requirement.
+Setting the Lightmap Resolution and Max Lightmap Size
+Light Probes
+As explained in the Lighting section, Light Probes sample the lighting data in 
+the scene during baking and allow the bounced light information to be used by 
+dynamic objects as they move or change. This helps them blend into and feel 
+more natural in the baked lighting environment.
+Light Probes add naturalism to a render without increasing the processing time 
+for a rendered frame. This makes them suitable for all hardware, even low-end 
+mobile devices.
+The effect of using Light Probes when rendering a dynamic object: with Light Probe on the left, and without on the right
+Reflection Probes
+You can also use Reflection Probes to optimize your scene. Reflection Probes 
+project parts of the environment onto nearby geometry to create more realistic 
+reflections. By default, Unity uses the Skybox as the reflection map. But by using 
+one or more Reflection Probes, the reflections will match their surroundings more 
+closely.
+The effect of using Reflection Probes on smooth surfaces: with Reflection Probes on the left and without on the right
+
+123 of 140 | unity. com
+© 2024 Unity Technologies
+The size of the cubemap generated when baking the Reflection Probes depends 
+on how close the Camera gets to a reflective object. Always make sure to use 
+the smallest map size that suits your needs to optimize your scene.
+Adjusting the size of the Reflection Probe cubemap
+Camera settings
+The URP enables you to disable unwanted renderer processes on your cameras 
+for performance optimization. This is useful if you’re targeting both high- and 
+low-end devices in your project. Disabling expensive processes, such as post-
+processing, shadow rendering, or depth texture can reduce visual fidelity but 
+improve performance on low-end devices.
+Occlusion culling
+Another great way to optimize your Camera is with occlusion culling. By default, 
+the Camera in Unity will always draw everything in the Camera’s frustum, 
+including geometry that might be hidden behind walls or other objects.  
+There’s no point in drawing geometry that the player can’t see, and that takes  
+up precious milliseconds. This is where occlusion culling comes in.
+Occlusion culling is best suited to a scene where significant numbers of objects 
+might be masked when another item appears between them and the Camera. 
+A cellular corridor maze-type game is an ideal candidate for using occlusion 
+culling, as seen in the images below.
+Frustum culling in the image on left, and occlusion culling in the image on right
+
+124 of 140 | unity. com
+© 2024 Unity Technologies
+By baking occlusion data, Unity ignores the parts of your scene that are 
+blocked. Reducing the geometry being drawn per frame provides a significant 
+performance boost.
+To enable occlusion culling in your scene, mark any geometry as either 
+Occluder Static or Occludee Static. Occluders are medium to large objects 
+that can occlude objects marked as Occludees. To be an Occulder, an object 
+must be opaque, have a Terrain or Mesh Renderer component, and not move 
+at runtime. Occludees can be any object with a Renderer component, including 
+small and transparent objects that similarly do not move at runtime.
+You set the static properties using the usual drop-down.
+Settings for an object included in occlusion data
+Open Window > Rendering > Occlusion Culling, and select the Bake tab.  
+In the bottom-right corner of the Inspector, press Bake. Unity generates 
+occlusion data, saving the data as an asset in your project and linking the  
+asset to the current scene.
+Occlusion culling Bake tab

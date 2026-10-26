@@ -1,0 +1,54 @@
+33 of 80 | unity. com
+© 2023 Unity Technologies
+P R O J E C T 
+CO N F I G U R AT I O N
+There are a few Project Settings that can impact your mobile performance.
+Reduce or disable Accelerometer Frequency 
+Unity pools your mobile’s accelerometer several times a second.  
+Disable this if it’s not being used in your application, or reduce its frequency  
+for better performance.
+Ensure your Accelerometer Frequency is disabled if you are not making use of it in your mobile game.
+
+34 of 80 | unity. com
+© 2023 Unity Technologies
+Disable unnecessary Player or Quality settings
+In the Player settings, disable Auto Graphics API for unsupported platforms 
+to prevent generating excessive shader variants. Disable Target Architectures 
+for older CPUs if your application is not supporting them.
+In the Quality settings, disable unneeded Quality levels.
+Disable unnecessary physics
+If your game is not using physics, uncheck Auto Simulation and Auto Sync 
+Transforms. These will just slow down your application with no discernible benefit.
+Choose the right frame rate 
+Mobile projects must balance frame rates against battery life and thermal 
+throttling. Instead of pushing the limits of your device at 60 fps, consider 
+running at 30 fps as a compromise. Unity defaults to 30 fps for mobile. 
+You can also adjust the frame rate dynamically during runtime with 
+Application. targetFrameRate. For example, you could even drop below  
+30 fps for slow or relatively static scenes and reserve higher fps settings  
+for gameplay.
+Avoid large hierarchies
+Split your hierarchies. If your GameObjects do not need to be nested 
+in a hierarchy, simplify the parenting. Smaller hierarchies benefit from 
+multithreading to refresh the Transforms in your scene. Complex hierarchies incur 
+unnecessary Transform computations and more cost to garbage collection.
+See “Optimizing the hierarchy” on the Unity Blog and this Unite talk for best 
+practices with Transforms.
+Transform once, not twice
+Also, when moving Transforms, use Transform. SetPositionAndRotation  
+to update both position and rotation at once. This avoids the overhead  
+of modifying a transform twice.
+If you need to instantiate a GameObject at runtime, a simple optimization  
+is to parent and reposition during instantiation:
+GameObject.Instantiate(prefab, parent);
+GameObject. Instantiate(prefab, parent, position, rotation);
+ 
+For more details about Object. Instantiate, please see the Scripting API.
+
+35 of 80 | unity. com
+© 2023 Unity Technologies
+Assume Vsync is enabled 
+Mobile platforms won’t render half-frames. Even if you disable Vsync in the 
+Editor (Project Settings > Quality), Vsync is enabled at the hardware level.  
+If the GPU cannot refresh fast enough, the current frame will be held, 
+effectively reducing your fps.

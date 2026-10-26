@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>相机堆叠 · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">09 · 相机堆叠</div>
+    <div class="pager"><a href="ch-08.html">← 上一节</a><a href="ch-10.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>摄像机堆叠（Camera Stacking）</h2>
+
+<p>游戏中一个常见需求是：将不同摄像机所看到的几何体组合到单次渲染中。上图展示了一个位于前景的架子，它在游戏内充当物品栏。收集到的物品会被添加到架子上，玩家可以在关键时刻从中进行选择。请注意，它拥有不同的视野（field of view），以及不同的光照和后处理。这一效果是通过 URP 中的摄像机堆叠（Camera Stacking）功能实现的。</p>
+
+<figure><figcaption>图 1：使用摄像机堆叠的示例</figcaption></figure>
+
+<h3>如何设置该功能</h3>
+
+<p>下面来看看如何设置这一功能。</p>
+
+<ol>
+  <li>通过右键单击 Hierarchy 视图并选择 <strong>Create &gt; Camera</strong> 来创建一个摄像机。移除 Audio Listener 组件。</li>
+  <li>使用 <strong>Inspector &gt; Camera Settings</strong> 面板，将该摄像机的 Render Type 设置为 <strong>Overlay</strong>。</li>
+  <li>为摄像机和它渲染的 GameObject 创建一个新的 Layer。</li>
+  <li>在 Inspector 中更新该摄像机的 <strong>Rendering &gt; Culling Mask</strong>。</li>
+  <li>将摄像机移动到场景中合适的位置，然后通过把 GameObject 放入 Overlay Layer 来添加并摆放它们。</li>
+  <li>通过更新主摄像机的 <strong>Rendering &gt; Culling Mask</strong>，确保主摄像机不渲染 Overlay。</li>
+  <li>在 Stack 面板中，使用“+”按钮添加该 Overlay 摄像机。</li>
+</ol>
+
+<h3>用代码控制堆栈</h3>
+
+<p>与后处理一样，你可以通过代码控制堆栈，并在运行时动态添加或移除摄像机。参见以下代码示例：</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.Rendering.Universal;
+
+public class StackController : MonoBehaviour
+{
+    public Camera overlayCamera;
+
+    // Start 在第一帧更新之前被调用
+    void Start()
+    {
+        Camera camera = GetComponent&lt;Camera&gt;();
+        var cameraData = camera.GetUniversalAdditionalCameraData();
+        cameraData.cameraStack.Remove(overlayCamera);
+    }
+}</code></pre>
+
+<p>后处理和摄像机堆叠都可以通过 URP 轻松配置，它们是在游戏中创建丰富、富有氛围感效果的强大工具。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-08.html"><span class="dir">← 上一节</span>后处理</a>
+    <a href="ch-10.html"><span class="dir">下一节 →</span>SubmitRenderRequest API</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

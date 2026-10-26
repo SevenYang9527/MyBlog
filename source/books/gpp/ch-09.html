@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>观察者模式 · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">09 · 观察者模式</div>
+    <div class="pager"><a href="ch-08.html">← 上一节</a><a href="ch-10.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>观察者模式（Observer Pattern）</h2>
+
+<p>在运行时，游戏里可能发生任意数量的事件。当你摧毁一个敌人时会发生什么？当你拾取一个强化道具或完成一个目标时又会怎样？你常常需要一种机制，让某些对象能够通知其他对象，而无需直接引用它们，从而避免产生不必要的依赖关系。</p>
+
+<p>观察者模式（Observer Pattern）是这类问题的常见解决方案。它让你的对象之间能够通信，同时通过一种“一对多”的依赖关系保持松耦合。当一个对象改变状态时，所有依赖它的对象都会自动收到通知。这类似于一座向众多不同听众广播的无线电塔。</p>
+
+<figure><figcaption>图 1：观察者模式就像一座无线电塔，主题向各个观察者广播信号。</figcaption></figure>
+
+<p>负责广播的对象称为主题（subject）。其他正在监听的对象称为观察者（observers）。</p>
+
+<p>这种模式将主题松散地解耦——主题其实并不认识各个观察者，也不关心它们收到信号后会做什么。虽然观察者依赖主题，但观察者彼此之间并不知情。</p>
+
+<h3>事件</h3>
+
+<p>观察者模式如此普遍，以至于它已经内建在 C# 语言中。你当然可以自己设计主题-观察者类，但通常没有必要。还记得关于重复造轮子的那个观点吗？C# 已经通过事件（event）实现了这一模式。</p>
+
+<p>事件（event）就是一种表示“某事已经发生”的通知。它涉及几个部分：</p>
+
+<ol>
+<li>发布者（publisher，即主题）基于一个委托（delegate）创建事件，从而确立特定的函数签名。事件只是主题将在运行时执行的某种动作（例如受到伤害、点击按钮等等）。</li>
+<li>订阅者（subscribers，即观察者）随后各自编写一个名为事件处理程序（event handler）的方法，该方法必须与委托的签名匹配。</li>
+<li>每个观察者的事件处理程序都订阅发布者的事件。你可以让任意数量的观察者加入订阅，它们都会等待事件触发。</li>
+<li>当发布者在运行时发出某个事件发生的信号时，我们说它引发了（raises）该事件。这进而调用订阅者的事件处理程序，由它们执行各自的内部逻辑作为响应。</li>
+</ol>
+
+<p>通过这种方式，你可以让许多组件对来自主题的单个事件做出反应。如果主题表示某个按钮被点击了，观察者可以播放一段动画或音效、触发一段过场动画，或者保存一个文件。它们的响应可以是任何内容，这也是你会经常看到观察者模式被用于在对象之间发送消息的原因。</p>
+
+<figure><figcaption>图 2：主题引发事件，从而通知各个观察者。</figcaption></figure>
+
+<h3>示例：简单的主题与观察者</h3>
+
+<p>例如，你可以像这样定义一个基本的主题/发布者：</p>
+
+<pre><code>using UnityEngine;
+using System;
+public class Subject: MonoBehaviour
+{
+    public event Action ThingHappened;
+    public void DoThing()
+    {
+        ThingHappened?.Invoke();
+    }
+}</code></pre>
+
+<p>这里你继承自 MonoBehaviour，以便更容易地挂载到 GameObject 上，但这不是必须的。</p>
+
+<p>虽然你可以自由定义自己的自定义委托，但在大多数情况下 System.Action 就够用了。如果你需要在事件中传递参数，请使用 Action&lt;T&gt; 委托，并把它们作为 List&lt;T&gt; 写在尖括号内传递（最多 16 个参数）。</p>
+
+<p>ThingHappened 就是实际的事件，主题在 DoThing 方法中引发它。</p>
+
+<p>要监听该事件，你可以构建一个示例 Observer 类。这里为了便利继承了 MonoBehaviour，但这不是必须的。</p>
+
+<pre><code>public class Observer : MonoBehaviour
+{
+    [SerializeField] private Subject subjectToObserve;
+    private void OnThingHappened()
+    {
+        // any logic that responds to event goes here
+        Debug.Log("Observer responds");
+    }
+    private void Awake()
+    {
+        if (subjectToObserve != null)
+        {
+            subjectToObserve.ThingHappened += OnThingHappened;
+        }
+    }
+    private void OnDestroy()
+    {
+        if (subjectToObserve != null)
+        {
+            subjectToObserve.ThingHappened -= OnThingHappened;
+        }
+    }
+}</code></pre>
+
+<p>把这个组件挂载到一个 GameObject 上，并在 Inspector 中引用 subjectToObserve，即可监听 ThingHappened 事件。</p>
+
+<p>OnThingHappened 方法可以包含观察者针对该事件执行的任意响应逻辑。开发者常常加上“On”前缀来表示事件处理程序（只需遵循你的代码风格指南中的命名约定）。</p>
+
+<p>在 Awake 或 Start 中，你可以用 += 运算符订阅该事件。这会把观察者的 OnThingHappened 方法与主题的 ThingHappened 组合在一起。</p>
+
+<p>如果有任何东西运行了主题的 DoThing 方法，就会引发该事件。随后，观察者的 OnThingHappened 事件处理程序会自动被调用，并打印出调试语句。</p>
+
+<p><strong>注意：</strong>如果在运行时删除或移除仍订阅着 ThingHappened 的观察者，那么调用该事件可能会导致错误。因此，务必在 MonoBehaviour 的 OnDestroy 方法中用 -= 运算符取消订阅该事件。</p>
+
+<p>你几乎可以把观察者模式应用到游戏过程中发生的所有事情上。例如，你的游戏可以在玩家摧毁敌人或收集物品时每次都引发一个事件。如果你需要一个追踪分数或成就的统计系统，观察者模式可以让你在不影响原有游戏玩法代码的情况下创建它。</p>
+
+<p>许多 Unity 应用会把事件应用于：</p>
+
+<ul>
+<li>目标或目的</li>
+<li>胜利/失败条件</li>
+<li>PlayerDeath、EnemyDeath 或 Damage</li>
+<li>物品拾取</li>
+<li>用户界面</li>
+</ul>
+
+<p>主题只需要在合适的时机引发一个事件，然后任意数量的观察者都可以订阅。</p>
+
+<h3>观察者示例场景</h3>
+
+<p>在示例项目中，ButtonSubject 允许用户用鼠标按钮引发一个 Clicked 事件。随后，其他几个带有 AudioObserver 和 ParticleSystemObserver 组件的 GameObject 可以各自以自己的方式响应该事件。</p>
+
+<p>判断哪个对象是“主题”、哪个是“观察者”，只取决于具体用法。任何引发事件的东西都充当主题，任何响应事件的东西都是观察者。同一个 GameObject 上的不同组件既可以是主题，也可以是观察者。甚至同一个组件也可以在一种情境下是主题，在另一种情境下是观察者。</p>
+
+<p>例如，示例中的 AnimObserver 会在按钮被点击时给它添加一点移动效果。尽管它是 ButtonSubject GameObject 的一部分，但它充当的是观察者。</p>
+
+<h3>UnityEvents 与 UnityActions</h3>
+
+<p>Unity 还包含一套独立的 UnityEvents 系统，它使用来自 UnityEngine.Events API 的 UnityAction 委托。</p>
+
+<p>UnityEvents 为观察者模式提供了图形化界面。如果你用过 Unity 的 UI 系统（例如创建 UI Button 的 OnClick 事件），那么你已经对它有所体验了。</p>
+
+<figure><figcaption>图 3：UnityEvents 提供了用于配置的图形化组件。</figcaption></figure>
+
+<p>在这个示例中，按钮的 OnClick 事件会调用并触发两个 AudioObserver 的 OnThingHappened 方法作出响应。因此，你可以不写代码就设置好主题的事件。</p>
+
+<p>如果你想允许设计师或非程序员创建游戏玩法事件，UnityEvents 会很有用。但要注意，它们可能比 System 命名空间中对应的 events 或 actions 更慢。</p>
+
+<p>在考虑使用 UnityEvents 和 UnityActions 时，请权衡性能与易用性。参见 Unity Learn 上的“Create a Simple Messaging System with Events”模块以获取示例。</p>
+
+<h3>优点与缺点</h3>
+
+<p>实现事件会增加一些额外工作，但确实带来一些优势：</p>
+
+<ul>
+<li>观察者模式有助于解耦对象：事件发布者无需了解事件订阅者本身的任何信息。主题与观察者之间不是建立类与类之间的直接依赖，而是在保持一定分离度的同时进行通信。</li>
+<li>你无需自己构建：C# 已包含成熟的事件系统，你可以使用 System.Action 委托而不必定义自己的委托。另外，Unity 也包含 UnityEvents 和 UnityActions。</li>
+<li>每个观察者实现自己的事件处理逻辑：通过这种方式，每个观察对象都保有其响应所需的逻辑。这使调试和单元测试更容易。</li>
+<li>它非常适合用户界面：你的核心玩法代码可以与 UI 逻辑分开存放。随后，你的 UI 元素监听特定的游戏事件或条件并作出恰当响应。MVP 和 MVC 模式正是为此目的使用观察者模式。</li>
+</ul>
+
+<p>同时要注意观察者模式的以下告诫：</p>
+
+<ul>
+<li>它增加了额外的复杂性：和其他模式一样，创建事件驱动的架构确实需要更多前期设置。另外，删除主题或观察者时要小心，务必在 OnDestroy 中注销观察者。</li>
+<li>观察者需要引用定义事件的类：观察者仍然依赖于发布事件的类。使用一个处理所有事件的静态 EventManager（见下文）有助于让对象彼此之间进一步解耦。</li>
+<li>性能可能成为问题：事件驱动的架构会带来额外开销。大型场景和大量 GameObject 会影响性能。</li>
+</ul>
+
+<h3>改进建议</h3>
+
+<p>这里只介绍了观察者模式的基本版本，但你可以对它进行扩展，以满足游戏应用的所有需求。</p>
+
+<p>在搭建观察者模式时，可以考虑以下建议：</p>
+
+<ul>
+<li>使用 ObservableCollection 类：C# 提供了一个动态的 ObservableCollection 来追踪特定变化。当添加、移除项或刷新列表时，它可以通知你的观察者。</li>
+<li>把唯一的实例 ID 作为参数传入：层级中的每个 GameObject 都有一个唯一的实例 ID。如果你触发的事件可能适用于多个观察者，就把该唯一 ID 传入事件（使用 Action&lt;int&gt; 类型）。然后只有在 GameObject 与该唯一 ID 匹配时，才在事件处理程序中运行相应逻辑。</li>
+<li>创建一个静态 EventManager：由于事件可以驱动你游戏中的大量玩法，许多 Unity 应用会使用静态或单例的 EventManager。这样，你的观察者就可以把游戏事件的集中来源当作主题来引用，从而简化设置。<p>FPS Microgame 就有一个很好的静态 EventManager 实现，它实现了自定义的 GameEvents，并包含用于添加或移除监听者的静态辅助方法。</p><p>Unity Open Project 也展示了一种使用 ScriptableObjects 转发 UnityEvents 的游戏架构。它使用事件来播放音频或加载新场景。</p></li>
+<li>创建一个事件队列：如果你的场景中有大量对象，你可能不希望一次性引发所有事件。想象一下，当你调用单个事件时，一千个对象同时播放音效会是多么刺耳的嘈杂。<p>把观察者模式与命令模式结合，可以让你把事件封装进一个事件队列。然后你可以使用命令缓冲区一次一个地回放这些事件，或者在必要时有选择地忽略它们（例如，当你限制了同时能发出声音的对象数量上限时）。</p></li>
+</ul>
+
+<p>观察者模式在模型-视图-呈现器（Model View Presenter，MVP）架构模式中占有重要地位，下一章会更详细地介绍它。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-08.html"><span class="dir">← 上一节</span>状态模式</a>
+    <a href="ch-10.html"><span class="dir">下一节 →</span>MVP 模式</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

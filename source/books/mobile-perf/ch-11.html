@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>动画 · Unity 移动游戏性能优化指南</title>
+<meta name="description" content="Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 移动游戏性能优化指南</div>
+    <div class="book-en">Unity: Optimize Your Mobile Game Performance</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析</a></li>
+      <li><a href="ch-03.html">内存</a></li>
+      <li><a href="ch-04.html">自适应性能</a></li>
+      <li><a href="ch-05.html">代码与架构</a></li>
+      <li><a href="ch-06.html">项目配置</a></li>
+      <li><a href="ch-07.html">资源</a></li>
+      <li><a href="ch-08-1.html">图形与 GPU 优化（1/2）</a></li>
+      <li><a href="ch-08-2.html">图形与 GPU 优化（2/2）</a></li>
+      <li><a href="ch-09.html">用户界面</a></li>
+      <li><a href="ch-10.html">音频</a></li>
+      <li><a href="ch-11.html">动画</a></li>
+      <li><a href="ch-12.html">物理</a></li>
+      <li><a href="ch-13.html">工作流与协作</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 80 页 · 共 13 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">11 · 动画</div>
+    <div class="pager"><a href="ch-10.html">← 上一节</a><a href="ch-12.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>动画（Animation）</h2>
+
+<p>Unity 的 Mecanim 系统相当完善。如果可能，请借助后文介绍的设置来限制它在移动端上的使用。</p>
+
+<h3>使用通用骨骼而非人形骨骼（Generic versus humanoid rigs）</h3>
+
+<p>默认情况下，Unity 以通用骨骼（Generic Rig）导入带动画的模型，但开发者在对角色制作动画时常常会切换到人形骨骼（Humanoid Rig）。人形骨骼比等效的通用骨骼多消耗 30–50% 的 CPU 时间，因为它每一帧都会计算反向运动学（inverse kinematics）和动画重定向（animation retargeting），即使这些功能并未被使用也是如此。如果你不需要人形骨骼的这些特定功能，请改用通用骨骼。</p>
+
+<p><strong>Animator 的开销可能很高。</strong></p>
+
+<h3>避免过度使用 Animator（Avoid excessive use of Animators）</h3>
+
+<p>Animator 主要面向人形角色，但也常被用来驱动单个数值（例如 UI 元素的 alpha 通道）。请避免过度使用 Animator，尤其是在与 UI 元素结合使用时。在移动端上，只要有可能，就应改用旧版 Animation 组件（legacy Animation components）。对于简单的动画（例如 DOTween），可以考虑自行编写补间函数（tweening functions）或使用第三方库。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-10.html"><span class="dir">← 上一节</span>音频</a>
+    <a href="ch-12.html"><span class="dir">下一节 →</span>物理</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

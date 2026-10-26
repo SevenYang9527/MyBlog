@@ -1,0 +1,296 @@
+16 of 99 | unity. com
+© 2022 Unity Technologies
+Your Vehicle class might look like this:
+Suppose you are building a turn-based game where you move the vehicles 
+around a board.
+public class Vehicle
+{
+    public float speed = 100;
+    public Vector3 direction;
+    public void GoForward()
+    {
+            ...
+    }
+    public void Reverse()
+    {
+            ...
+    }
+    public void TurnRight()
+    {
+            ...
+    }
+    public void TurnLeft()
+    {
+            ...
+    }
+}
+An example game of cars versus trains
+Road movement
+Rail movement
+
+17 of 99 | unity. com
+© 2022 Unity Technologies
+You could have another class called Navigator to steer a vehicle along a 
+prescribed path:
+With this class, you expect to be able to pass any vehicle into the Navigator’s 
+Move method, and this will work fine with cars and trucks. What happens, 
+though, when you want to implement a class called Train?
+public class Navigator
+{
+    public void Move(Vehicle vehicle)
+    {
+        vehicle.GoForward();
+        vehicle.TurnLeft();
+        vehicle.GoForward();
+        vehicle.TurnRight();
+        vehicle.GoForward();
+    }
+}
+A Train would violate your base class.
+The TurnLeft and TurnRight methods would not work in a Train class since 
+a train can’t leave its tracks. If you do pass a train into the Navigator’s Move 
+method, that would throw an unimplemented Exception (or do nothing) when 
+you get to those lines. You violate the Liskov substitution principle if you cannot 
+substitute a type for its subtype.
+
+18 of 99 | unity. com
+© 2022 Unity Technologies
+Since a Train is a subtype of Vehicle, you would expect to use it any place 
+that accepts the Vehicle class. Doing otherwise might make your code behave 
+unpredictably.
+Consider some tips to adhere more closely to Liskov substitution principle:
+	
+—
+If you are removing features when subclassing, you are likely breaking 
+Liskov substitution: A NotImplementedException is a dead giveaway 
+that you’ve violated this principle. Leaving a method blank does so as well. 
+If the subclass does not behave like the base class, you’re not following 
+LSP – even if there’s no explicit error or exception.
+	
+—
+Keep abstractions simple: The more logic you put into the base class the 
+more likely you will break LSP. The base class should only express the 
+common functionality of the derived subclasses.
+	
+—
+A subclass needs to have the same public members as the base class: 
+Those members also need to have the same signatures and behavior 
+when calling them.
+	
+—
+Consider the class API before establishing class hierarchies:  
+Even though you think of them all as vehicles, it might make more 
+sense for a Car and Train to inherit from separate parent classes. 
+Classifications in reality don’t always translate into class hierarchy. 
+	
+—
+Favor composition over inheritance: Instead of trying to pass 
+functionality through inheritance, create an interface or separate class to 
+encapsulate a specific behavior. Then build up a “composition” of different 
+functionality by mixing and matching.
+Composition over inheritance
+
+19 of 99 | unity. com
+© 2022 Unity Technologies
+To fix this design, scrap the original Vehicle type, then move much of the 
+functionality into interfaces:
+Follow the LSP principle more closely by creating a RoadVehicle type and 
+RailVehicle type. The Car and Train would then inherit from their respective 
+base classes.
+public interface ITurnable 
+{
+    public void TurnRight();
+    public void TurnLeft();
+}
+public interface IMovable
+{
+    public void GoForward();
+    public void Reverse();
+}
+Refactoring to take Liskov substitution into consideration
+
+20 of 99 | unity. com
+© 2022 Unity Technologies
+public class RoadVehicle : IMovable, ITurnable
+{
+    public float speed = 100f;
+    public float turnSpeed = 5f;
+    public virtual void GoForward()
+    {
+        ...
+    }
+    public virtual void Reverse()
+    {
+        ... 
+    }
+    public virtual void TurnLeft()
+    {
+        ... 
+    }
+    public virtual void TurnRight()
+    {
+        ... 
+    }
+}
+public class RailVehicle : IMovable
+{
+    public float speed = 100;
+    public virtual void GoForward()
+    {
+        ...
+    }
+    public virtual void Reverse()
+    {
+       ...
+    }
+}
+public class Car : RoadVehicle
+{
+    ...
+}
+public class Train : RailVehicle
+{
+    ...
+}
+
+21 of 99 | unity. com
+© 2022 Unity Technologies
+In this way the functionality comes through interfaces rather than inheritance. 
+Car and Train no longer share the same base class, which now satisfies LSP. 
+Though you could derive RoadVehicle and RailVehicle from the same base 
+class, there is not much need to in this case.
+This way of thinking can be counterintuitive because you have certain 
+assumptions about the real world. In software development, this is called 
+the circle–ellipse problem. Not every actual “is a” relationship translates into 
+inheritance. Remember, you want your software design to drive your class 
+hierarchy, not your prior knowledge of reality.
+Follow the Liskov substitution principle to limit how you use inheritance to keep 
+your codebase extendable and flexible.
+Interface segregation principle
+The interface segregation principle (ISP) states that no client should be forced 
+to depend on methods it does not use.
+In other words, avoid large interfaces. Follow the same idea as the single-
+responsibility principle, which tells you to keep classes and methods short. 
+This gives you maximum flexibility, keeping interfaces compact and focused.
+Imagine you’re making a strategy game with different player units. Each unit  
+has different stats like health and speed. You might want to make an interface  
+to guarantee that all of the units implement similar features:
+public interface IUnitStats 
+{
+    public float Health { get; set; }
+    public int Defense { get; set; }
+    public void Die();
+    public void TakeDamage();
+    public void RestoreHealth();
+    public float MoveSpeed { get; set; }
+    public float Acceleration { get; set; }
+    public void GoForward();
+    public void Reverse();
+    public void TurnLeft();
+    public void TurnRight();
+    public int Strength { get; set; }
+    public int Dexterity { get; set; }
+    public int Endurance { get; set; }
+}
+
+22 of 99 | unity. com
+© 2022 Unity Technologies
+Let’s say you want to make a destructible prop like a breakable barrel or crate.  
+This prop will also need the concept of health despite not moving. A crate or barrel 
+also won’t have many of the abilities associated with other units in the game.
+Split it into several smaller interfaces rather than make one interface that gives 
+the breakable prop too many methods. A class implementing them will then  
+only mix and match what it needs.
+Split the interface into smaller ones.
+
+23 of 99 | unity. com
+© 2022 Unity Technologies
+You can also add an IExplodable interface for the exploding barrel:
+public interface IExplodable 
+{
+    public float Mass { get; set; }
+    public float ExplosiveForce { get; set; }
+    public float FuseDelay { get; set; }
+    public void Explode();
+}
+public interface IMovable
+{
+    public float MoveSpeed { get; set; }
+    public float Acceleration { get; set; }
+    public void GoForward();
+    public void Reverse();
+    public void TurnLeft();
+    public void TurnRight();
+}
+public interface IDamageable 
+{
+    public float Health { get; set; }
+    public int Defense { get; set; }
+    public void Die();
+    public void TakeDamage();
+    public void RestoreHealth();
+}
+public interface IUnitStats 
+{
+    public int Strength { get; set; }
+    public int Dexterity { get; set; }
+    public int Endurance { get; set; }
+}
+
+24 of 99 | unity. com
+© 2022 Unity Technologies
+public class ExplodingBarrel : MonoBehaviour, IDamageable, IExplodable
+{
+    ...
+}
+public class EnemyUnit : MonoBehaviour, IDamageable, IMovable, IUnit-
+Stats
+{
+    ...
+}
+Again, this favors composition over inheritance, similar to the example with 
+Liskov substitution. The interface segregation principle helps decouple your 
+systems and makes them easier to modify and redeploy. 
+Because a class can implement more than one interface, you can compose  
+an enemy unit from IDamageable, IMoveable, and IUnitStats.
+An exploding barrel could use IDamageable and IExplodable without needing 
+the unnecessary overhead of the other interfaces.
+Dependency inversion principle
+The dependency inversion principle (DIP) says that high-level modules should 
+not import anything directly from low-level modules. Both should depend on 
+abstractions.
+Let’s unpack what that means. When one class has a relationship with another, 
+it has a dependency or coupling. Each dependency in software design carries 
+some risk. 
+If one class knows too much about how another class works, modifying the 
+first class can damage the second or vice versa. A high degree of coupling is 
+considered unclean code practice. An error in one part of the application can 
+snowball into many.
+
+25 of 99 | unity. com
+© 2022 Unity Technologies
+Strive for loose coupling with high cohesion.
+Ideally, aim for as few dependencies between classes as possible. Each class 
+also needs its internal parts to work together in unison, rather than relying on 
+connections to the outside. Your object is considered cohesive when it functions 
+on internal or private logic. 
+In the best scenario, aim for loose coupling and high cohesion.
+You need to be able to modify and expand your game application. If it’s fragile 
+and resistant to modification, investigate how it’s currently structured.
+The dependency inversion principle can help reduce this tight coupling between 
+classes. When building classes and systems in your application, some are 
+naturally “high-level” and some “low-level. ” A high-level class depends on a 
+lower-level class to get something done. SOLID tells us to switch this up.
+
+26 of 99 | unity. com
+© 2022 Unity Technologies
+The Switch (high-level) depends directly on the Door (low-level) class.
+Without dependency inversion
+Suppose you are making a game where a character explores the level and 
+triggers a door to open. You might want to create a class called Switch and 
+another class called Door.
+On a high level, you want the character to move to a specific location and for 
+something to happen. The Switch will be responsible for that.
+On a low level is another class, Door, that contains the actual implementation 
+of how to open the door geometry. For simplification, a Debug.Log statement is 
+added to represent the logic of the opening and closing door.

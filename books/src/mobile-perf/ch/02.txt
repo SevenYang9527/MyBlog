@@ -1,0 +1,183 @@
+8 of 80 | unity. com
+© 2023 Unity Technologies
+P R O F I L I N G
+Profile early, often, and on the target device 
+Profiling is the process of measuring aspects of your game’s performance 
+at runtime. By using a profiling tool, you can measure how your game runs 
+on its target platform and use this information to track down the cause of a 
+performance problem. By watching the profiling tool as you make changes, 
+you can gauge whether changes actually fix the performance problem.
+The Unity Profiler provides performance information about your application, 
+but it can’t help you if you don’t use it.
+Profile your project early and throughout the development cycle, not just 
+when you are close to shipping. Investigate glitches or spikes as soon as they 
+appear to benchmark performance before and after major changes in your 
+project. As you develop a “performance signature” for your project, you’ll be 
+able to spot new issues more easily.
+
+9 of 80 | unity. com
+© 2023 Unity Technologies
+While profiling in the Editor can give you an idea of the relative performance 
+of different systems in your game, profiling on each device gives you the 
+opportunity to gain more accurate insights. Profile a development build on 
+target devices whenever possible. Remember to profile and optimize for both 
+the highest- and lowest-spec devices that you plan to support.
+Along with the Unity Profiler, you can leverage the Memory Profiler and 
+Profile Analyzer, as well as these native tools from iOS and Android for further 
+performance testing on their respective hardware:
+	
+—
+On iOS, use Xcode and Instruments.
+	
+—
+On Android / Arm use : 
+Android Studio : The latest Android Studio includes a new  
+Android Profiler that replaces the previous Android Monitor tools. Use it 
+to gather real-time data about hardware resources on Android devices.
+Arm Mobile Studio : This suite of tools can help you profile and debug 
+your games in great detail, catering toward devices running Arm hardware.
+Snapdragon Profiler : Specifically for Snapdragon chipset devices only. 
+Analyze CPU, GPU, DSP, memory, power, thermal, and network data to 
+help find and fix performance bottlenecks.
+Certain hardware can also take advantage of Intel VTune, which helps you to find 
+and fix performance bottlenecks on Intel platforms (with Intel processors only).
+See Profiling Applications Made with Unity for more information.
+
+10 of 80 | unity. com
+© 2023 Unity Technologies
+Focus on optimizing the right areas 
+Don’t guess or make assumptions about what is slowing down your game’s 
+performance. Use the Unity Profiler and platform-specific tools to locate  
+the precise source of a lag. Profiling tools ultimately help you understand 
+what’s going on under the hood of your Unity project, but don’t wait  
+for significant performance problems to start showing before digging into 
+your detective toolbox.
+Of course, not every optimization described here will apply to your 
+application. Something that works well in one project may not translate to 
+yours. Identify genuine bottlenecks and concentrate your efforts on what 
+benefits your work. 
+To learn more about how to plan your profiling workflows see  
+the Ultimate guide to profiling Unity games.
+
+11 of 80 | unity. com
+© 2023 Unity Technologies
+Understand how the Unity Profiler works
+The built-in Unity Profiler can help you detect the causes of any lags or 
+freezes at runtime and better understand what’s happening at a specific 
+frame or point in time. 
+The Profiler is instrumentation-based; it profiles timings of game and engine 
+code that are automatically marked up (such as MonoBehaviour’s Start or 
+Update methods, or specific API calls), or explicitly wrapped with the help  
+of ProfilerMarker API.
+Begin by enabling the CPU and Memory tracks as your default. You can 
+monitor supplementary Profiler Modules like Renderer, Audio, and Physics,  
+as needed for your game (e. g. , physics-heavy or music-based gameplay).
+A chart from the profiling e-book featuring a workflow you can follow to profile your Unity projects efficiently.
+
+12 of 80 | unity. com
+© 2023 Unity Technologies
+To capture profiling data from an actual mobile device within your chosen platform, 
+check the Development Build and Autoconnect Profiler boxes before you click Build 
+and Run. Alternatively, if you want the app to start separately from your profiling, you 
+can uncheck the Autoconnect Profiler box, and then connect manually once the app 
+is running.
+Use the Unity Profiler to test performance and resource allocation for your application.
+
+13 of 80 | unity. com
+© 2023 Unity Technologies
+Choose the platform target to profile. The Record button tracks several seconds  
+of your application’s playback (300 frames by default).  
+Go to Unity > Preferences > Analysis > Profiler > Frame Count to increase this  
+as far as 2000 if you need longer captures. While this means that the Unity Editor has 
+to do more CPU work and take up more memory, it can be useful depending on your 
+specific scenario.
+Adjust your Build Settings before profiling.
+
+14 of 80 | unity. com
+© 2023 Unity Technologies
+When using the Deep Profiling setting, Unity can profile the beginning and  
+end of every function call in your script code, telling you exactly which part  
+of your application is being executed and potentially causing a delay. However, 
+deep profiling adds overhead to every method call and may skew the 
+performance analysis.
+Click in the window to analyze a specific frame. Next, use either the Timeline  
+or Hierarchy view for the following :
+	
+—
+Timeline shows the visual breakdown of timing for a specific frame. This 
+allows you to visualize how the activities relate to one another and across 
+different threads. Use this option to determine if you are CPU- or GPU-
+bound.
+	
+—
+Hierarchy shows the hierarchy of ProfileMarkers, grouped together.  
+This allows you to sort the samples based on time cost in milliseconds 
+(Time ms and Self ms). You can also count the number of Calls to a 
+function and the managed heap memory (GC Alloc) on the frame.
+Use the Timeline view to determine if you are CPU-bound or GPU-bound.
+
+15 of 80 | unity. com
+© 2023 Unity Technologies
+The Hierarchy view allows you to sort ProfileMarkers by time cost.
+You can find a complete overview of the Unity Profiler here. If you’re new to 
+profiling, you can also watch this Introduction to Unity Profiling.
+Before optimizing anything in your project, save the Profiler . data file. Implement 
+your changes and compare the saved . data before and after the modification. 
+Rely on this cycle to improve performance: profile, optimize, and compare. Then, 
+rinse and repeat.
+Use the Profile Analyzer
+The Profile Analyzer lets you aggregate multiple frames of Profiler data  
+and then locate frames of interest. Do you want to see what happens to the 
+Profiler after you make a change to your project? The Compare view allows 
+you to load and differentiate two data sets, so you can test changes  
+and improve their outcome. The Profile Analyzer is available via Unity’s 
+Package Manager.
+
+16 of 80 | unity. com
+© 2023 Unity Technologies
+Work on a specific time budget per frame
+Each frame will have a time budget based on your target frames per second 
+(fps). For an application to run at 30 fps, its frame budget can’t exceed 33. 33 
+ms per frame (1000 ms/30 fps). Likewise, a target of 60 fps leaves 16.66 ms 
+per frame.
+Take an even deeper dive into frames and marker data with the Profile Analyzer, which complements the existing Profiler.
+
+17 of 80 | unity. com
+© 2023 Unity Technologies
+Account for device temperature
+For mobile, however, we don’t recommend using this maximum time 
+consistently as the device can overheat and the OS can thermal throttle the 
+CPU and GPU. We recommend that you use only about 65% of the available 
+time to allow for cooldown between frames. A typical frame budget will be 
+approximately 22 ms per frame at 30 fps and 11 ms per frame at 60 fps. 
+Devices can exceed this budget for short periods of time (e. g. , for cutscenes 
+or loading sequences) but not for a prolonged duration.
+Most mobile devices do not have active cooling like their desktop 
+counterparts. Physical heat levels can directly impact performance. 
+If the device is running hot, the Profiler might perceive and report poor 
+performance, even if it is not cause for long-term concern. To combat 
+profiling overheating, profile in short bursts. This cools the device and 
+simulates real-world conditions. Our general recommendation is to keep the 
+device cool for 10-15 minutes before profiling again.
+Determine if you are GPU-bound or CPU-bound
+The central processing unit (CPU) is responsible for determining what must be 
+drawn, and the graphics processing unit (GPU) is responsible for drawing it. When 
+a rendering performance problem is due to the CPU taking too long to render a 
+frame, the game becomes CPU bound. When a rendering performance problem is 
+due to the GPU taking too long to render a frame, it becomes GPU bound. 
+The Profiler can tell you if your CPU is taking longer than your allotted frame 
+budget or if the culprit is your GPU. It does this by emitting markers prefixed with 
+Gfx as follows:
+	
+—
+If you see the Gfx. WaitForCommands marker, the render thread is 
+ready, but you may be waiting for a bottleneck on the main thread. 
+	
+—
+If you frequently encounter Gfx. WaitForPresent, that means the main 
+thread was ready but was waiting for the GPU to present the frame.
+Test on a min-spec device
+There is a wide range of iOS and Android devices out there.  
+We want to reiterate the importance of testing your project on the minimum 
+and maximum device specifications that you want your application to support, 
+whenever possible.

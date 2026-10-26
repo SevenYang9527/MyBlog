@@ -1,0 +1,135 @@
+Evolution of rendering: 
+From Built-in Render 
+Pipeline to SRP
+One of Unity’s biggest strengths is its platform reach. The ideal for all game 
+studios is to create once and efficiently deploy their game to their desired range 
+of platforms, from high-end PCs to low-end mobile.
+The Built-in Render Pipeline was developed to be a turnkey solution for all 
+platforms supported by Unity. It supports a mix of graphics features and is 
+convenient to use with Forward and Deferred pipelines.
+However, as Unity continues to add support for more platforms, we have 
+perceived the following shortcomings surrounding the Built-in Render Pipeline:
+	
+—
+The bulk of the code is written in C++ and can’t be modified by 
+developers, making it a blackbox system
+	
+—
+The render flow and render passes are prestructured
+	
+—
+The rendering algorithm is hardcoded
+	
+—
+Unconstrained customization makes achieving good performance on all 
+platforms difficult
+	
+—
+It exposes callbacks in the rendering code that trigger sync points in the 
+pipeline. Those callbacks prevent multithreaded rendering optimizations, 
+enabling changes for injection of state at any point in the frame 
+dynamically by calling to C#
+	
+—
+Caching data to manage the persistence state for user injection is difficult
+The solution: Scriptable Render Pipelines
+The SRPs were developed to support an efficient multiplatform workflow by 
+providing:
+9 of 140 | unity. com
+© 2024 Unity Technologies
+
+10 of 140 | unity. com
+© 2024 Unity Technologies
+	
+—
+Intelligent and reliable scaling for the maximum number of hardware 
+platforms, from high- to low-end devices
+	
+—
+The ability to customize rendering processes using C#, not C++.  
+Using C# means a new executable does not need to be compiled  
+for every change
+	
+—
+Flexibility to support architecture evolution
+	
+—
+Flexibility to create sharp graphics that are performant  
+across many platforms
+The image below illustrates how SRPs work. Use C# to control and customize 
+render passes and rendering control, as well as HLSL Shaders that can be 
+created using artist-friendly tools such as Shader Graph. Shaders give you 
+access to even the lower-level API and engine-layer abstractions.
+The new graphics programmable model for the Scriptable Render Pipelines
+An advanced user can create a new SRP from scratch or modify the HDRP  
+or URP. The graphics stack is open source and available for use on GitHub.  
+Why choose URP
+	
+—
+Accessible to a wide range of users: URP is configurable by artists  
+and technical artists alike, providing more flexibility for prototyping and  
+refining rendering techniques for full game production.
+	
+—
+Extendable and customizable: URP allows users to modify existing 
+capabilities and extend the pipeline with new ones, making it a solid 
+choice for advanced users, including Asset Store and third-party  
+package creators, experienced studios, and advanced teams. 
+ 
+While the low-level rendering API is written in C++ for performance 
+purposes, a URP developer can write a simple C# script to be called
+
+11 of 140 | unity. com
+© 2024 Unity Technologies
+during the render pipeline, enabling high-level customization without 
+sacrificing performance.
+	
+—
+Multiple rendering options: URP provides a Universal Renderer that 
+supports Forward, Forward+ and Deferred rendering paths, as well as a 2D 
+Renderer. 
+ 
+These renderers can be extended with additional features and Scriptable 
+Render Passes. The Render Objects feature can be used to render objects 
+from a given Layer Mask at different events in the rendering pipeline. It also 
+allows you to override material and other render states when rendering 
+those objects, making it possible to customize the rendering without code. 
+URP can be extended with custom renderers to suit specific needs.
+	
+—
+Better performance: URP provides equal, if not better performance than 
+the Built-in Render Pipeline for comparable Quality settings in the majority 
+of cases. In particular:
+	
+—
+URP evaluates real-time lighting more efficiently. In Forward 
+rendering it evaluates all lighting in a single pass. Forward+ improves 
+upon standard Forward rendering by culling lights spatially rather 
+than per object. This increases the overall number of lights that can 
+be utilized in rendering a frame. In Deferred rendering it supports the 
+Native RenderPass API, allowing G-buffer and lighting passes to be 
+combined into a single render pass.
+	
+—
+There are CPU and GPU improvements when drawing meshes. 
+This is due to SRP Batcher, which ensures fewer draw calls and 
+improvements on how depth is handled.
+	
+—
+URP makes more efficient use of tile memory on mobile devices, 
+leading to less power consumption, a longer battery life, and 
+therefore, the possibility of longer play sessions.
+	
+—
+URP comes with an integrated post-processing stack that allows for 
+better performance compared to the Built-in Render Pipeline. Using 
+the Volume framework, you can create post-processing effects that 
+are dependent on the Camera position without writing any code.
+	
+—
+Compatible with the latest tools: URP supports the latest artist-friendly 
+tools, such as Shader Graph, VFX Graph, and the Rendering Debugger.
+Most Unity projects are now being built on URP or HDRP, however the Built-in 
+Render Pipeline will remain an available option in Unity 2022 LTS and Unity 6.
+Follow this link for a comprehensive comparison of the Built-in Render Pipeline 
+and URP capabilities.

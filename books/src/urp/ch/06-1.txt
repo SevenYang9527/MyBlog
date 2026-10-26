@@ -1,0 +1,197 @@
+69 of 140 | unity. com
+© 2024 Unity Technologies
+Shaders
+This section is for users who want to convert an existing custom shader to work 
+with URP and/or want to write a custom shader in code without using Shader 
+Graph. It provides the information required to port both basic and advanced 
+shaders to URP from the Built-in Render Pipeline. The tables included show helpful 
+samples of available HLSL shader functions, macros, and so on. In each case, a link 
+is provided to the relevant include containing many other useful functions.
+For those who already have experience coding shaders, the includes provide 
+you with a clear idea of what’s available in HLSL to write compact and efficient 
+shaders. After considering the information here, hopefully porting your shaders 
+to URP won’t seem so daunting.
+Another approach is to use Shader Graph to create versions of your custom shaders. 
+An introduction to Shader Graph is provided in the Additional tools section.
+Comparing URP and Built-in Render Pipeline shaders
+URP shaders use the ShaderLab structure, as seen in the code snippet below. As 
+such, Property, SubShader, Tags, and Pass will all be familiar to shader coders.
+The basic structure of a SubShader block
+The first thing to notice when comparing a URP shader with a Built-in Render 
+Pipeline shader is the use of the key-value pair "RenderPipeline" = 
+"UniversalPipeline" in the SubShader tag.
+SubShader { 
+   Tags {"RenderPipeline" = "UniversalPipeline" } 
+   Pass {    
+      HLSLPROGRAM 
+      ... 
+      ENDHLSL 
+   } 
+}
+
+70 of 140 | unity. com
+© 2024 Unity Technologies
+A SubShader tag with the name RenderPipeline tells Unity which render 
+pipelines to use this SubShader with. The value of UniversalPipeline 
+indicates that Unity should use this SubShader with URP.
+Looking at the render Pass code, you’ll see the shader code contained between 
+the HLSLPROGRAM / ENDHLSL macros. This indicates the former CG (C for 
+Graphics) shader programming language has been replaced by HLSL (High 
+Level Shading Language) although the shader syntax and functionality are 
+near-identical. Unity switched to HLSL a long time ago, so this shouldn’t come 
+as a surprise, but now the CGPROGRAM / ENDCG macros are not recommended. 
+Using these macros implies using UnityCG. cginc. Mixing the SRP and Built-in 
+Render Pipeline shader libraries in this way can cause several problems.
+For URP, the shader code inside those passes is written in HLSL. Although most of 
+the ShaderLab hasn’t changed compared to the Built-in Render Pipeline, shaders 
+written for the Built-in Render Pipeline are automatically disabled by URP.  
+The reason for this is the change in the internal lighting process. While the Built-
+in Render Pipeline performs separate shader passes for every light that reaches 
+an object (multipass), the URP Forward Renderer evaluates all lighting in a light 
+loop in a single pass. This change leads to different data structures that store 
+light data and new shading libraries with new conventions.
+Unity will use the first SubShader block that is supported on the GPU. If the first 
+SubShader block doesn’t have a “RenderPipeline” =  ”UniversalPipeline” 
+tag, it won’t run in the URP. Instead, Unity will try to run the next SubShader, if 
+any. If none of the SubShaders are supported, Unity will render the well-known 
+magenta error shader. 
+A SubShader can contain multiple Pass blocks, but each of them should be 
+tagged with a specific LightMode. As URP uses a single-pass Forward Renderer, 
+only the first “UniversalForward” Pass supported by the GPU will be used to 
+render objects in Forward rendering.
+As covered earlier, using Window > Rendering > Render Pipeline Converter 
+converts Built-in Render Pipeline shaders to URP shaders for all materials 
+automatically. But what about custom shaders?
+Custom shaders
+Custom shaders require some work when upgrading to URP. Listed below are the 
+actions needed to perform on legacy shaders as part of the upgrading process.
+We made this step-by-step 
+video tutorial on how to convert 
+a custom unlit Built-in shader  
+to URP, including a Unity  
+project to follow.
+
+71 of 140 | unity. com
+© 2024 Unity Technologies
+Includes
+Replace . cginc includes files with the following HLSL equivalents: 
+Built-in Render 
+Pipeline
+HLSL
+UnityCG. cginc
+Github link
+AutoLight.cginc
+Github link
+Github link
+Other useful HLSL includes
+Space transform-related functions are found in this include, which is added by 
+default when you use Core. hlsl.
+HLSL space transform functions
+URP helper function
+Description
+float4x4 GetObjectToWorldMatrix()
+Returns UNITY_MATRIX_M matrix that 
+converts from Object to World Space  
+ 
+This is the equivalent of Built-in Render 
+Pipeline unity_ObjectToWorld.
+float4x4 GetWorldToObjectMatrix()
+Returns UNITY_MATRIX_I_M matrix that 
+converts from World to Object Space  
+ 
+This matrix is the inverse of UNITY_
+MATRIX_M. It is the equivalent of  
+Built-in Render Pipeline  
+unity_WorldToObject.
+float4x4 GetWorldToHClipMatrix()
+Returns UNITY_MATRIX_VP matrix that 
+converts from World to Clip Space
+float4x4 GetViewToHClipMatrix()
+Returns UNITY_MATRIX_P matrix that 
+converts from View to Clip Space
+float3 TransformObjectToWorld(float3 
+positionOS)
+Given a position in Object Space, returns the 
+position in World Space
+float3 
+TransformObjectToWorldDir(float3 
+dirOS, bool doNormalize = true)
+Given a direction in Object Space, returns 
+the direction in World Space
+float3 TransformWorldToObject(float3 
+positionWS)
+Given a position in World Space, returns the 
+position in Object Space
+
+72 of 140 | unity. com
+© 2024 Unity Technologies
+float3 TransformWorldToView(float3 
+positionWS)
+Given a position in World Space, returns the 
+position in View Space
+real3x3 CreateTangentToWorld(real3 
+normal, real3 tangent, real 
+flipSign)
+Create a Tangent to World matrix given a 
+normal and a tangent
+real3 TransformTangentToWorld(real3 
+normalTS, real3x3 tangentToWorld, 
+bool doNormalize = false)
+Given a normal in Tangent Space, returns a 
+normal in World Space
+real3 TransformWorldToTangent(real3 
+normalWS, real3x3 tangentToWorld, 
+bool doNormalize = true)
+Given a normal in World Space, returns a 
+normal in Tangent Space
+Notation for the space type at the end of the variable name:
+	
+—
+WS: World Space
+	
+—
+TS: Tangent Space
+	
+—
+VS: View Space
+	
+—
+OS: Object Space
+Other shader functions, including fog and UV, can be found in this include, which is 
+added by default when you use Core. hlsl. The following table lists a few examples.
+URP helper function
+Description
+VertexPositionInputs 
+GetVertexPositionInputs(float3 
+positionOS)
+Given a position in Object Space, returns 
+a struct containing position in World, View, 
+and Clip Space 
+ 
+This function should be used only in  
+vertex shader.
+VertexNormalInputs 
+GetVertexNormalInputs(float3 
+normalOS)
+Given a normal in Object Space, returns a 
+struct with the World Space normal, tangent, 
+and bitangent vectors 
+ 
+These vectors can be used to construct 
+a Tangent to World matrix using 
+CreateTangentToWorld. Returns input. 
+tangentWS, input. bitangentWS, input. 
+normalWS.
+float3 GetCameraPositionWS()
+Returns the Camera position in World Space  
+ 
+This is similar to the Built-in Render 
+Pipeline’s _WorldSpaceCameraPos variable.
+float3 GetViewForwardDir()
+Returns the forward (central) direction of 
+the current view in World Space
+float3 GetWorldSpaceViewDir(float3 
+positionWS)
+Computes the World Space view direction 
+(pointing toward  
+the viewer)

@@ -1,0 +1,94 @@
+<h2>性能（Performance）（2/2）</h2>
+
+<p>你可以借助 Visualization 选项卡查看遮挡剔除（occlusion culling）的实际运行效果。在场景中选择 Camera，然后使用 Scene 视图中的 Occlusion Culling 弹出窗口配置可视化。该弹出窗口可能会被那个小小的 Camera 视图窗口挡住。如果遇到这种情况，请右键单击双线图标并选择 Collapse。移动弹出窗口，然后通过右键单击选择 expand 来还原 Camera 视图。</p>
+
+<figure><figcaption>图 12：Visualization 选项卡与 Occlusion Culling 弹出窗口</figcaption></figure>
+
+<p>在移动 Camera 时，你应该会看到物体不断地出现和消失。</p>
+
+<figure><figcaption>图 13：左侧图像为关闭遮挡剔除的效果，右侧图像为开启遮挡剔除的效果</figcaption></figure>
+
+<h3>管线设置（Pipeline settings）</h3>
+
+<p>前面已经介绍过更改 URP Asset 的设置以及使用不同质量层级（Quality tier）会产生哪些效果，这里再补充一些技巧，帮助你通过试验质量层级为项目取得最佳效果：</p>
+
+<ul>
+<li>降低 Shadow Resolution 和阴影距离，以获得性能提升。</li>
+<li>禁用项目用不到的功能，例如深度纹理（depth texture）和不透明纹理（opaque texture）。</li>
+<li>启用 SRP Batcher，以使用新的批处理方式。SRP Batcher 会自动将使用相同着色器变体（shader variant）的网格批处理在一起，从而减少绘制调用（draw call）。如果场景中有大量动态物体，这不失为提升性能的有效方法。如果看不到 SRP Batcher 复选框，请单击三个垂直点图标（  ），然后选择 Show Additional Properties。</li>
+</ul>
+
+<h3>帧调试器（Frame Debugger）</h3>
+
+<p>使用 Frame Debugger 可以更好地了解渲染过程中究竟发生了什么。要在 Frame Debugger 窗口中查看更多信息，请使用 URP Asset 调整 Debug Level。与 SRP Batcher 复选框一样，只有在启用 Show Additional Properties 后，该选项才会显示在 Inspector 中。</p>
+
+<figure><figcaption>图 14：为 URP Asset Inspector 启用额外属性</figcaption></figure>
+
+<p>调整 Debug Level 可能会影响性能。在不使用 Frame Debugger 时，请务必将其关闭。</p>
+
+<figure><figcaption>图 15：设置 Debug Level</figcaption></figure>
+
+<p>Frame Debugger 会列出渲染最终图像之前所做的所有绘制调用，帮助你精确定位某些帧渲染耗时过长的原因。它还能帮你查明场景的绘制调用数量为何如此之高。</p>
+
+<p>通过 Window &gt; Analysis &gt; Frame Debugger 打开 Frame Debugger。在游戏运行时，单击 Enable 按钮。这会暂停游戏，让你可以逐个检查绘制调用。</p>
+
+<figure><figcaption>图 16：Frame Debugger 详细信息</figcaption></figure>
+
+<p>单击渲染管线（左窗格）中的某个阶段，会在 Game 视图中显示该阶段的预览。</p>
+
+<figure><figcaption>图 17：Frame Debugger 会显示 Game 视图中渲染过程的每一步——此处展示的是 SSAO 生成步骤</figcaption></figure>
+
+<h3>Unity 性能分析器（Unity Profiler）</h3>
+
+<p>与 Frame Debugger 一样，Profiler 也是确定项目完成一个帧循环需要多长时间的好方法。它提供渲染、内存和脚本方面的概览。你可以找出耗时较长的脚本，从而定位代码中潜在的瓶颈。</p>
+
+<p>通过 Window &gt; Analysis &gt; Profiler 打开 Profiler。进入 Play Mode 后，该窗口会提供游戏整体性能的概览。你也可以暂停实时视图（live view），并使用 Hierarchy Mode 查看完成单个帧所需时间的明细。Profiler 会向你显示 Unity 在该帧内发起的每一次调用。</p>
+
+<p>如需更详细的分析，请使用低层级原生插件 Profiler API（low-level native plug-in Profiler API）。你可以用这套 Profiler API 扩展 Profiler，对原生插件代码进行性能分析，或者准备好性能分析数据，发送给第三方性能分析工具，例如用于 Sony Playstation 的 Razor、用于 Microsoft（Windows 和 Xbox）的 PIX，以及 Chrome Tracing、ETW、ITT、VTune 或 Telemetry。</p>
+
+<figure><figcaption>图 18：使用低层级原生插件 Profiler API 的 Profiler 窗口</figcaption></figure>
+
+<pre><code>#include &lt;IUnityInterface.h&gt;
+#include &lt;IUnityProfiler.h&gt;
+
+static IUnityProfiler* s_UnityProfiler = NULL;
+static const UnityProfilerMarkerDesc* s_MyPluginMarker = NULL;
+static bool s_IsDevelopmentBuild = false;
+
+static void MyPluginWorkMethod()
+{
+    if (s_IsDevelopmentBuild)
+        s_UnityProfiler-&gt;BeginSample(s_MyPluginMarker);
+
+    // 我希望在 Unity Profiler 中显示为“MyPluginMethod”的代码。
+    // ...
+
+    if (s_IsDevelopmentBuild)
+        s_UnityProfiler-&gt;EndSample(s_MyPluginMarker);
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginLoad(IUnityInterfaces* unityInterfaces)
+{
+    s_UnityProfiler = unityInterfaces-&gt;Get&lt;IUnityProfiler&gt;();
+
+    if (s_UnityProfiler == NULL)
+        return;
+
+    s_IsDevelopmentBuild = s_UnityProfiler-&gt;IsAvailable() != 0;
+
+    s_UnityProfiler-&gt;CreateMarker(&amp;s_MyPluginMarker, "MyPluginMethod",
+        kUnityProfilerCategoryOther, kUnityProfilerMarkerFlagDefault, 0);
+}
+
+extern "C" void UNITY_INTERFACE_EXPORT UNITY_INTERFACE_API UnityPluginUnload()
+{
+    s_UnityProfiler = NULL;
+}</code></pre>
+
+<figure><figcaption>图 19：左侧为使用低层级原生插件 Profiler API 的示例</figcaption></figure>
+
+<h3>更多资源（Additional resources）</h3>
+
+<p>如果你想在 Unity 中培养高级性能分析技能，可以先下载免费电子书《Ultimate guide to profiling Unity games》。这本指南汇集了在 Unity 中对应用程序进行性能分析、管理其内存，以及从头到尾优化其功耗的高级建议与知识。</p>
+
+<p>Nik 还推荐了另外几个有用的资源：Catlike Coding 的《Measuring Performance》，以及 The Gamedev Guru 的《Unity Draw Call Batching》。</p>

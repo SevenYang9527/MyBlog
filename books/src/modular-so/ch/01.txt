@@ -1,0 +1,24 @@
+3 of 75 | unity. com
+© 2023 Unity Technologies
+ScriptableObjects aren’t flashy. 
+As Unity components go, they don’t call attention to themselves. Instead, they 
+quietly work behind the scenes. It’s likely that you won’t notice them – that is, 
+until you need them.
+You will often hear ScriptableObjects described as “data containers. ” That label, 
+however, doesn’t quite do them justice. Applied correctly, ScriptableObjects can 
+help you speed up your Unity workflow, reduce memory usage, and simplify .
+your code.
+This guide assembles tips and tricks from professional developers for deploying 
+ScriptableObjects in production. These include examples of how to apply them to 
+specific design patterns and how to avoid common pitfalls. 
+If you’re an intermediate to experienced Unity developer, ScriptableObjects .
+can help promote clean coding practices by separating data from logic. This 
+makes it easier to make changes without causing unintended side effects, 
+improving testability and modularity. 
+Because you can work with them interactively in the Editor, you’ll discover 
+that ScriptableObjects are especially useful when you’re collaborating with 
+non-programmers, such as artists and designers. We hope that some of these 
+techniques can complement your existing workflow and streamline your project 
+setup.
+Let’s explore the unsung hero of game architecture, the humble ScriptableObject.
+I N T R O D U C T I O N

@@ -1,0 +1,203 @@
+CO M M A N D 
+PAT T E R N
+
+62 of 99 | unity. com
+© 2022 Unity Technologies
+One of the original Gang of Four patterns, command is useful whenever you 
+want to track a specific series of actions. You’ve likely seen the command 
+pattern at work if you’ve played a game that uses undo/redo functionality or 
+keeps your input history in a list. Imagine a strategy game where the user can 
+plan several turns before actually executing them. That’s the command pattern.
+Instead of invoking a method directly, the command pattern allows you to 
+encapsulate one or more method calls as a “command object. ”
+Storing these command objects in a collection like a queue or a stack allows you 
+to control the timing of their execution. This functions as a small buffer. You can 
+then potentially delay a series of actions for later playback or undo them.
+To implement the command pattern, you need a general object that will contain 
+your action. This command object will hold what logic to perform and how to 
+undo it. 
+The command object and command invoker
+There are a number of ways to implement this, but here’s one version that uses 
+an interface:
+Storing actions with the command pattern
+public interface ICommand
+{
+    void Execute();
+    void Undo();
+}
+In this case, every gameplay action will apply the ICommand interface (you could 
+also implement this with an abstract class). 
+Each command object will be responsible for its own Execute and Undo methods. 
+Thus, adding more commands to your game won’t affect any existing ones.
+You’ll need another class to execute and undo commands. Create a 
+CommandInvoker class. In addition to the ExecuteCommand and UndoCommand 
+methods, it has an undo stack to hold the sequence of command objects.
+
+63 of 99 | unity. com
+© 2022 Unity Technologies
+public class CommandInvoker
+{
+    private static Stack<ICommand> undoStack = new Stack<ICommand>();
+    public static void ExecuteCommand(ICommand command)
+    {
+        command.Execute();
+        undoStack.Push(command);
+    }
+    public static void UndoCommand()
+    {
+        if (undoStack.Count > 0)
+        {
+            ICommand activeCommand = undoStack.Pop();
+            activeCommand.Undo();
+        }
+    }
+}
+Example: Undoable movement
+Let’s imagine you want to move your player around a maze in your application. 
+You could create a PlayerMover responsible for shifting the player’s position:
+public class PlayerMover : MonoBehaviour
+{
+    [SerializeField] private LayerMask obstacleLayer;
+    private const float boardSpacing = 1f;
+    public void Move(Vector3 movement)
+    {
+        transform.position = transform.position + movement;
+    }
+    public bool IsValidMove(Vector3 movement)
+    {
+        return !Physics.Raycast(transform.position, movement, board-
+Spacing, obstacleLayer);
+    }
+}
+You’ll pass in a Vector3 into the Move method to guide the player along the 
+four compass directions. You can also use a raycast to detect the walls in the 
+appropriate LayerMask. Of course, implementing what you want to apply to the 
+command pattern is separate from the pattern itself.
+
+64 of 99 | unity. com
+© 2022 Unity Technologies
+Player movement in the sample
+ICommand requires an Execute method to store what you’re trying to 
+accomplish. Whatever logic you want to accomplish goes in here, so invoke 
+Move with the movement vector.
+ICommand also needs an Undo method to restore the scene back to its previous 
+state. In this case, the Undo logic subtracts the movement vector, essentially 
+pushing the player in the opposite direction.
+public class MoveCommand : ICommand
+{
+    PlayerMover playerMover;
+    Vector3 movement;
+    public MoveCommand(PlayerMover player, Vector3 moveVector)
+    {
+        this.playerMover = player;
+        this.movement = moveVector;
+    }
+    public void Execute()
+    {
+        playerMover.Move(movement);
+    }
+    public void Undo()
+    {
+        playerMover.Move(-movement);
+    }
+}
+To follow the command pattern, capture the PlayerMover’s Move method as 
+an object. Instead of calling Move directly, create a new class, MoveCommand, 
+that implements the ICommand interface:
+
+65 of 99 | unity. com
+© 2022 Unity Technologies
+The MoveCommand stores any parameters that it needs to execute. Set these 
+up with a constructor. In this case, you save the appropriate PlayerMover 
+component and the movement vector.
+Once you create the command object and save its needed parameters, use the 
+CommandInvoker’s static ExecuteCommand and UndoCommand methods to pass 
+in your MoveCommand. This runs the MoveCommand’s Execute or Undo and 
+tracks the command object in the undo stack.
+The CommandInvoker, ICommand, and MoveCommand
+
+66 of 99 | unity. com
+© 2022 Unity Technologies
+The InputManager doesn’t call the PlayerMover’s Move method directly. 
+Instead, add an extra method, RunMoveCommand, to create a new MoveCommand 
+and send it to the CommandInvoker.
+private void RunPlayerCommand(PlayerMover playerMover, Vector3 move-
+ment)
+{
+    if (playerMover == null)
+    {
+        return;
+    }
+    if (playerMover.IsValidMove(movement))
+    {
+        ICommand command = new MoveCommand(playerMover, movement);
+        CommandInvoker.ExecuteCommand(command);
+    }
+}
+Then, set up the various onClick events of the UI Buttons to call 
+RunPlayerCommand with the four movement vectors.
+Check out the sample project for implementation details for the InputManager or set 
+up your own input using the keyboard or gamepad. Your player can now navigate the 
+maze. Click the Undo button so you can backtrack to the beginning square.
+Pros and cons
+Implementing replayability or undoability is as simple as generating a collection of 
+command objects. You can also use the command buffer to play back actions in 
+sequence with specific controls. 
+For example, think about a fighting game where a series of specific button clicks 
+triggers a combo move or attack. Storing player actions with the command pattern 
+makes setting up such combos much simpler.
+On the flip side, the command pattern introduces more structure, just like the other 
+design patterns. You’ll have to decide where these extra classes and interfaces 
+provide enough benefit for deploying command objects in your application.
+
+67 of 99 | unity. com
+© 2022 Unity Technologies
+New 
+command
+Undo stack
+Redo stack
+Improvements
+Once you learn the basics, you can affect the timing of commands and play them 
+back in succession or reverse, depending on the context.
+Consider the following when incorporating the command pattern:
+	
+—
+Create more commands: The sample project only includes one type 
+of command object, the MoveCommand. You can create any number of 
+command objects that implement ICommand and track them using the 
+CommandInvoker.
+	
+—
+Adding redo functionality is a matter of adding another stack: When 
+you undo a command object, push it onto a separate stack that tracks 
+redo operations. This way you can quickly cycle through the undo 
+history or redo those actions. Clear out the redo stack when the user 
+invokes an entirely new movement (you can find an implementation in the 
+accompanying sample project).
+Undo and redo stacks
+	
+—
+Use a different collection for your buffer of command objects: A queue 
+might be handier if you want first in, first out (FIFO) behavior. If you use 
+a list, track the currently active index; commands before active index are 
+undoable. Commands after the index are redoable.
+
+68 of 99 | unity. com
+© 2022 Unity Technologies
+A list or other collection acts as a command buffer.
+	
+—
+Limit the size of the stacks: Undo and redo operations can quickly blow 
+up out of control. Limit the stacks to the last number of commands.
+	
+—
+Pass any necessary parameters into the constructor: This helps 
+encapsulate the logic as seen in the MoveCommand example.
+The CommandInvoker, like other external objects, doesn’t see the inner workings of 
+the command object, only invoking Execute or Undo. Give the command object any 
+data needed to work when calling the constructor. 
+Undo
+Newer
+Redo
+Current index
+Older

@@ -1,0 +1,232 @@
+<p>假设你正在制作一款回合制游戏，玩家要操纵各种载具（vehicle）在棋盘上移动。你的 Vehicle 类可能像这样：</p>
+
+<pre><code>public class Vehicle
+{
+    public float speed = 100;
+    public Vector3 direction;
+    public void GoForward()
+    {
+            ...
+    }
+    public void Reverse()
+    {
+            ...
+    }
+    public void TurnRight()
+    {
+            ...
+    }
+    public void TurnLeft()
+    {
+            ...
+    }
+}</code></pre>
+
+<figure><figcaption>图 1：一个汽车对战火车的示例游戏，分别展示公路移动与铁轨移动</figcaption></figure>
+
+<p>你可能还会有另一个名为 Navigator 的类，用来沿着预定路径操纵载具：</p>
+
+<pre><code>public class Navigator
+{
+    public void Move(Vehicle vehicle)
+    {
+        vehicle.GoForward();
+        vehicle.TurnLeft();
+        vehicle.GoForward();
+        vehicle.TurnRight();
+        vehicle.GoForward();
+    }
+}</code></pre>
+
+<p>借助这个类，你会期望能把任何载具传入 Navigator 的 Move 方法，而这对汽车和卡车来说都能正常工作。但是，当你想要实现一个名为 Train 的类时，会发生什么呢？</p>
+
+<figure><figcaption>图 2：Train 会违反基类的约定</figcaption></figure>
+
+<p>由于火车无法脱离轨道，TurnLeft 和 TurnRight 方法在 Train 类中无法工作。如果你确实把火车传入了 Navigator 的 Move 方法，那么执行到这些行时就会抛出一个未实现的异常（或者什么也不做）。如果你不能用一个类型替换它的子类型，就违反了里氏替换原则（Liskov substitution principle）。</p>
+
+<p>由于 Train 是 Vehicle 的子类型（subtype），你会期望在任何接受 Vehicle 类的地方都能使用它。反过来做则可能让你的代码表现出不可预测的行为。</p>
+
+<p>请考虑以下一些技巧，以便更严格地遵循里氏替换原则：</p>
+
+<ul>
+<li>如果你在子类化（subclassing）时移除功能，你很可能就破坏了里氏替换：NotImplementedException 是违反该原则的铁证，把方法留空同样如此。如果子类的行为不像基类（base class），那么即使没有显式的错误或异常，你也没有遵循 LSP。</li>
+<li>保持抽象（abstraction）简单：你放进基类的逻辑越多，就越可能破坏 LSP。基类应当只表达派生子类的公共功能。</li>
+<li>子类必须拥有与基类相同的公共成员：调用这些成员时，它们还必须具有相同的签名和行为。</li>
+<li>在建立类层次结构之前先考虑类的 API：尽管你把它们都视为载具，但让 Car 和 Train 分别继承自不同的父类可能更合理。现实世界中的分类并不总能转化为类层次结构。</li>
+<li>优先使用组合（composition）而非继承（inheritance）：不要试图通过继承来传递功能，而应创建一个接口或单独的类来封装特定行为。然后通过混用与搭配，构建出不同功能的“组合”。</li>
+</ul>
+
+<figure><figcaption>图 3：用组合代替继承的设计思路</figcaption></figure>
+
+<p>要修正这个设计，请丢弃原来的 Vehicle 类型，然后把大部分功能移入接口（interface）：</p>
+
+<pre><code>public interface ITurnable 
+{
+    public void TurnRight();
+    public void TurnLeft();
+}
+public interface IMovable
+{
+    public void GoForward();
+    public void Reverse();
+}</code></pre>
+
+<figure><figcaption>图 4：重构后由 ITurnable 与 IMovable 接口承担转向和移动功能</figcaption></figure>
+
+<p>通过创建 RoadVehicle 类型和 RailVehicle 类型，可以更严格地遵循 LSP 原则。Car 和 Train 随后分别继承各自的基类。</p>
+
+<pre><code>public class RoadVehicle : IMovable, ITurnable
+{
+    public float speed = 100f;
+    public float turnSpeed = 5f;
+    public virtual void GoForward()
+    {
+        ...
+    }
+    public virtual void Reverse()
+    {
+        ... 
+    }
+    public virtual void TurnLeft()
+    {
+        ... 
+    }
+    public virtual void TurnRight()
+    {
+        ... 
+    }
+}
+public class RailVehicle : IMovable
+{
+    public float speed = 100;
+    public virtual void GoForward()
+    {
+        ...
+    }
+    public virtual void Reverse()
+    {
+       ...
+    }
+}
+public class Car : RoadVehicle
+{
+    ...
+}
+public class Train : RailVehicle
+{
+    ...
+}</code></pre>
+
+<figure><figcaption>图 5：考虑里氏替换原则之后重构出的类层次结构</figcaption></figure>
+
+<p>通过这种方式，功能是经由接口而非继承传递的。Car 和 Train 不再共享同一个基类，这就满足了 LSP。尽管你也可以让 RoadVehicle 和 RailVehicle 派生自同一个基类，但在本例中并没有太大必要。</p>
+
+<p>这种思维方式可能反直觉，因为你对现实世界抱有一些既定假设。在软件开发中，这被称为圆–椭圆问题（circle–ellipse problem）。并非每一个现实中的“是一个（is a）”关系都能转化为继承。请记住，你希望由软件设计来驱动类层次结构，而不是由你先前对现实的认知来驱动。</p>
+
+<p>遵循里氏替换原则，限制你使用继承的方式，从而让代码库保持可扩展和灵活。</p>
+
+<h3>接口隔离原则</h3>
+
+<p>接口隔离原则（Interface segregation principle，ISP）指出，不应强迫任何客户端依赖它不使用的方法。</p>
+
+<p>换句话说，要避免庞大的接口。遵循与单一职责原则相同的思路，即保持类和方法简短。这样能给你最大的灵活性，让接口保持紧凑和专注。</p>
+
+<p>想象你正在制作一款包含不同玩家单位的策略游戏。每个单位都有不同的属性，比如生命值和速度。你可能想创建一个接口，以保证所有单位都实现相似的功能：</p>
+
+<pre><code>public interface IUnitStats 
+{
+    public float Health { get; set; }
+    public int Defense { get; set; }
+    public void Die();
+    public void TakeDamage();
+    public void RestoreHealth();
+    public float MoveSpeed { get; set; }
+    public float Acceleration { get; set; }
+    public void GoForward();
+    public void Reverse();
+    public void TurnLeft();
+    public void TurnRight();
+    public int Strength { get; set; }
+    public int Dexterity { get; set; }
+    public int Endurance { get; set; }
+}</code></pre>
+
+<p>假设你想制作一个可破坏的道具，比如可打碎的桶或板条箱。这个道具虽然不会移动，但也需要生命值这一概念。板条箱或桶也不会拥有游戏中其他单位的许多能力。</p>
+
+<p>与其让一个接口赋予可破坏道具过多方法，不如把它拆分成若干更小的接口。这样，实现这些接口的类只需按需混用和搭配。</p>
+
+<figure><figcaption>图 6：把庞大的接口拆分成多个更小的接口</figcaption></figure>
+
+<p>你还可以为爆炸桶添加一个 IExplodable 接口：</p>
+
+<pre><code>public interface IExplodable 
+{
+    public float Mass { get; set; }
+    public float ExplosiveForce { get; set; }
+    public float FuseDelay { get; set; }
+    public void Explode();
+}
+public interface IMovable
+{
+    public float MoveSpeed { get; set; }
+    public float Acceleration { get; set; }
+    public void GoForward();
+    public void Reverse();
+    public void TurnLeft();
+    public void TurnRight();
+}
+public interface IDamageable 
+{
+    public float Health { get; set; }
+    public int Defense { get; set; }
+    public void Die();
+    public void TakeDamage();
+    public void RestoreHealth();
+}
+public interface IUnitStats 
+{
+    public int Strength { get; set; }
+    public int Dexterity { get; set; }
+    public int Endurance { get; set; }
+}</code></pre>
+
+<pre><code>public class ExplodingBarrel : MonoBehaviour, IDamageable, IExplodable
+{
+    ...
+}
+public class EnemyUnit : MonoBehaviour, IDamageable, IMovable, IUnitStats
+{
+    ...
+}</code></pre>
+
+<p>同样，这更倾向于组合而非继承，与里氏替换的示例类似。接口隔离原则有助于解耦（decouple）你的系统，使它们更易于修改和重新部署。</p>
+
+<p>由于一个类可以实现多个接口，你可以用 IDamageable、IMoveable 和 IUnitStats 组合出一个敌方单位。</p>
+
+<p>爆炸桶则可以使用 IDamageable 和 IExplodable，而无需承担其他接口带来的不必要开销。</p>
+
+<h3>依赖倒置原则</h3>
+
+<p>依赖倒置原则（dependency inversion principle，DIP）指出，高层模块（high-level module）不应直接导入（import）低层模块（low-level module）的任何内容。两者都应依赖于抽象。</p>
+
+<p>我们来拆解一下这句话的含义。当一个类与另一个类存在关系时，它就拥有了一种依赖（dependency）或耦合（coupling）。软件设计中的每一种依赖都带有一定风险。</p>
+
+<p>如果一个类对另一个类的工作方式了解过多，那么修改第一个类就可能破坏第二个类，反之亦然。高度耦合被视为不整洁的编码实践。应用程序某一部分的错误可能会像滚雪球一样扩散成许多错误。</p>
+
+<figure><figcaption>图 7：追求松散耦合与高内聚</figcaption></figure>
+
+<p>理想情况下，应尽量减少类与类之间的依赖。每个类还需要让其内部各部分协同一致地工作，而不是依赖与外部的连接。当一个对象基于内部或私有逻辑运行时，它就被认为是内聚的（cohesive）。</p>
+
+<p>最佳情形是，以松散耦合（loose coupling）和高内聚（high cohesion）为目标。</p>
+
+<p>你需要能够修改和扩展你的游戏应用程序。如果它很脆弱、抗拒修改，就要调查一下它当前的结构是怎样的。</p>
+
+<p>依赖倒置原则有助于减少类与类之间的这种紧密耦合。在应用程序中构建类和系统时，有些天然属于“高层”，有些属于“低层”。一个高层类依赖一个低层类来完成某件事。SOLID 告诉我们要把这种关系倒过来。</p>
+
+<figure><figcaption>图 8：在没有依赖倒置的情况下，Switch（高层）直接依赖 Door（低层）类</figcaption></figure>
+
+<p>假设你正在制作一款游戏，角色在关卡中探索并触发一扇门打开。你可能想创建一个名为 Switch 的类，以及另一个名为 Door 的类。</p>
+
+<p>在高层上，你希望角色移动到某个特定位置，并让某件事情发生。Switch 将负责这件事。</p>
+
+<p>在低层上是另一个类 Door，它包含如何打开门几何体的实际实现。为简化起见，这里添加一条 Debug.Log 语句来表示开门和关门的逻辑。</p>

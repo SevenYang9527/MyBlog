@@ -1,0 +1,220 @@
+<h2>数据容器（Data Containers）</h2>
+
+<p>ScriptableObject 最常见的用途是作为共享数据的数据容器，尤其是那些在运行时不会改变的静态游戏配置数据。</p>
+
+<p>ScriptableObject 的典型用例包括：</p>
+<ul>
+  <li>库存（Inventories）</li>
+  <li>敌人、玩家或物品的统计数据（statistics）</li>
+  <li>音频集合（Audio collections）</li>
+</ul>
+
+<p>在运行时，你可以把这些数据存储在 MonoBehaviour 上，但这样做可能效率低下。正如你在上一节的比较中所见，MonoBehaviour 会带来额外的开销，因为它们需要一个 GameObject——默认还包括一个 Transform——来充当宿主。这意味着在存储单个值之前，你需要先创建大量用不到的数据。</p>
+
+<p>要亲自验证这一点，请新建一个 GameObject，并在其上挂载一个内容为空的 MonoBehaviour。然后，用文本编辑器打开这个序列化对象：</p>
+
+<figure><figcaption>图 1：一个仅挂载最简 MonoBehaviour 的新建 GameObject</figcaption></figure>
+
+<pre><code>GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7467558130563611466}
+  - component: {fileID: 2006805663113952451}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &amp;7467558130563611466
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338842853706088653}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.1780801, y: -2.6573246, z: -0.01486098}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &amp;2006805663113952451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}</code></pre>
+
+<p>将其与一个空的 ScriptableObject 对比：</p>
+
+<figure><figcaption>图 2：ScriptableObject 降低了存储数据的开销</figcaption></figure>
+
+<p>ScriptableObject 精简了这部分内存占用，去掉了 GameObject 和 Transform。它还把数据存储在项目层级（project level）。这一点很有帮助，尤其是当你需要从多个场景访问同一份数据时。</p>
+
+<pre><code>MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2d85be56c1ae45d69604547c4544ba5, type: 3}
+  m_Name: PlayerID
+  m_EditorClassIdentifier:</code></pre>
+
+<p>MonoBehaviour 带来的额外数据起初可能不会影响应用程序的性能，但随着游戏规模扩大、对象数量增多，这种影响就会变得明显。</p>
+
+<h4>ScriptableObject 数据与持久化数据</h4>
+
+<p>当人们把 ScriptableObject 称为数据容器时，通常指的是不需要在运行时改变的数据。</p>
+
+<p>虽然对 ScriptableObject 数据的修改在 Editor 中确实会持久保留（很像修改材质资源上的值），但在应用程序构建（build）中，这些修改不会在运行时保存。</p>
+
+<p>需要从一个会话保存下来、再加载到另一个会话的持久化数据（persistent data），通常以另一种文件格式存储（例如 JSON、XML、MessagePack、Protocol Buffers 等）。详情参见下文的双重序列化（Dual Serialization）。</p>
+
+<p>在游戏构建中，确实可以在运行时修改 ScriptableObject 数据（例如 ScriptableObject 变量和 Runtime Sets），但这些修改是临时的。开始新的游戏会话时，ScriptableObject 数据会恢复为构建时的原始状态。</p>
+
+<p>可以把 ScriptableObject 数据看作相对于持久化数据的「只读」数据，而持久化数据是「读写」的，并保存在外部文件中。</p>
+
+<h3>减少重复数据</h3>
+
+<p>设想你有一千个 GameObject，各自挂载着自定义的 MonoBehaviour，每个组件都有若干字段。</p>
+
+<p>如果每个组件都持有这些成员变量的一份副本，那就意味着你可能在随身携带大量重复数据。</p>
+
+<figure><figcaption>图 3：大量对象各自持有重复的本地数据会导致性能低下</figcaption></figure>
+
+<p>有些数据并不需要在运行时改变，所以这种做法的效率略低。相反，你可以把这些数据汇总到一个 ScriptableObject 中。然后，这一千个对象中的每一个都可以指向这份共享的数据资源。每个对象存储的是对数据的引用，而不是数据本身的副本。</p>
+
+<h4>设计模式</h4>
+
+<p>设计模式可以帮助开发者编写更易维护、更灵活的代码，这在经常变化的游戏开发领域很有用。阅读《Level up your code with game programming patterns》，了解更多关于 SOLID 原则和设计模式的内容。</p>
+
+<p>对 ScriptableObject 的引用（而不是数据的完整副本）相对来说很小。随着规模扩大，不去复制数据所带来的内存节省会变得相当可观。</p>
+
+<figure><figcaption>图 4：许多对象通过一个 ScriptableObject 共享数据</figcaption></figure>
+
+<p>在软件设计中，这是一种被称为享元模式（flyweight pattern）的优化。以这种方式重构代码可以避免复制大量值，并降低内存占用。</p>
+
+<figure><figcaption>图 5：Memory Profiler 对比重复数据（A）与共享数据（B）的内存占用</figcaption></figure>
+
+<p>你可以用这种方式存储大量共享数据。以下场景可以考虑使用 ScriptableObject：</p>
+<ul>
+  <li>在 Editor 会话期间保存和存储数据</li>
+  <li>将数据保存为资源（Asset）以便在运行时使用</li>
+</ul>
+
+<p>与 MonoBehaviour 不同，ScriptableObject 不能挂载到 GameObject 上。相反，你要把它们作为资源（asset）保存在项目中。如果你的某个 Prefab 的 MonoBehaviour 使用了不会变化的数据，这一点尤其有用。</p>
+
+<h3>重构示例</h3>
+
+<p>设想有一个控制 NPC 生命值的 MonoBehaviour。你可能会这样定义它的类：</p>
+
+<pre><code>public class NPCHealthUnrefactored : MonoBehaviour
+{
+    [Range(10, 100)]
+    public int maxHealth;
+    [Range(10, 100)]
+    public int healthThreshold;
+    public NPCAIStateEnum goodHealthAi;
+    public NPCAIStateEnum lowHealthAi;
+    public int currentHealth;
+}</code></pre>
+
+<p>这样能行，但你手上有一些不期望在运行时改变的数据。如果你有很多对象都挂载了 NPCHealthUnrefactored，就会产生大量不必要的重复数据。</p>
+
+<figure><figcaption>图 6：重构前的 NPCHealth MonoBehaviour</figcaption></figure>
+
+<p>所有不需要改变的数据都可以移入一个 ScriptableObject：</p>
+
+<p>使用 CreateAssetMenu 特性（attribute）来配置菜单操作。你可以选择性地指定默认的 fileName 或菜单项顺序。</p>
+
+<pre><code>[CreateAssetMenu(fileName="NPCConfig")]
+public class NPCConfigSO : ScriptableObject
+{
+    [Range(10, 100)]
+    public int maxHealth;
+    [Range(10, 100)]
+    public int healthThreshold;
+    public NPCAIStateEnum goodHealthAi;
+    public NPCAIStateEnum lowHealthAi;
+}</code></pre>
+
+<h4>本指南中的代码约定</h4>
+
+<p>本指南中的许多代码示例为说明用途和更易阅读做了简化（例如使用 public 字段）。</p>
+
+<p>在生产环境中，请使用 private 字段和 public 属性（properties），以获得更好的封装性和灵活性。对 private 字段应用 SerializeField 特性，使它们显示在 Editor 的 Inspector 中。</p>
+
+<p>命名约定也有助于区分用于 ScriptableObject 的脚本和 MonoBehaviour。实现方式之一是在类名末尾加上「Data」或「SO」后缀。这不是必须的，但有助于保持项目条理清晰、减少歧义。</p>
+
+<p>随着代码库增长，建议维护并遵循一份代码风格指南。更多信息参见《Create a C# style guide》。</p>
+
+<p>这样重构之后，NPCHealth 组件就简化为：</p>
+
+<pre><code>public class NPCHealth: MonoBehaviour
+{
+    // 对 ScriptableObject 的引用
+    public NPCConfigSO config;
+    public int currentHealth;
+}</code></pre>
+
+<figure><figcaption>图 7：重构将数据拆分到 MonoBehaviour 与 ScriptableObject 中</figcaption></figure>
+
+<h3>自定义 Inspector</h3>
+
+<p>把数据分离到 ScriptableObject 之后，你的数据会分散在两个地方：ScriptableObject 资源和引用它的 MonoBehaviour。</p>
+
+<p>为了让 MonoBehaviour 更易于浏览，可以考虑创建一个自定义编辑器（custom editor）。下面是一个针对 NPCHealth 的示例。</p>
+
+<figure><figcaption>图 8：自定义 Inspector 在 MonoBehaviour 中显示 ScriptableObject 的变量</figcaption></figure>
+
+<p>MonoBehaviour 现在包含了指向这个新 ScriptableObject 的引用。在 Inspector 中，重构后的一切看起来相似，只是数据被拆分了。</p>
+
+<p>这样你就可以在 MonoBehaviour 的其他属性旁边查看 NPCConfig 的变量。如果你选中原来的 NPCHealth Prefab，就能方便地编辑两个对象中的值。</p>
+
+<p>自定义编辑器只需要几行代码：</p>
+<ul>
+  <li>从 Editor 派生一个新类，并将其放在名为「Editor」的文件夹中。应用 CustomEditor 特性并传入 NPCHealth 类型。</li>
+  <li>为 NPCConfig ScriptableObject 预留一个临时编辑器。</li>
+  <li>在 OnInspectorGUI 中，为 NPCHealth 组件创建编辑器。</li>
+  <li>绘制基类的 Inspector 和新的自定义 Inspector。</li>
+</ul>
+
+<pre><code>using UnityEditor;
+[CustomEditor(typeof(NPCHealth))]
+public class NPCHealthEditor : Editor
+{
+    private Editor editorInstance;
+    private void OnEnable()
+    {
+        // 重置编辑器实例
+        editorInstance = null;
+    }
+    public override void OnInspectorGUI()
+    {
+        // 被检查的目标组件
+        NPCHealth npcHealth = (NPCHealth)target;
+        if (editorInstance == null)
+            editorInstance = Editor.
+                CreateEditor(npcHealth.config);
+        // 显示来自 MonoBehaviour 的变量
+        base.OnInspectorGUI();
+        // 绘制 ScriptableObject 的 Inspector
+        editorInstance.DrawDefaultInspector();
+    }
+}</code></pre>
+
+<p>你可以在该示例的基础上扩展自定义属性绘制器（property drawer）和编辑器特性（editor attribute）。在处理 ScriptableObject 时，这甚至能带来更好的用户体验。</p>
+
+<h3>架构收益</h3>
+
+<p>借助 ScriptableObject，你可以清晰地将共享数据与非共享数据分开。任何某个 GameObject 实例独有的内容都保留在 MonoBehaviour 中，而共享数据则出现在 ScriptableObject 中。不过，使用 ScriptableObject 的架构并不止于节省内存。</p>

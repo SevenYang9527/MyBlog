@@ -1,0 +1,122 @@
+<h2>图形与 GPU 优化（Graphics and GPU Optimization）</h2>
+
+<p>在每一帧中，Unity 都会确定必须渲染哪些对象，然后创建绘制调用（draw call）。绘制调用是对图形 API（graphics API）的一次调用，用于绘制对象（例如一个三角形）；而批处理（batch）是一组要一起执行的绘制调用。</p>
+
+<p>随着项目变得越来越复杂，你需要一条能够优化 GPU 工作负载的管线。通用渲染管线（Universal Render Pipeline，URP）支持三种渲染方式：前向渲染（Forward）、前向+（Forward+）和延迟渲染（Deferred）。</p>
+
+<figure><figcaption>图 1：使用通用渲染管线创建的 Boat Attack 演示项目。</figcaption></figure>
+
+<p>前向渲染在单个渲染通道（pass）中计算所有光照，通常被推荐作为移动游戏的默认选择。前向+ 随 Unity 2022 LTS 引入，它按空间而不是按对象剔除光源，从而对标准前向渲染做出了改进。这显著增加了在一帧渲染中可以使用的光源总数。延迟渲染模式适合特定场景，例如包含大量动态光源的游戏。与主机和 PC 上相同、基于物理的光照与材质，同样可以扩展到你的手机或平板电脑上。</p>
+
+<p>下表比较了 URP 中的三种渲染方式。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>功能</th>
+      <th>前向渲染</th>
+      <th>前向+</th>
+      <th>延迟渲染</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>每个对象的最大实时光源数量</td>
+      <td>9</td>
+      <td>不限；受每台摄像机（Camera）的上限限制</td>
+      <td>不限</td>
+    </tr>
+    <tr>
+      <td>逐像素法线编码</td>
+      <td>不编码（法线值精确）</td>
+      <td>不编码（法线值精确）</td>
+      <td>两种选项：<br>— 在 G-buffer 中对法线进行量化（损失精度，性能更好）<br>— 八面体编码（法线精确，但在移动 GPU 上可能产生明显的性能影响）<br>更多信息，请参阅 G-buffer 中的法线编码（Encoding of normals in G-buffer）。</td>
+    </tr>
+    <tr>
+      <td>MSAA</td>
+      <td>支持</td>
+      <td>支持</td>
+      <td>不支持</td>
+    </tr>
+    <tr>
+      <td>顶点光照</td>
+      <td>支持</td>
+      <td>不支持</td>
+      <td>不支持</td>
+    </tr>
+    <tr>
+      <td>摄像机堆叠（Camera stacking）</td>
+      <td>支持</td>
+      <td>支持</td>
+      <td>支持，但有一项限制：Unity 只使用延迟渲染路径渲染基础摄像机（base Camera）；所有叠加摄像机（overlay Camera）都由 Unity 使用前向渲染路径渲染</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>通过《Introduction to the Universal Render Pipeline for advanced Unity creators》这本电子书，了解如何把基于内置渲染管线（Built-in Render Pipeline）的项目迁移到 URP。</p>
+
+<h3>GPU 优化（GPU optimization）</h3>
+
+<p>要优化图形渲染，你需要了解目标硬件的限制，以及如何对 GPU 进行性能分析（profiling）。性能分析能帮助你检查和验证所做的优化是否有效。</p>
+
+<p>以下最佳实践可用于减轻 GPU 的渲染工作负载。</p>
+
+<h4>对 GPU 进行基准测试（Benchmark the GPU）</h4>
+
+<p>进行性能分析时，从基准测试（benchmark）入手会很有帮助。基准测试能告诉你，针对特定 GPU 应当预期得到什么样的性能分析结果。</p>
+
+<p>GFXBench 提供了大量针对 GPU 和显卡的行业标准基准测试。该网站很好地概述了当前可用的 GPU，以及它们彼此之间的性能对比。</p>
+
+<h4>关注渲染统计数据（Watch the rendering statistics）</h4>
+
+<p>点击 Game 视图右上角的 Stats 按钮。该窗口会在 Play 模式下显示应用程序的实时渲染信息。利用这些数据来帮助优化性能：</p>
+
+<ul>
+  <li>fps：每秒帧数（Frames per second）</li>
+  <li>CPU Main：处理一帧（并为所有窗口更新编辑器）所需的总时间</li>
+  <li>CPU Render：渲染 Game 视图一帧所需的总时间</li>
+  <li>Batches：要一起绘制的绘制调用分组</li>
+  <li>Tris（三角形）和 Verts（顶点）：网格几何体</li>
+  <li>SetPass 调用（SetPass calls）：Unity 为渲染屏幕上的 GameObject 而必须切换着色器通道（shader pass）的次数；每个通道都会带来额外的 CPU 开销。</li>
+</ul>
+
+<p>注意：编辑器内的 fps 不一定能反映构建版本（build）的性能。为了获得最准确的结果，建议你对构建版本进行性能分析。在基准测试时，以毫秒为单位的帧时间比每秒帧数是更准确的指标。</p>
+
+<h4>使用绘制调用批处理（Use draw call batching）</h4>
+
+<p>要绘制一个 GameObject，Unity 会向图形 API（例如 OpenGL、Vulkan 或 Direct3D）发出一次绘制调用。每次绘制调用都相当消耗资源。绘制调用之间的状态变化（例如切换材质）会在 CPU 一侧造成性能开销。</p>
+
+<p>PC 和主机硬件能够承受大量绘制调用，但每次调用的开销仍然高到值得设法减少它们。在移动设备上，绘制调用优化至关重要。你可以通过绘制调用批处理来实现这一点。</p>
+
+<p>绘制调用批处理会尽量减少这些状态变化，并降低渲染对象的 CPU 成本。Unity 可以通过多种技术将多个对象合并为更少的批次：</p>
+
+<ul>
+  <li>SRP Batcher：如果你使用的是 HDRP 或 URP，请在 Pipeline Asset 的 Advanced 下启用 SRP Batcher。使用兼容的着色器时，SRP Batcher 会减少绘制调用之间的 GPU 设置工作，并使材质数据持久保存在 GPU 内存中。这可以显著加快 CPU 的渲染时间。使用更少的 Shader Variants，并把 Keyword 数量控制在最低限度，可以改善 SRP 批处理效果。请查阅这份 SRP 文档，了解你的项目如何利用这一渲染工作流。</li>
+  <li>GPU 实例化（GPU instancing）：如果你有大量相同的对象（例如使用相同网格和材质的建筑、树木、草地等），请使用 GPU 实例化。这项技术利用图形硬件对这些对象进行批处理。要启用 GPU Instancing，请在 Project 窗口中选择你的材质，然后在 Inspector 中勾选 Enable Instancing。</li>
+</ul>
+
+<figure><figcaption>图 2：SRP Batcher 帮助你批处理绘制调用。</figcaption></figure>
+
+<ul>
+  <li>静态批处理（Static batching）：对于不移动的几何体，Unity 可以减少共享同一材质的任意网格的绘制调用。它比动态批处理更高效，但会占用更多内存。<br>在 Inspector 中把所有永不移动的网格标记为 Batching Static。Unity 会在构建时将所有静态网格合并为一个大型网格。StaticBatchingUtility 也允许你在运行时自己创建这些静态批次（例如在生成了一个由不移动部件组成的程序化关卡之后）。</li>
+  <li>动态批处理（Dynamic Batching）：对于小型网格，Unity 可以在 CPU 上对顶点进行分组和变换，然后一次性全部绘制。注意：除非你有足够多的低多边形网格（每个不超过 300 个顶点，总共 900 个顶点属性），否则不要使用它。否则，启用它只会浪费 CPU 时间去寻找可供批处理的小型网格。</li>
+</ul>
+
+<p>遵循几条简单的规则，你就可以最大化批处理效果：</p>
+
+<ul>
+  <li>在场景中尽量少用纹理。纹理越少，需要的唯一材质就越少，也就越容易进行批处理。此外，请尽可能使用纹理图集（texture atlas）。</li>
+  <li>始终以尽可能大的图集尺寸烘焙光照贴图（lightmap）。光照贴图越少，需要的材质状态变化就越少，但要留意内存占用。</li>
+  <li>注意不要无意中创建材质实例。在脚本中访问 Renderer.material 会复制该材质，并返回对新副本的引用。这会破坏任何已经包含该材质的现有批次。如果你想访问已批处理对象的材质，请改用 Renderer.sharedMaterial。</li>
+  <li>在优化过程中，通过 Profiler 或渲染统计数据留意静态批处理与动态批处理的数量相对于总绘制调用数量的情况。</li>
+</ul>
+
+<p>更多信息，请参阅 Draw Call Batching 文档。</p>
+
+<h4>使用帧调试器（Use the Frame Debugger）</h4>
+
+<p>帧调试器（Frame Debugger）展示了每一帧是如何由各个绘制调用构建而成的。它是排查着色器属性问题的宝贵工具，可以帮助你分析游戏的渲染方式。</p>
+
+<p>初次接触帧调试器？请在这里查看入门介绍。</p>
+
+<figure><figcaption>图 3：帧调试器把每一帧拆分成各自独立的步骤。</figcaption></figure>

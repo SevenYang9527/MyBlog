@@ -1,0 +1,97 @@
+99 of 140 | unity. com
+© 2024 Unity Technologies
+The SubmitRenderRequest API
+Sometimes you might want to render your game to a different destination than 
+the user’s screen. The SubmitRenderRequest API is designed with this purpose 
+in mind. Let’s look at a possible use case. 
+Coding a screengrab 
+The script below will render the game to an off-screen RenderTexture when 
+the user presses the onscreen GUI. The script should be attached to the Main 
+Camera. A RenderTexture is created in the Start callback. It is 1920 x 1080 
+pixels with a bit depth of 24. When the user presses the “Render Request” 
+button, the RenderRequest method is called.
+In the RenderRequest method, there’s a reference to the Camera component. 
+Create a RenderPipeline. StandardRequest instance, then check whether 
+the current pipeline supports the RenderRequest framework. If it does, 
+you set the RenderTexture that was initialized in the Start callback as the 
+destination of this request object and initialize the render using RenderPipeline.
+SubmitRenderRequest. This method takes a camera instance and a request 
+object. At this point, Texture2D contains a render of the current scene. To 
+save this to a file, you first need to convert the RenderTexture to a Texture2D 
+instance. The method ToTexture2D shows one possible route. Once you have 
+a Texture2D you can use the EncodeToPNG method of a Texture2D instance to 
+get a byte array. You can then use the System.IO.File method WriteAllBytes to 
+save the byte array to a file.
+
+100 of 140 | unity. com
+© 2024 Unity Technologies
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+[RequireComponent(typeof(Camera))]
+public class StandardRenderRequest : MonoBehaviour
+{
+    [SerializeField]
+    RenderTexture texture2D;
+    private void Start()
+    {
+        texture2D = new RenderTexture(1920, 1080, 24);
+    }
+    // When user clicks on GUI button,
+    // Render Requests are sent with various output textures to render giv-
+en frame
+    private void OnGUI()
+    {
+        GUILayout.BeginVertical();
+        if (GUILayout.Button("Render Request"))
+        {
+            RenderRequest();
+        }
+        GUILayout.EndVertical();
+    }
+    void RenderRequest()
+    {
+        Camera cam = GetComponent<Camera>();
+        RenderPipeline.StandardRequest request = new RenderPipeline.Stan-
+dardRequest();
+        if (RenderPipeline.SupportsRenderRequest(cam, request))
+        {
+            // 2D Texture
+            request.destination = texture2D;
+            RenderPipeline.SubmitRenderRequest(cam, request);
+            SaveTexture(ToTexture2D(texture2D));
+        }
+    }
+    void SaveTexture(Texture2D texture)
+    {
+If you use the script directly, the screengrab will be saved in a newly created 
+folder called RenderOutput in the Assets folder of your game. The file name is 
+R_ followed by a randomly chosen integer between 0 and 100,000.
+
+101 of 140 | unity. com
+© 2024 Unity Technologies
+        byte[] bytes = texture.EncodeToPNG();
+        var dirPath = Application.dataPath + "/RenderOutput";
+        if (!System.IO.Directory.Exists(dirPath))
+        {
+            System.IO.Directory.CreateDirectory(dirPath);
+        }
+        System.IO.File.WriteAllBytes(dirPath + "/R_" + Random.Range(0, 
+100000) + ".png", bytes);
+        Debug.Log(bytes.Length / 1024 + "Kb was saved as: " + dirPath);
+        #if UNITY_EDITOR
+                UnityEditor.AssetDatabase.Refresh();
+        #endif
+    }
+    Texture2D ToTexture2D(RenderTexture rTex)
+    {
+        Texture2D tex = new Texture2D(rTex.width, rTex.height, Tex-
+tureFormat.RGB24, false);
+        RenderTexture.active = rTex;
+        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        tex.Apply();
+        Destroy(tex);//prevents memory leak
+        return tex;
+    }
+}

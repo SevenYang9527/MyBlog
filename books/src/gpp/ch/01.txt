@@ -1,0 +1,58 @@
+I N T R O D U C I N G 
+D E S I G N PAT T E R N S
+
+5 of 99 | unity. com
+© 2022 Unity Technologies
+When working in Unity, you don’t have to reinvent the wheel. It’s likely someone 
+has already invented one for you.
+For every software design issue you encounter, a thousand developers have 
+been there before. While you can’t always ask them directly for advice,  
+you can learn from their decisions through design patterns.
+Design patterns are general solutions to common problems found in software 
+engineering. These aren’t finished solutions that you can copy and paste into 
+your code, but you can think of design patterns as extra tools in your toolbox. 
+Some are more obvious than others.
+This guide assembles well-known design patterns in Unity development.  
+The examples in this guide have been simplified and technical jargon reduced, 
+to make them more accessible, though you should have a working knowledge  
+of C# basics before starting with them.
+If you’re still new to design patterns or need a quick refresher, the guide also 
+provides common scenarios where you can apply them in game development. 
+For those switching from another object-oriented language (Java, C++, etc. )  
+to C#, these samples will show you how to adapt patterns specifically to Unity.
+At the core of it, design patterns are just ideas. They won’t apply in all situations. 
+But they can help you build larger applications that scale when used correctly. 
+Integrate them into your project to improve code readability and make your 
+codebase cleaner. As you gain experience with patterns, you’ll recognize when 
+they can speed up your development process.
+Then you can stop reinventing the wheel and, well, start working on something new.
+Contributors
+This guide was written by Wilmer Lin, a 3D and visual effects artist with over 
+15 years of industry experience in film and television, who now works as an 
+independent game developer and educator. Significant contributions were also 
+made by senior technical content marketing manager Thomas Krogh-Jacobsen 
+and senior Unity engineers Peter Andreasen and Scott Bilas.
+
+6 of 99 | unity. com
+© 2022 Unity Technologies
+Using this guide and the KISS principle
+This guide aims to present you with new ways of thinking about and 
+organizing your code. Several patterns for software design highlighted 
+in this guide are adapted to Unity development.
+The included sample project shows some of the code in context.  
+Use the corresponding scenes to explore these design patterns and 
+their underpinning principles.
+However, when reviewing these examples, remember there isn’t a 
+blanket “right way” to approach a problem. The sample code is one 
+solution among many. 
+When in doubt, filter everything in this guide through the KISS principle: 
+“Keep it simple, stupid. ” Only add complexity if necessary. 
+Every design pattern comes with tradeoffs, whether that means 
+additional structures to maintain or more setup at the beginning.  
+Decide if the benefit justifies extra work before implementing it.
+If you’re unsure if a pattern applies to your specific problem, you might be 
+better off waiting for a situation where it feels like a more natural fit. Don’t 
+use a pattern because it’s new or novel to you; use it when you need it.
+Then, the design pattern will serve its intended purpose: to help you 
+develop better software. 
+Let’s get started.

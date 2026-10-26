@@ -1,0 +1,23 @@
+68 of 80 | unity. com
+© 2023 Unity Technologies
+A N I M AT I O N
+Unity’s Mecanim system is fairly sophisticated. If possible, limit your usage  
+on mobile using the settings that follow.
+Use generic versus humanoid rigs 
+By default, Unity imports animated models with the Generic Rig, but 
+developers often switch to the Humanoid Rig when animating a character. 
+A Humanoid Rig consumes 30–50% more CPU time than the equivalent Generic 
+Rig because it calculates inverse kinematics and animation retargeting each 
+frame, even when not in use. If you don’t need these specific features of the 
+Humanoid Rig, use the Generic Rig instead.
+
+69 of 80 | unity. com
+© 2023 Unity Technologies
+Animators are potentially expensive.
+Avoid excessive use of Animators 
+Animators are primarily intended for humanoid characters but are often  
+used to animate single values (e. g. , the alpha channel of a UI element).  
+Avoid overusing Animators, particularly in conjunction with UI elements. 
+Whenever possible, use the legacy Animation components for mobile.
+Consider creating tweening functions or using a third-party library for  
+simple animations (e. g. , DOTween).

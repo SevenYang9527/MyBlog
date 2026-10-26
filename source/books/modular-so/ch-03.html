@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScriptableObject 与 MonoBehaviour 的区别 · 用 ScriptableObjects 构建模块化游戏架构</title>
+<meta name="description" content="Unity 官方电子书：把数据与逻辑拆开，让架构长出可替换的模块">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用 ScriptableObjects 构建模块化游戏架构</div>
+    <div class="book-en">Create Modular Game Architecture in Unity with ScriptableObjects</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">什么是 ScriptableObject</a></li>
+      <li><a href="ch-03.html">ScriptableObject 与 MonoBehaviour 的区别</a></li>
+      <li><a href="ch-04-1.html">数据容器（1/2）</a></li>
+      <li><a href="ch-04-2.html">数据容器（2/2）</a></li>
+      <li><a href="ch-05.html">模式：可扩展的枚举</a></li>
+      <li><a href="ch-06.html">模式：委托对象</a></li>
+      <li><a href="ch-07-1.html">模式：观察者（1/2）</a></li>
+      <li><a href="ch-07-2.html">模式：观察者（2/2）</a></li>
+      <li><a href="ch-08.html">模式：命令</a></li>
+      <li><a href="ch-09.html">模式：运行时集合</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 76 页 · 共 9 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">03 · ScriptableObject 与 MonoBehaviour 的区别</div>
+    <div class="pager"><a href="ch-02.html">← 上一节</a><a href="ch-04-1.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>ScriptableObject 与 MonoBehaviour 对比</h2>
+
+<p>MonoBehaviour 与 ScriptableObject 都是脚本。</p>
+
+<p>MonoBehaviour 和 ScriptableObject 类都派生自 UnityEngine.Object。</p>
+
+<table>
+<thead>
+<tr>
+<th>MonoBehaviour</th>
+<th>ScriptableObject</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MonoBehaviour 从 Unity 接收回调。<br>
+按照 MonoBehaviour 的事件函数命名你的方法，即可把它们接入游戏引擎的玩家循环（player loop）。<br>
+例如：Start、Awake、Update、OnEnable、OnDisable、OnCollisonEnter</td>
+<td>ScriptableObject 不会从 Unity 接收大部分回调。<br>
+ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnEnable、OnDestroy 和 OnDisable。编辑器还会从 Inspector 调用 OnValidate 和 Reset。<br>
+你可以在 ScriptableObject 上创建其他方法，但玩家循环不会自动调用它们。</td>
+</tr>
+</tbody>
+</table>
+
+<figure><figcaption>图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。</figcaption></figure>
+
+<h3>对比</h3>
+
+<p>要理解 ScriptableObject，最好的方式或许就是把它与它的“同类兄弟”MonoBehaviour 作比较。下表拆解了两者的相似之处与差异。</p>
+
+<p>从表面上看，ScriptableObject 很简单。它的 API 只提供寥寥几个方法。在这种情况下，这是件好事：简单意味着出错的地方更少。</p>
+
+<table>
+<thead>
+<tr>
+<th>MonoBehaviour</th>
+<th>ScriptableObject</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MonoBehaviour 在运行时必须挂载到 GameObject 上。如果要在运行时创建一个 MonoBehaviour，请使用 AddComponent API。</td>
+<td>ScriptableObject 不挂载到任何特定的 GameObject 上。请把 ScriptableObject 保存为项目（Project）层级的独立资源文件，然后从某个 MonoBehaviour 或其他脚本中引用这个 ScriptableObject 资源。</td>
+</tr>
+<tr>
+<td>在保存时，我们把 MonoBehaviour 的数据保存到场景（Scene）和预制件（Prefab）中。</td>
+<td>每个 ScriptableObject 实例都可以保存为项目层级下自己的独立文件。</td>
+</tr>
+<tr>
+<td>在编辑器中，退出播放模式（Play mode）时，对 MonoBehaviour 值的修改会被重置。</td>
+<td>在编辑器中，退出播放模式时，对 ScriptableObject 值的修改不会被重置。在独立构建（standalone build）中，运行时对 ScriptableObject 值的修改不会被保存。</td>
+</tr>
+<tr>
+<td colspan="2">MonoBehaviour 与 ScriptableObject 都是可序列化的，并且都能在 Inspector 中查看。</td>
+</tr>
+</tbody>
+</table>
+
+<h3>回调与消息</h3>
+
+<p>ScriptableObject 拥有 MonoBehaviour 可用事件函数的一个子集。你可以为自己的 ScriptableObject 定义自定义方法，但调用它们是你的责任。只有下列这些方法会在 PlayerLoop 中被自动调用。</p>
+
+<table>
+<thead>
+<tr>
+<th>事件函数（运行时）</th>
+<th>执行时机</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Awake</td>
+<td>它在 ScriptableObject 脚本启动时被调用，类似于 MonoBehaviour 的 Awake 回调。当游戏启动，或者加载的场景中包含对某个 ScriptableObject 资源的引用时，它也会执行。</td>
+</tr>
+<tr>
+<td>OnEnable</td>
+<td>它在 ScriptableObject 被加载或实例化时调用，紧接在 Awake 回调之后。OnEnable 会在 ScriptableObject.CreateInstance 期间执行，或在脚本重新编译成功后执行。</td>
+</tr>
+<tr>
+<td>OnDisable</td>
+<td>当 ScriptableObject 超出作用域时，它会被调用。如果你加载的场景不包含对该 ScriptableObject 资源的引用，就会发生这种情况；或者它就在该 ScriptableObject 的 OnDestroy 之前发生。Unity 也会在脚本重新编译之前执行 OnDisable。进入播放模式时，OnDisable 会在 OnEnable 之前紧挨着运行。</td>
+</tr>
+<tr>
+<td>OnDestroy</td>
+<td>当有东西销毁该 ScriptableObject 时会被调用，可以是在编辑器中删除它，也可以是从代码中销毁它。如果你是在运行时创建的该 ScriptableObject，那么当应用程序退出，或编辑器退出播放模式时，也会触发 OnDestroy。注意：这只会销毁对象的原生 C++ 部分。更多信息请参见“生命周期与创建”。</td>
+</tr>
+<tr>
+<td colspan="2"><strong>仅编辑器函数</strong></td>
+</tr>
+<tr>
+<td>OnValidate</td>
+<td>当脚本被加载，或 Inspector 中的某个值发生变化时，OnValidate 会执行。可以用它来确保你的数据保持在某个范围内。</td>
+</tr>
+<tr>
+<td>Reset</td>
+<td>当你在 Inspector 的上下文菜单中点击 Reset 按钮时，Reset 会被调用。</td>
+</tr>
+</tbody>
+</table>
+
+<p>要销毁一个 ScriptableObject，请在编辑器中移除它，或者在运行时调用 Destroy／DestroyImmediate。</p>
+
+<p>下面简要概述 ScriptableObject 的事件函数与生命周期。请把它与 MonoBehaviour 事件函数的执行顺序（从顶部开始）作对比。</p>
+
+<figure><figcaption>图 2：ScriptableObject 的事件函数及其执行顺序。</figcaption></figure>
+
+<h3>文件</h3>
+
+<p>MonoBehaviour 与 ScriptableObject 之间最大的差别之一，在于它们保存数据的方式。</p>
+
+<p>Unity 把 MonoBehaviour 序列化到场景文件或预制件文件之中。</p>
+
+<p>与此相反，Unity 把 ScriptableObject 保存到它们各自的资源文件中。这些文件比 MonoBehaviour 更小，也更模块化。</p>
+
+<p>如果你在 Project Settings &gt; Asset Serialization 窗口中选择 Mode: Force Text，就可以用文本编辑器打开一个 ScriptableObject 资源。它看起来可能像这样：</p>
+
+<figure><figcaption>图 3：一个以文本形式序列化的 ScriptableObject 实例。</figcaption></figure>
+
+<p>保存的数据包含：</p>
+
+<ul>
+<li>MonoBehaviour 本身</li>
+<li>它所挂载的 GameObject</li>
+<li>该 GameObject 的 Transform</li>
+<li>所挂载 GameObject 上的任何其他组件与 MonoBehaviour</li>
+</ul>
+
+<figure><figcaption>图 4：ScriptableObject 作为资源出现在项目中，而 MonoBehaviour 则挂载到 GameObject 上。</figcaption></figure>
+
+<h3>创建与生命周期</h3>
+
+<p>ScriptableObject 的生命周期与你项目中任何其他资源（材质、纹理等）的生命周期相似。</p>
+
+<p>如同前面的示例，为你的脚本应用 CreateAssetMenu 特性（attribute），以便向编辑器添加一个自定义菜单操作。你可以选择性地指定默认的 fileName 或菜单项顺序。这是创建 ScriptableObject 资源最常见的方式。</p>
+
+<pre><code>[CreateAssetMenu(fileName="MyScriptableObject"]
+public class MyScriptableObject: ScriptableObject
+{
+public int someVar;
+}</code></pre>
+
+<h4>YAML 并非标记语言</h4>
+
+<p>Unity 使用一个高性能的序列化库，它实现了 YAML 规范的一个子集。这是一种轻量、易读的语言，与 XML 和 JSON 有亲缘关系。</p>
+
+<p>在 YAML 中，数据以嵌套元素的层级结构来组织。每个对象都有一个 Class ID、一个 File ID 和一个对象类型。请注意，ScriptableObject 使用“MonoBehaviour”作为自己的对象类型，而不是定义自己的类型。</p>
+
+<figure><figcaption>图 5：YAML 中的一个对象头。</figcaption></figure>
+
+<p>每个对象之下是它的序列化属性，以键值对的形式表示。更多信息请阅读博文《Understanding Unity's serialization language, YAML.》。</p>
+
+<p>如果你需要在运行时创建一个 ScriptableObject 实例，可以调用静态的 CreateInstance 方法：</p>
+
+<pre><code>ScriptableObject.CreateInstance&lt;MyScriptableObjectClass&gt;();</code></pre>
+
+<h4>销毁 ScriptableObject</h4>
+
+<p>与其他 Unity 对象一样，ScriptableObject 由一个原生 C++ 部分和一个 C# 托管部分构成。你可以直接销毁原生 C++ 部分，但托管部分会一直保留，直到资源垃圾回收器（GC）将它清除。如果你切换场景，或调用 Resources.UnloadUnusedAssets，就会发生 GC 清理。</p>
+
+<figure><figcaption>图 6：ScriptableObject 同时具有原生侧与托管侧。</figcaption></figure>
+
+<p>请显式地把所有指向该 ScriptableObject 资源的引用设为 null，以免延迟垃圾回收。</p>
+
+<p>注意：在调用 Destroy 或 DestroyImmediate 之前完成这一步很重要。否则，指向该对象的引用在编辑器中可能只是名义上被标记为“null”，即使它实际上并非 null。只有当不再有任何引用指向该 ScriptableObject 时，GC 清理才会发生。</p>
+
+<p>一旦你掌握了创建和销毁自己的 ScriptableObject 的诀窍，就该去探索一些在游戏应用中使用它们的创造性方式了。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-02.html"><span class="dir">← 上一节</span>什么是 ScriptableObject</a>
+    <a href="ch-04-1.html"><span class="dir">下一节 →</span>数据容器（1/2）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

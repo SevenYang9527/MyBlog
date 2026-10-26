@@ -1,0 +1,102 @@
+<h2>工厂模式（Factory Pattern）</h2>
+
+<figure><figcaption>图 1：工厂可以生成一个或多个产品。</figcaption></figure>
+
+<p>有时，拥有一个专门负责创建其他对象的特殊对象会很有帮助。许多游戏会在游戏过程中生成各种各样的东西，而在运行时，你往往直到真正需要的时候才知道自己需要什么。</p>
+
+<p>工厂模式为此指定了一个特殊的对象——你猜对了——工厂（Factory）。在某个层面上，它封装了生成其「产品（Product）」时所涉及的许多细节。直接的好处是让你的代码更整洁。不过，如果每个产品都遵循一个共同的接口或基类，你还可以更进一步，让它包含更多自身的构建逻辑，把这些逻辑对工厂本身隐藏起来。这样一来，创建新对象就变得更具可扩展性。</p>
+
+<p>你还可以为工厂创建子类，从而得到多个专门负责特定产品的工厂。这样做有助于在运行时生成敌人、障碍物或其他任何东西。</p>
+
+<h3>示例：一个简单的工厂</h3>
+
+<p>设想你想创建一个工厂模式，用来为游戏关卡实例化物品。你可以用预制件（Prefab）来创建 GameObject，但你可能还想在创建每个实例时执行一些自定义行为。</p>
+
+<p>与其使用 if 语句或 switch 来维护这些逻辑，不如创建一个名为 IProduct 的接口（interface）和一个名为 Factory 的抽象类（abstract class）：</p>
+
+<pre><code>public interface IProduct
+{
+    public string ProductName { get; set; }
+    public void Initialize();
+}
+public abstract class Factory : MonoBehaviour
+{
+    public abstract IProduct GetProduct(Vector3 position);
+    // 与所有工厂共享的方法
+    …
+}</code></pre>
+
+<p>产品的方法需要遵循特定的模板，但除此之外它们并不共享任何功能。因此，你定义了 IProduct 接口。</p>
+
+<p>工厂可能需要一些共享的通用功能，所以这个示例使用了抽象类。在使用子类时，只要留意 SOLID 原则中的里氏替换（Liskov substitution）即可。</p>
+
+<p>它们最终会形成这样的结构：</p>
+
+<figure><figcaption>图 2：用接口在产品之间定义共享的属性与逻辑，从而得到这样的类结构。</figcaption></figure>
+
+<p>IProduct 接口定义了产品之间的共同点。在这个例子里，你只有一个 ProductName 属性和产品在 Initialize 中运行的任何逻辑。</p>
+
+<p>然后，你可以根据需要定义任意多个产品（ProductA、ProductB 等），只要它们遵循 IProduct 接口即可。</p>
+
+<p>基类 Factory 有一个 GetProduct 方法，它返回一个 IProduct。由于它是抽象的，你不能直接创建 Factory 的实例。你派生出几个具体的子类（ConcreteFactoryA 和 ConcreteFactoryB），由它们来实际获取不同的产品。</p>
+
+<p>这个示例中的 GetProduct 接收一个 Vector3 位置，这样你就能更方便地在特定位置实例化一个预制件 GameObject。每个具体工厂中的一个字段还存储着对应的模板预制件。</p>
+
+<p>下面是示例中的 ProductA 和 ConcreteFactoryA。</p>
+
+<pre><code>public class ProductA : MonoBehaviour, IProduct
+{
+    [SerializeField] private string productName = "ProductA";
+    public string ProductName { get => productName; set => productName = value; }
+    private ParticleSystem particleSystem;
+    public void Initialize()
+    {
+        // 该产品独有的任何逻辑
+        gameObject.name = productName;
+        particleSystem = GetComponentInChildren&lt;ParticleSystem&gt;();
+        particleSystem?.Stop();
+        particleSystem?.Play();
+    }
+}
+public class ConcreteFactoryA : Factory
+{
+    [SerializeField] private ProductA productPrefab;
+    public override IProduct GetProduct(Vector3 position)
+    {
+        // 创建一个预制件实例并获取产品组件
+        GameObject instance = Instantiate(productPrefab.gameObject, position, Quaternion.identity);
+        ProductA newProduct = instance.GetComponent&lt;ProductA&gt;();
+        // 每个产品都包含自己的逻辑
+        newProduct.Initialize();
+        return newProduct;
+    }
+}</code></pre>
+
+<p>在这里，你让实现了 IProduct 的产品类成为 MonoBehaviour，从而在工厂中利用预制件。</p>
+
+<p>请注意每个产品都可以有自己版本的 Initialize。示例中的 ProductA 预制件包含一个 ParticleSystem，当 ConcreteFactoryA 实例化一个副本时，它就会播放。工厂本身并不包含任何触发粒子的具体逻辑；它只调用所有产品共有的 Initialize 方法。</p>
+
+<p>探索示例项目，看看 ClickToCreate 组件如何在工厂之间切换，以创建行为各异的 ProductA 和 ProductB。ProductB 在生成时播放声音，而 ProductA 则触发粒子效果。</p>
+
+<h3>优缺点</h3>
+
+<p>在设置大量产品时，你会从工厂模式中获益最多。在应用程序中定义新的产品类型不会改变你已有的产品，也不要求你修改之前的代码。</p>
+
+<p>把每个产品的内部逻辑分离到它自己的类中，可以让工厂代码保持相对简短。每个工厂只知道要对每个产品调用 Initialize，而不必了解底层的细节。</p>
+
+<p>缺点在于，为了实现这个模式，你会创建若干个类和子类。与其他模式一样，这会带来一点额外的开销；如果你没有很多种类的产品，这些开销可能是不必要的。</p>
+
+<figure><figcaption>图 3：一个产品播放声音，另一个产品播放粒子效果，但两者使用同一个接口。</figcaption></figure>
+
+<h3>改进</h3>
+
+<p>工厂的实现方式可能与这里展示的有很大不同。在构建你自己的工厂模式时，可以考虑以下调整：</p>
+
+<ul>
+<li>使用字典（dictionary）来查找产品：你可能想以键值对的形式把产品存放在字典中。用一个唯一的字符串标识符（例如 Name 或某个 ID）作为键，用类型作为值。这样可以让检索产品和/或它们对应的工厂更方便。</li>
+<li>让工厂（或工厂管理器）成为静态的：这使它更易于使用，但需要额外的设置。静态类不会出现在 Inspector 中，所以你还需要把产品集合也设为静态的。</li>
+<li>将其应用于非 GameObject 和非 MonoBehaviour 的场合：不要把自己局限在预制件或其他 Unity 特有的组件上。工厂模式可以适用于任何 C# 对象。</li>
+<li>与对象池（Object Pool）模式结合使用：工厂不一定需要实例化或创建新对象。它们也可以从层级结构中获取已有的对象。如果你要一次性实例化大量对象（例如武器发射的投射物），请使用对象池模式来获得更优化的内存管理。</li>
+</ul>
+
+<p>工厂可以按需生成任何游戏元素。但要注意，创建产品往往并不是它们唯一的目的。你可能只是把工厂模式作为另一项更大任务的一部分来使用（例如，在对话框中设置 UI 元素，或者搭建游戏关卡的某些部分）。</p>

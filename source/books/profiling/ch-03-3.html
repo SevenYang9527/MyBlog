@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>性能分析工作流（3/3） · Unity 游戏性能分析终极指南</title>
+<meta name="description" content="Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 游戏性能分析终极指南</div>
+    <div class="book-en">Ultimate Guide to Profiling Unity Games</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析入门</a></li>
+      <li><a href="ch-03-1.html">性能分析工作流（1/3）</a></li>
+      <li><a href="ch-03-2.html">性能分析工作流（2/3）</a></li>
+      <li><a href="ch-03-3.html">性能分析工作流（3/3）</a></li>
+      <li><a href="ch-04.html">内存分析</a></li>
+      <li><a href="ch-05-1.html">Unity 性能分析与调试工具（1/5）</a></li>
+      <li><a href="ch-05-2.html">Unity 性能分析与调试工具（2/5）</a></li>
+      <li><a href="ch-05-3.html">Unity 性能分析与调试工具（3/5）</a></li>
+      <li><a href="ch-05-4.html">Unity 性能分析与调试工具（4/5）</a></li>
+      <li><a href="ch-05-5.html">Unity 性能分析与调试工具（5/5）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 75 页 · 共 5 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">03 · 性能分析工作流</div>
+    <div class="pager"><a href="ch-03-2.html">← 上一节</a><a href="ch-04.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<p>……执行分配的代码，以及在深度性能分析（deep profiling）时、品红色的 GC.Alloc 采样之间出现的间隙。Timeline 视图中的 GC.Alloc 采样能在一定程度上说明这些分配可能耗费了多长时间。</p>
+
+<p>此外，分配新内存还会对性能产生一些负面影响，而这些影响更难测量，也更难直接归因到具体代码：</p>
+
+<ul>
+<li>向系统请求新内存可能会影响移动设备的功耗预算，进而导致系统降低 CPU 或 GPU 的运行速度。</li>
+<li>新内存很可能需要被加载到 CPU 的 L1 缓存中，从而把已有的缓存行（cache line）挤出去。</li>
+<li>随着托管内存（Managed Memory）中现有的空闲空间最终被耗尽，增量式垃圾回收（Incremental Garbage Collection）或同步垃圾回收（Synchronous Garbage Collection）可能被立即触发，也可能延迟触发。</li>
+</ul>
+
+<p>在帧的开头，四次 Physics.FixedUpdate 合计耗时 4.57 毫秒。再往后，LateBehaviourUpdate（对 MonoBehaviour.LateUpdate() 的调用）耗时 4 毫秒，Animators 约占 1 毫秒。</p>
+
+<p>为了确保该项目达到预期的帧预算（frame budget）和帧率，需要把所有这些主线程问题都排查一遍，找出合适的优化方案。最大的性能收益来自优化那些耗时最长的部分。</p>
+
+<p>在受主线程限制的项目中，以下这些方面通常是寻找优化机会时收效显著的地方：</p>
+
+<ul>
+<li>物理（Physics）</li>
+<li>MonoBehaviour 脚本更新</li>
+<li>垃圾分配和/或垃圾回收</li>
+<li>摄像机剔除与渲染</li>
+<li>糟糕的绘制调用（draw call）批处理（batching）</li>
+<li>UI 更新、布局与重建</li>
+<li>动画</li>
+</ul>
+
+<p>根据你想排查的问题，其他工具也会有所帮助：</p>
+
+<ul>
+<li>对于耗时很长、却看不出究竟为何如此的 MonoBehaviour 脚本，可以在代码中添加性能分析标记（Profiler Markers），或者尝试深度性能分析，以查看完整的调用堆栈。</li>
+<li>对于会分配托管内存的脚本，启用分配调用栈（Allocation Call Stacks），就能准确看到这些分配来自何处。或者，启用 Deep Profiling，或使用项目审计器（Project Auditor），它会按内存筛选出代码问题，从而让你找出所有会导致托管内存分配的代码行。</li>
+<li>使用帧调试器（Frame Debugger）来排查绘制调用批处理效果不佳的原因。</li>
+</ul>
+
+<h3>渲染线程</h3>
+
+<p>这是一个受渲染线程（render thread）限制的项目。它是一款采用等距视角的主机游戏，目标帧预算为 33.33 毫秒。</p>
+
+<p>这份性能分析捕获显示，在当前帧可以开始渲染之前，主线程要等待渲染线程，具体表现为 Gfx.WaitForPresentOnGfxThread 标记。渲染线程仍在提交上一帧的绘制调用命令，还没有准备好接受主线程传来的新绘制调用；该渲染线程的时间花在了 Camera.Render 上。你可以区分与当前帧相关的标记和其他帧的标记，因为后者的颜色更深。你还可以看到，一旦主线程能够继续执行、开始发出供渲染线程处理的绘制调用，渲染线程处理当前帧就要花掉 100 毫秒以上，这又会在下一帧造成新的瓶颈。</p>
+
+<figure><figcaption>图 1：一个受渲染线程限制的场景的 Profiler 捕获，主线程在 Gfx.WaitForPresentOnGfxThread 上等待渲染线程，而渲染线程处理当前帧耗时超过 100 毫秒。</figcaption></figure>
+
+<p>进一步调查发现，这款游戏的渲染设置相当复杂，涉及九台不同的摄像机，以及由替换着色器（replacement shader）带来的许多额外渲染通道。该游戏还使用前向渲染路径（forward rendering path）渲染了 130 多盏点光源，而每盏光源都可能额外增加多个透明绘制调用。总的来说，这些问题叠加在一起，使每帧的绘制调用数量超过了 3000 个。</p>
+
+<p>对于受渲染线程限制的项目，以下是需要排查的常见原因：</p>
+
+<ul>
+<li>绘制调用批处理效果不佳，尤其是在 OpenGL 或 DirectX 11 等较旧的图形 API 上。</li>
+<li>摄像机数量过多。除非你在做分屏多人游戏，否则通常应该始终只保留一台处于活动状态的 Camera。</li>
+<li>剔除效果不佳，导致绘制的东西太多。检查 Camera 的视锥体（frustum）尺寸和剔除层遮罩（cull layer mask）。考虑启用遮挡剔除（Occlusion Culling）。你甚至可以根据自己对世界中物体布局的了解，自己实现一套简单的遮挡剔除系统。看一看场景中有多少投射阴影的物体——阴影剔除是在与“常规”剔除不同的另一个通道中进行的。</li>
+</ul>
+
+<p>Rendering Profiler 模块会概览每帧的绘制调用批次数量和 SetPass 调用数量。要排查渲染线程正在向 GPU 发出哪些绘制调用批次，最好的工具是帧调试器。</p>
+
+<h3>工作线程</h3>
+
+<p>受主线程和渲染线程之外的 CPU 线程限制的项目并不常见。不过，如果你的项目使用了数据导向技术栈（Data-Oriented Technology Stack，DOTS），这种情况就可能出现，尤其是当你使用 C# Job System 把工作从主线程转移到工作线程（worker thread）时。</p>
+
+<p>下面这份捕获来自编辑器中的播放模式（Play mode），展示了一个在 CPU 上运行粒子流体模拟的 DOTS 项目。</p>
+
+<p>乍看之下，这像是一次成功。工作线程被 Burst 编译的作业（job）排得满满当当，说明大量工作已经转移出了主线程。通常来说，这是一个稳妥的决策。</p>
+
+<p>然而在这个案例中，48.14 毫秒的帧时间，以及主线程上长达 35.57 毫秒的灰色 WaitForJobGroupID 标记，都是情况不妙的信号。WaitForJobGroupID 表示主线程已经把作业调度到工作线程上异步运行，但它在工作线程尚未运行完这些作业之前就需要它们的结果。WaitForJobGroupID 下方那些蓝色的 Profiler 标记显示，主线程在等待的同时也在执行作业，试图让这些作业尽快完成。</p>
+
+<figure><figcaption>图 2：一个以模拟为主、受工作线程限制的基于 DOTS 的项目，主线程卡在 WaitForJobGroupID 上等待作业结果。</figcaption></figure>
+
+<p>尽管这些作业经过了 Burst 编译，它们仍然在做大量的工作。也许这个项目用来快速找出哪些粒子彼此靠近的空间查询结构（spatial query structure）应该被优化，或者换成一个更高效的结构。或者，可以把空间查询作业调度到帧的末尾而不是开头，因为直到下一帧开始时才需要这些结果。也许这个项目试图模拟的粒子太多了。要找到解决方案，需要进一步分析这些作业的代码，因此添加更细粒度的 Profiler 标记有助于找出它们最慢的部分。</p>
+
+<p>你项目中的作业可能并不像这个例子那样高度并行。也许你只有一个长时间运行的作业，跑在单个工作线程上。这没有问题，只要从作业被调度到它必须完成之间的时间，足够它运行完就行。如果不够，你就会看到主线程在等待作业完成时停滞，正如上面的截图所示。</p>
+
+<p>同步点（sync point）和工作线程瓶颈的常见原因包括：</p>
+
+<ul>
+<li>作业没有被 Burst 编译器编译</li>
+<li>长时间运行的作业跑在单个工作线程上，而没有并行分散到多个工作线程</li>
+<li>作业被调度的时刻与需要其结果的时刻之间时间不足</li>
+<li>一帧中存在多个“同步点”，它们要求所有作业立即完成</li>
+</ul>
+
+<p>你可以使用 CPU Usage Profiler 模块 Timeline 视图中的 Flow Events 功能，来排查作业在何时被调度、以及主线程在何时需要它们的结果。关于如何编写高效的 DOTS 代码，更多信息请参阅这份 DOTS 最佳实践指南。</p>
+
+<h3>受 GPU 限制</h3>
+
+<p>如果主线程大量时间花在 Gfx.WaitForPresentOnGfxThread 这类 Profiler 标记上，同时你的渲染线程显示 Gfx.PresentFrame 或 &lt;GraphicsAPIName&gt;.WaitForLastPresent 这类标记，那么你的应用程序就是受 GPU 限制的。</p>
+
+<p>下面这份捕获来自一台三星 Galaxy S7，使用的是 Vulkan 图形 API。尽管在这个例子中，花在 Gfx.PresentFrame 上的时间有一部分可能与等待 VSync 有关，但这个 Profiler 标记的时长如此之长，说明其中大部分时间是在等待 GPU 完成上一帧的渲染。</p>
+
+<figure><figcaption>图 3：一个受 GPU 限制的移动游戏的捕获，渲染线程长时间停留在 Gfx.PresentFrame 中等待 GPU。</figcaption></figure>
+
+<p>在这款游戏中，某些玩法事件触发了某个着色器的使用，使 GPU 渲染的绘制调用数量变成了原来的三倍。在分析 GPU 性能时，需要排查的常见问题包括：</p>
+
+<ul>
+<li>昂贵的全屏后处理（post-processing）效果，包括环境光遮蔽（Ambient Occlusion）和泛光（Bloom）这类常见元凶。</li>
+<li>昂贵的片元着色器（fragment shader），原因包括：
+<ul>
+<li>分支逻辑</li>
+<li>使用全浮点精度（full float precision）而不是半精度（half precision）</li>
+<li>过多使用寄存器（register），影响 GPU 的波前（wavefront）占用率</li>
+</ul>
+</li>
+<li>由低效的 UI、粒子系统或后处理效果导致的透明渲染队列（Transparent render queue）中的过度绘制（overdraw）。</li>
+<li>过高的屏幕分辨率，例如 4K 显示器或移动设备上的 Retina 显示屏所提供的分辨率。</li>
+<li>由密集的网格几何体或缺少 LOD 导致的微三角形（micro triangle），这在移动 GPU 上尤其成问题，但也会影响 PC 和主机的 GPU。</li>
+<li>由未压缩的纹理，或没有 mipmap 的高分辨率纹理导致的缓存未命中（cache miss）和 GPU 显存带宽浪费。</li>
+<li>Geometry 着色器或 Tesselation 着色器，如果启用了动态阴影，它们可能每帧要运行多次。</li>
+</ul>
+
+<p>如果你的应用程序看起来受 GPU 限制，可以用帧调试器快速了解正在发送给 GPU 的绘制调用批次。不过，这个工具无法提供任何具体的 GPU 计时信息，只能展示整体场景是如何构建的。</p>
+
+<p>要排查 GPU 瓶颈的成因，最好的办法是用合适的 GPU 性能分析工具抓取一份 GPU 捕获。具体用哪个工具取决于目标硬件和所选的图形 API。更多信息请参阅本指南的性能分析与调试工具部分。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-03-2.html"><span class="dir">← 上一节</span>性能分析工作流（2/3）</a>
+    <a href="ch-04.html"><span class="dir">下一节 →</span>内存分析</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+{
+  "slug": "urp",
+  "title_en": "Introduction to the Universal Render Pipeline for advanced Unity creators",
+  "title_zh": "URP 进阶指南：面向资深 Unity 开发者的通用渲染管线",
+  "subtitle_zh": "Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "Introduction",
+      "title_zh": "引言",
+      "pages": "6-8",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "引言",
+          "chars": 3203
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Evolution of rendering: From Built-in Render Pipeline to SRP",
+      "title_zh": "渲染的演进：从内置管线到 SRP",
+      "pages": "9-11",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "渲染的演进：从内置管线到 SRP",
+          "chars": 5438
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "The conversion process",
+      "title_zh": "迁移流程",
+      "pages": "12-31",
+      "parts": [
+        {
+          "id": "03-1",
+          "title_zh": "迁移流程（1/2）",
+          "chars": 11277
+        },
+        {
+          "id": "03-2",
+          "title_zh": "迁移流程（2/2）",
+          "chars": 9804
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Lighting in URP",
+      "title_zh": "URP 中的光照",
+      "pages": "32-64",
+      "parts": [
+        {
+          "id": "04-1",
+          "title_zh": "URP 中的光照（1/4）",
+          "chars": 9508
+        },
+        {
+          "id": "04-2",
+          "title_zh": "URP 中的光照（2/4）",
+          "chars": 10803
+        },
+        {
+          "id": "04-3",
+          "title_zh": "URP 中的光照（3/4）",
+          "chars": 10620
+        },
+        {
+          "id": "04-4",
+          "title_zh": "URP 中的光照（4/4）",
+          "chars": 5884
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Decals",
+      "title_zh": "贴花（Decals）",
+      "pages": "65-68",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "贴花（Decals）",
+          "chars": 2497
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Shaders",
+      "title_zh": "Shader",
+      "pages": "69-76",
+      "parts": [
+        {
+          "id": "06-1",
+          "title_zh": "Shader（1/2）",
+          "chars": 7496
+        },
+        {
+          "id": "06-2",
+          "title_zh": "Shader（2/2）",
+          "chars": 6360
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Pipeline callbacks",
+      "title_zh": "管线回调",
+      "pages": "77-88",
+      "parts": [
+        {
+          "id": "07-1",
+          "title_zh": "管线回调（1/2）",
+          "chars": 7643
+        },
+        {
+          "id": "07-2",
+          "title_zh": "管线回调（2/2）",
+          "chars": 6542
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Post-processing",
+      "title_zh": "后处理",
+      "pages": "89-95",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "后处理",
+          "chars": 6721
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "Camera Stacking",
+      "title_zh": "相机堆叠",
+      "pages": "96-98",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "相机堆叠",
+          "chars": 2045
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "The SubmitRenderRequest API",
+      "title_zh": "SubmitRenderRequest API",
+      "pages": "99-101",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "SubmitRenderRequest API",
+          "chars": 3840
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Additional tools compatible with URP",
+      "title_zh": "与 URP 配套的工具",
+      "pages": "102-119",
+      "parts": [
+        {
+          "id": "11-1",
+          "title_zh": "与 URP 配套的工具（1/2）",
+          "chars": 7664
+        },
+        {
+          "id": "11-2",
+          "title_zh": "与 URP 配套的工具（2/2）",
+          "chars": 6817
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Performance",
+      "title_zh": "性能",
+      "pages": "120-128",
+      "parts": [
+        {
+          "id": "12-1",
+          "title_zh": "性能（1/2）",
+          "chars": 6563
+        },
+        {
+          "id": "12-2",
+          "title_zh": "性能（2/2）",
+          "chars": 5568
+        }
+      ]
+    }
+  ],
+  "book_pages": 140
+}

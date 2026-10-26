@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>URP 中的光照（2/4） · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">04 · URP 中的光照</div>
+    <div class="pager"><a href="ch-04-1.html">← 上一节</a><a href="ch-04-3.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h3>使用 Forward+ 时的设置覆盖</h3>
+<p>使用 Forward+ 时，URP Asset 中若干光照（Lighting）设置会被覆盖：</p>
+<ul>
+<li>Main Light：无论你选择什么值，该属性的值都是 Per Pixel。</li>
+<li>Additional Lights：无论你选择什么值，该属性的值都是 Per Pixel。</li>
+<li>Additional Lights &gt; Per Object Limit：Unity 会忽略此属性。</li>
+<li>Reflection Probes &gt; Probe Blending：反射探针（Reflection Probe）混合始终开启。</li>
+</ul>
+
+<h2>Light Inspector（光照检查器）</h2>
+<p>Light Inspector 是设置光照的三个位置之一。与内置渲染管线（Built-in Render Pipeline）一样，URP 支持平行光（Directional）、聚光灯（Spot）、点光源（Point）和面光源（Area）四种光照，不过面光源仅在 Baked Indirect 模式下有效。更多细节请参阅 Light Mode 一节。</p>
+<figure><figcaption>图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比</figcaption></figure>
+<p>上图展示了两个版本的 Light Inspector 中光照属性的呈现方式。URP 版本根据光照是平行光还是点光源，把控件分为五组，并为聚光灯和面光源额外增加一个 Shape 分组。</p>
+<p>下表列出了 URP 与内置渲染管线 Inspector 之间的差异。</p>
+<table>
+<thead>
+<tr>
+<th>URP Light Inspector 属性</th>
+<th>说明</th>
+<th>内置渲染管线 Light Inspector 属性</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Light Appearance</td>
+<td>可在 Color 与 Filter and Temperature 之间选择。Color 设置发出的光照颜色。Filter and Temperature 同时使用颜色（filter）和色温，在冷光与暖光之间切换。</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Bias</td>
+<td>Bias 控制阴影痤疮（shadow acne）。默认使用 URP Asset 中的设置；你也可以通过此 Inspector 设置自定义值。</td>
+<td>Bias/Normal Bias</td>
+</tr>
+<tr>
+<td>Light Cookie</td>
+<td>如果为纹理设置了光照 Cookie（light cookie），且光照类型为平行光，则会出现一个新面板，让你控制 Cookie 的 x、y 尺寸以及偏移。点光源的 Cookie 必须是立方体贴图（cubemap）。URP 支持彩色 Cookie，而内置渲染管线仅支持灰度。</td>
+<td>Cookie</td>
+</tr>
+<tr>
+<td>Shape: Spot</td>
+<td>现在可以同时控制聚光灯的内锥角与外锥角。</td>
+<td>Spot Angle, Range</td>
+</tr>
+<tr>
+<td>Shape: Area</td>
+<td>用于控制面光源的形状。</td>
+<td>Shape, Width, Height, Radius</td>
+</tr>
+<tr>
+<td>无</td>
+<td>使用位于光源中心球体上的 billboard，或用菲涅尔（Fresnel）着色器控制该球体的 alpha 值，即可轻松复现。详见 Halo light 一节。</td>
+<td>Draw Halo</td>
+</tr>
+<tr>
+<td>无</td>
+<td>参阅 Lens Flare 一节，了解如何在 URP 中实现镜头光晕（Lens Flare）。</td>
+<td>Flare</td>
+</tr>
+</tbody>
+</table>
+
+<h2>为新场景布光</h2>
+<h3>创建光照设置资源（Lighting Settings Asset）</h3>
+<p>为 URP 的新场景布光，第一步是创建新的 Lighting Settings Asset（见上图）。打开 Window &gt; Rendering &gt; Lighting，进入 Scene 标签页后点击 New Lighting Settings，并为新资源命名。此后你在各个 Lighting 面板中应用的设置都会保存到该资源中。通过切换 Lighting Settings Asset 即可在不同设置之间切换。</p>
+
+<h3>环境光或环境光照（Ambient / Environment lighting）</h3>
+<p>从内置渲染管线到 URP，环境光/环境光照的定义方式没有变化。主环境光通过 Window &gt; Rendering &gt; Lighting &gt; Environment 面板计算。</p>
+<figure><figcaption>图 2：Environment 面板中可用的光照设置</figcaption></figure>
+<p>你可以将 Environment Lighting 设置为使用场景的 Skybox，并可选地调整 Intensity、Gradient 或 Color。</p>
+<figure><figcaption>图 3：Environment Lighting 选项</figcaption></figure>
+
+<h2>阴影（Shadows）</h2>
+<p>从内置渲染管线转到 URP 后，最大的变化在于阴影的设置方式。</p>
+<p>阴影设置不再通过 Project Settings &gt; Quality 提供。如前所述，使用 URP 时你需要一个 Renderer Data 对象和一个 Render Pipeline Asset。关于为 URP 设置项目的一节介绍了如何通过 Render Pipeline Asset 查看场景，你可以用它来定义阴影的保真度。</p>
+
+<h3>URP Asset</h3>
+<h4>Main Light Shadow Resolution</h4>
+<p>URP Asset 中的 Lighting 和 Shadow 分组是设置场景阴影的关键。首先将 Main Light Shadow 设为 Disabled 或 Per Pixel，然后找到用于启用 Cast Shadows 的复选框。最后一项设置是阴影贴图的分辨率。</p>
+<p>如果你以前在 Unity 中处理过阴影，就会知道实时阴影需要渲染一张包含物体深度（从光源视角观察）的阴影贴图（shadow map）。这张阴影贴图的分辨率越高，视觉保真度就越高——但同时需要更强的处理能力和更多内存。会增加阴影处理开销的因素包括：</p>
+<ul>
+<li>阴影贴图中渲染的阴影投射者（Shadow Caster）数量——Main Light 的这个数量取决于 Shadow Distance（阴影视锥的远裁剪面）。</li>
+<li>可见的阴影接收者（Shadow Receiver）数量（你必须把它们全部纳入范围）。</li>
+<li>阴影级联（Shadow Cascades）的拆分数量。</li>
+<li>阴影过滤（Soft Shadows）。</li>
+</ul>
+<p>最高分辨率并不总是理想选择。例如 Soft Shadows 选项会产生模糊贴图的效果。在下面这张卡通风格的鬼屋房间图中，你可以看到前景的椅子在书桌抽屉上投下阴影，当分辨率高于 1024 时，这道阴影显得过于锐利。</p>
+<figure><figcaption>图 4：为主光源设置 Shadow Resolution：左上图分辨率为 256，右上图为 512，左中图为 1024，右中图为 2048，下图为 4096。</figcaption></figure>
+
+<h4>Main Light: Shadow Max Distance</h4>
+<figure><figcaption>图 5：改变主光源阴影的 Max Distance：左上图为 10，右上图为 30，左下图为 60，右下图为 400。</figcaption></figure>
+<p>Main Light Shadow 的另一项重要设置是 Max Distance。它以场景单位设定。在上图中，立柱之间相距 10 个单位，Max Distance 从 10 变化到 400 个单位。注意只有第一根立柱投下阴影，而且阴影在距摄像机 10 个单位处就被截断。取 60 个单位时（左下图），所有阴影都在视野内——阴影保真度足够。当 Max Distance 远大于可见资产的范围时，阴影贴图会被摊到过大的区域上，这意味着镜头内区域的分辨率远低于所需。</p>
+<p>Max Distance 属性需要与用户实际能看到的内容以及场景所用的单位直接相关。以能够给出可接受阴影的最小距离为目标（见下方注释）。如果玩家只能看到距摄像机 60 个单位的动态物体所投下的阴影，就把 Max Distance 设为 60。当混合光源（Mixed Lights）的 Lighting Mode 设为 Shadowmask 时，超出 Shadow Distance 的物体阴影会被烘焙。如果这是静态场景，你会看到所有物体上都有阴影，但动态阴影只绘制到 Shadow Distance 范围内。</p>
+<p><strong>注意：</strong>URP 仅支持 Stable Fit Shadow Projection，这依赖用户自行设置 Max Distance。内置渲染管线在 Shadow Projection 属性上同时支持 Stable Fit 和 Close Fit。在后一种模式下，左下与右下两张图会具有相同的质量，因为 Close Fit 会收缩阴影距离平面以贴合最后一个投射者。其缺点是，由于 Close Fit 会“动态”改变阴影视锥，阴影中可能出现闪烁/抖动（shimmer/dancing）现象。</p>
+
+<h3>阴影级联（Shadow Cascades）</h3>
+<p>由于透视关系，物体会在远处逐渐消失，因此降低 Shadow Resolution 是合理的，这样可以把更多阴影贴图用于靠近摄像机的阴影。Shadow Cascades 可以帮助实现这一点。</p>
+<p>下面两张图展示了鬼屋中带椅子和书桌的场景的阴影贴图。左图的级联数量为 1，贴图占满整个区域。右图的级联数量为 4，注意贴图中包含四张不同的贴图，每个区域分到的贴图分辨率更低。</p>
+<p>对于这样的小场景，级联数量为 1 很可能给出最佳结果。但如果你的 Max Distance 值很大，那么级联数量为 2 或 3 会让前景物体获得更好的阴影，因为它们分到了更大比例的阴影贴图。注意左图中的椅子要大得多，因而阴影更锐利。</p>
+<figure><figcaption>图 6：级联数量设为 1（左图）和 4（右图）时的阴影贴图</figcaption></figure>
+<p>你可以用可拖动的指针调整每个级联区段的起止范围，也可以在相应字段中设置单位值（见下图）。务必把 Max Distance 调整为贴合场景的值，并谨慎选择滑块位置。如果你以米（metric）作为工作单位，请始终让最后一个级联的范围最大不超过最后一个 Shadow Caster 的距离。</p>
+
+<h3>Additional Light Shadows（附加光源阴影）</h3>
+<figure><figcaption>图 7：URP Asset 中可用于 Additional Lights 的设置</figcaption></figure>
+<p>处理好 Main Light 的阴影之后，就该转向 Additional Lights Mode 了。将 URP Asset 的 Additional Lights Mode 设为 Per Pixel，即可让附加光源投射阴影。虽然该模式可以设为 Disabled、Per Vertex 或 Per Pixel（见上图），但只有最后一种支持阴影。</p>
+<p>勾选 Cast Shadows 复选框，然后选择 Shadow Atlas 的分辨率。这张图集将用于合并所有投射阴影的光源各自的贴图。请记住，点光源会投射六张阴影贴图、构成一张立方体贴图，因为它向所有方向发光。这使点光源成为性能开销最大的选择。单张附加光源阴影贴图的分辨率，由三档 Shadow Resolution 与在 Hierarchy 窗口中选中光源后通过 Light Inspector 设置的分辨率共同决定。</p>
+<figure><figcaption>图 8：Light Inspector 中的 Shadows 分组</figcaption></figure>
+<p>在鬼屋中，镜子上方有一盏聚光灯，书桌上方有一盏点光源，此外还有七张贴图。要把这七张贴图放进一张 1024 像素见方的贴图中，每张贴图的尺寸需要是 256 像素或更小。如果超过这个尺寸，阴影贴图的分辨率会被压缩以适配图集，并在控制台中输出一条警告信息。</p>
+<figure>
+<table>
+<thead>
+<tr>
+<th>贴图数量</th>
+<th>图集平铺</th>
+<th>图集尺寸（阴影档位尺寸乘以）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1x1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2–4</td>
+<td>2x2</td>
+<td>2</td>
+</tr>
+<tr>
+<td>5–16</td>
+<td>4x4</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<figcaption>图 9：根据附加光源阴影贴图的数量与每张贴图所选的分辨率档位来设置 Shadow Atlas 尺寸</figcaption>
+</figure>
+<p><strong>注意：</strong>URP 不支持附加平行光的阴影。请记住，Main Light 始终是最亮的平行光。若附加光源需要阴影，请使用点光源或聚光灯。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-04-1.html"><span class="dir">← 上一节</span>URP 中的光照（1/4）</a>
+    <a href="ch-04-3.html"><span class="dir">下一节 →</span>URP 中的光照（3/4）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

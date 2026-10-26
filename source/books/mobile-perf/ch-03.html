@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>内存 · Unity 移动游戏性能优化指南</title>
+<meta name="description" content="Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 移动游戏性能优化指南</div>
+    <div class="book-en">Unity: Optimize Your Mobile Game Performance</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析</a></li>
+      <li><a href="ch-03.html">内存</a></li>
+      <li><a href="ch-04.html">自适应性能</a></li>
+      <li><a href="ch-05.html">代码与架构</a></li>
+      <li><a href="ch-06.html">项目配置</a></li>
+      <li><a href="ch-07.html">资源</a></li>
+      <li><a href="ch-08-1.html">图形与 GPU 优化（1/2）</a></li>
+      <li><a href="ch-08-2.html">图形与 GPU 优化（2/2）</a></li>
+      <li><a href="ch-09.html">用户界面</a></li>
+      <li><a href="ch-10.html">音频</a></li>
+      <li><a href="ch-11.html">动画</a></li>
+      <li><a href="ch-12.html">物理</a></li>
+      <li><a href="ch-13.html">工作流与协作</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 80 页 · 共 13 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">03 · 内存</div>
+    <div class="pager"><a href="ch-02.html">← 上一节</a><a href="ch-04.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>内存</h2>
+
+<p>Unity 对用户编写的代码和脚本采用自动内存管理。小型数据（例如值类型的局部变量）分配在栈（stack）上。较大的数据以及需要长期存储的数据，则分配到托管堆（managed heap）或原生堆（native heap）上。</p>
+
+<p>垃圾回收器（garbage collector）会定期识别并释放托管堆中不再使用的内存。资源垃圾回收（Asset garbage collection）按需运行，或在你加载新场景时运行，释放原生对象和资源。虽然这一过程自动运行，但检查堆中所有对象的过程可能导致游戏卡顿或运行缓慢。</p>
+
+<p>优化内存占用，意味着要清楚地知道自己在何时分配和释放堆内存，以及如何把垃圾回收的影响降到最低。</p>
+
+<p>更多信息请参阅「了解托管堆」（Understanding the managed heap）。</p>
+
+<h2>使用 Memory Profiler</h2>
+
+<p>Memory Profiler 包会对你的托管堆内存拍摄快照（snapshot），帮助你找出内存碎片（fragmentation）和内存泄漏（memory leak）之类的问题。</p>
+
+<p>使用 Unity Objects 标签页，可以找出哪些位置的内存条目可以消除重复，或查明哪些对象占用的内存最多。All of Memory 标签页则展示快照中 Unity 所跟踪的全部内存的明细。</p>
+
+<p>了解如何在 Unity 中利用 Memory Profiler 改善内存占用。</p>
+
+<figure><figcaption>图 1：在 Memory Profiler 中捕获、检查并比较快照。</figcaption></figure>
+
+<h2>降低垃圾回收（GC）的影响</h2>
+
+<p>Unity 使用 Boehm-Demers-Weiser 垃圾回收器，它会停止运行你的程序代码，直到自身工作完成后才恢复正常执行。要注意某些不必要的堆分配，它们可能引发 GC 尖峰（GC spike）：</p>
+
+<ul>
+<li>字符串（Strings）：在 C# 中，字符串是引用类型而非值类型。减少不必要的字符串创建或操作。避免解析基于字符串的数据文件，例如 JSON 和 XML；改用 ScriptableObject 或 MessagePack、Protobuf 之类的格式来存储数据。如果需要在运行时构建字符串，请使用 <code>StringBuilder</code> 类。</li>
+<li>Unity 函数调用（Unity function calls）：要注意有些函数会产生堆分配。应当缓存数组的引用，而不是在循环中间分配数组。此外，善用某些不会产生垃圾的函数；例如使用 <code>GameObject.CompareTag</code>，而不是手工把字符串与 <code>GameObject.tag</code> 比较（返回新字符串会产生垃圾）。</li>
+<li>装箱（Boxing）：避免用值类型变量代替引用类型变量传参。这会创建一个临时对象，并可能带来相应的垃圾（例如 <code>int i = 123; object o = i</code> 会把值类型隐式转换为 object 类型）。应尽量针对你想传入的值类型提供具体的重载。泛型（generics）也可用于这些重载。</li>
+<li>协程（Coroutines）：虽然 <code>yield</code> 本身不产生垃圾，但创建新的 <code>WaitForSeconds</code> 对象会产生垃圾。应当缓存并复用 <code>WaitForSeconds</code> 对象，而不是在 <code>yield</code> 所在行创建它。</li>
+<li>LINQ 与正则表达式（Regular Expressions）：两者都会因幕后的装箱而产生垃圾。如果性能是问题，请避免使用 LINQ 和正则表达式。</li>
+</ul>
+
+<p>更多信息请参阅手册中关于垃圾回收最佳实践的页面。</p>
+
+<h3>尽可能为垃圾回收安排时机</h3>
+
+<p>如果你确定垃圾回收造成的停顿不会影响游戏中的某个特定时刻，就可以用 <code>System.GC.Collect</code> 触发垃圾回收。</p>
+
+<p>关于如何利用这一点，请参阅「了解自动内存管理」（Understanding automatic memory management）中的示例。<sup>2</sup></p>
+
+<p><sup>2</sup> 注意，使用 GC 会给某些 C# 调用增加读写屏障（read-write barrier），其开销虽小，但累计起来可能达到每帧约 1 ms 的脚本调用开销。为获得最佳性能，理想情况是主游戏循环中不产生任何 GC 分配（GC Allocs），并把 <code>GC.Collect</code> 隐藏在用户不会察觉的位置。</p>
+
+<h2>使用增量式垃圾回收器拆分 GC 工作量</h2>
+
+<p>增量式垃圾回收（incremental garbage collection）不使用一次长时间的程序执行中断，而是使用多次短得多的中断，把工作量分摊到许多帧上。如果垃圾回收正在影响性能，试着启用这个选项，看看它能否显著缓解 GC 尖峰问题。使用 Profile Analyzer 来验证它对应用带来的收益。</p>
+
+<figure><figcaption>图 2：使用增量式垃圾回收器以减少 GC 尖峰。</figcaption></figure>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-02.html"><span class="dir">← 上一节</span>性能分析</a>
+    <a href="ch-04.html"><span class="dir">下一节 →</span>自适应性能</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

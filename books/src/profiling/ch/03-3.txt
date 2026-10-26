@@ -1,0 +1,228 @@
+24 of 75 | unity. com
+© 2022 Unity Technologies
+the code that does the allocation, and in deep profiling, the gaps between the 
+magenta-colored GC. Alloc samples in the Timeline view provide some indication 
+of how long they might have taken. 
+Additionally, allocating new memory can have negatively effects on performance 
+that are harder to measure and attribute to them directly: 
+	
+—
+Requesting new memory from the system may affect the power budget on a 
+mobile device, which could lead to the system slowing down the CPU or GPU.
+	
+—
+The new memory likely needs to get loaded into the CPU’s L1 Cache and 
+thereby pushes out existing Cache lines.
+	
+—
+Incremental or Synchronous Garbage Collection may be triggered directly 
+or with a delay as the existing free space in Managed Memory is eventually 
+exceeded.
+At the start of the frame, four instances of Physics. FixedUpdate add up to 4. 57 
+ms. Later on, LateBehaviourUpdate (calls to MonoBehaviour. LateUpdate()) take 
+4 ms, and Animators account for about 1 ms. 
+To ensure this project hits its desired frame budget and rate, all of these main 
+thread issues need to be investigated to find suitable optimizations. The biggest 
+performance gains will be made by optimizing the things that take the longest time.
+The following areas are often fruitful places to look for optimizing in projects 
+that are main thread bound:
+	
+—
+Physics
+	
+—
+MonoBehaviour script updates
+	
+—
+Garbage allocation and/or collection
+	
+—
+Camera culling and rendering
+	
+—
+Poor draw call batching
+	
+—
+UI updates, layouts and rebuilds
+	
+—
+Animation
+Depending on the issue you want to investigate, other tools can also be helpful:
+	
+—
+For MonoBehaviour scripts that take a long time but don’t show you 
+exactly why that’s the case, add Profiler Markers to the code or try deep 
+profiling to see the full call stack.
+	
+—
+For scripts that allocate managed memory, enable Allocation Call Stacks 
+to see exactly where the allocations come from. Alternatively, enable 
+Deep Profiling or use Project Auditor, which shows code issues filtered 
+by memory, so you can identify all lines of code which result in managed 
+allocations.
+	
+—
+Use the Frame Debugger to investigate the causes of poor draw call batching.
+
+25 of 75 | unity. com
+© 2022 Unity Technologies
+Render thread
+Here’s a project that’s bound by its render thread. This is a console game with an 
+isometric viewpoint and a target frame budget of 33. 33 ms.
+The profiler capture shows that before rendering can begin on the current 
+frame, the main thread waits for the render thread, as indicated by the Gfx.
+WaitForPresentOnGfxThread marker. The render thread is still submitting draw 
+call commands from the previous frame and isn’t ready to accept new draw calls 
+from the main thread; the render thread is spending time in Camera. Render. 
+You can tell the difference between markers relating to the current frame and 
+markers from other frames, because the latter appear darker. You can also see 
+that once the main thread is able to continue and start issuing draw calls for the 
+render thread to process, the render thread takes over 100 ms to process the 
+current frame, which also creates a bottleneck during the next frame.
+Further investigation showed that this game had a complex rendering setup, 
+involving nine different cameras and many extra passes caused by replacement 
+shaders. The game was also rendering over 130 point lights using a forward 
+rendering path, which can add multiple additional transparent draw calls for each 
+light. In total, these issues combined to create over 3000 draw calls per frame.
+The following are common causes to investigate for projects that are render 
+thread-bound:
+	
+—
+Poor draw call batching, particularly on older graphics APIs such as OpenGL 
+or DirectX 11
+	
+—
+Too many cameras. Unless you’re making a split-screen multiplayer game, 
+the chances are that you should only ever have one active Camera.
+A Render thread-bound scenario
+
+26 of 75 | unity. com
+© 2022 Unity Technologies
+	
+—
+Poor culling, resulting in too many things being drawn. Investigate your 
+Camera’s frustum dimensions and cull layer masks. Consider enabling 
+Occlusion Culling. Perhaps even create your own simple occlusion culling 
+system based on what you know about how objects are laid out in your 
+world. Look at how many shadow-casting objects there are in the scene – 
+shadow culling happens in a separate pass to “regular” culling.
+The Rendering Profiler module shows an overview of the number of draw call 
+batches and SetPass calls every frame. The best tool for investigating which draw 
+call batches your render thread is issuing to the GPU is the Frame Debugger.
+Worker threads
+Projects bound by CPU threads other than the main or render threads are not 
+that common. However, it can arise if your project uses the Data-Oriented 
+Technology Stack (DOTS), especially if work is moved off the main thread into 
+worker threads using the C# Job System.
+Here’s a capture from Play mode in the Editor, showing a DOTS project running a 
+particle fluid simulation on the CPU.
+It looks like a success at first glance. The worker threads are packed tightly with 
+Burst-compiled jobs, indicating a large amount of work has been moved off the 
+main thread. Usually, this is a sound decision. 
+However, in this case, the frame time of 48. 14 ms and the gray 
+WaitForJobGroupID marker of 35. 57 ms on the main thread, are signs that all is 
+not well. WaitForJobGroupID indicates the main thread has scheduled jobs to 
+run asynchronously on worker threads, but it needs the results of those jobs 
+before the worker threads have finished running them. The blue Profiler markers 
+beneath WaitForJobGroupID show the main thread running jobs while it waits, in 
+an attempt to ensure the jobs finish sooner.  
+A DOTS-based project, heavy on simulation, bound by Worker threads
+
+27 of 75 | unity. com
+© 2022 Unity Technologies
+Although the jobs are Burst-compiled, they are still doing a lot of work. Perhaps 
+the spatial query structure used by this project to quickly find which particles 
+are close to each other should be optimized or swapped for a more efficient 
+structure. Or, the spatial query jobs can be scheduled for the end of the frame 
+rather than the start, with the results not required until the start of the next 
+frame. Perhaps this project is trying to simulate too many particles. Further 
+analysis of the jobs’ code is required to find the solution, so adding finer-grained 
+Profiler markers can help identify their slowest parts.
+The jobs in your project might not be as parallelized as in this example. Perhaps 
+you just have one long job running in a single worker thread. This is fine, so 
+long as the time between the job being scheduled and the time it needs to 
+be completed is long enough for the job to run. If it isn’t, you will see the main 
+thread stall as it waits for the job to complete, as in the screenshot above. 
+Common causes of sync points and worker thread bottlenecks include: 
+	
+—
+Jobs not being compiled by the Burst compiler
+	
+—
+Long-running jobs on a single worker thread instead of being parallelized 
+across multiple worker threads
+	
+—
+Insufficient time between the point in the frame when a job is scheduled 
+and the point when the result is required
+	
+—
+Multiple “sync points” in a frame, which require all jobs to complete 
+immediately
+You can use the Flow Events feature in the Timeline view of the CPU Usage 
+Profiler module to investigate when jobs are scheduled and when their results 
+are expected by the main thread. For more information about writing efficient 
+DOTS code, see this guide to DOTS Best Practices.
+GPU-bound
+Your application is GPU-bound if the main thread spends a lot of time in 
+Profiler markers such as Gfx. WaitForPresentOnGfxThread, and your render 
+thread simultaneously displays markers such as Gfx. PresentFrame or 
+<GraphicsAPIName>. WaitForLastPresent. 
+The following capture was taken on a Samsung Galaxy S7, using the Vulkan 
+graphics API. Although some of the time spent in Gfx. PresentFrame in this 
+example might be related to waiting for VSync, the extreme length of this 
+Profiler marker indicates the majority of this time is spent waiting for the GPU to 
+finish rendering the previous frame.
+
+28 of 75 | unity. com
+© 2022 Unity Technologies
+In this game, certain gameplay events triggered the use of a shader that tripled 
+the number of draw calls rendered by the GPU. Common issues to investigate 
+when profiling GPU performance include:
+	
+—
+Expensive full-screen post-processing effects, including common culprits 
+like Ambient Occlusion and Bloom
+	
+—
+Expensive fragment shaders caused by:
+	
+—
+Branching logic
+	
+—
+Using full float precision rather than half precision
+	
+—
+Excessive use of registers which affect the wavefront  
+occupancy of GPUs
+	
+—
+Overdraw in the Transparent render queue caused by inefficient UI, 
+particle systems, or post-processing effects
+	
+—
+Excessively high screen resolutions, such as those found in 4K displays or 
+Retina displays on mobile devices
+	
+—
+Micro triangles caused by dense mesh geometry or a lack of LODs, which 
+is a particular problem on mobile GPUs but can affect PC and console 
+GPUs as well
+	
+—
+Cache misses and wasted GPU memory bandwidth caused by 
+uncompressed textures, or high-resolution textures without mipmaps
+	
+—
+Geometry or Tesselation shaders, which may be run multiple times per 
+frame if dynamic shadows are enabled
+If your application appears to be GPU-bound you can use the Frame Debugger 
+as a quick way to understand the draw call batches that are being sent to the 
+GPU. However, this tool can’t present any specific GPU timing information, only 
+how the overall scene is constructed.
+The best way to investigate the cause of GPU bottlenecks is to examine a GPU 
+capture from a suitable GPU profiler. Which tool you use depends on the target 
+hardware and the chosen graphics API. See the profiling and debugging tools 
+section of this guide for more information.
+A capture from a GPU-bound mobile game

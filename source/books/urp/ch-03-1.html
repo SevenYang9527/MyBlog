@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>迁移流程（1/2） · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">03 · 迁移流程</div>
+    <div class="pager"><a href="ch-02.html">← 上一节</a><a href="ch-03-2.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>转换流程</h2>
+
+<p>本节介绍使用 URP 新建项目，或将现有项目转换为 URP 的具体步骤。</p>
+
+<h3>如何打开一个新的 URP 项目</h3>
+
+<p>通过 Unity Hub 使用 URP 打开一个新项目。点击 New，确认窗口顶部所选的 Unity 版本为 2022.2 或更高版本。为项目指定名称和位置，选择 3D (URP) 模板或 3D Sample Scene (URP)，然后点击 Create。</p>
+
+<figure><figcaption>图 1：使用 URP 模板创建新项目，首次使用时可能需要先下载该模板</figcaption></figure>
+
+<p><strong>注意：</strong>该模板会确保项目使用线性颜色空间（linear color space），这是正确计算光照所必需的。</p>
+
+<figure><figcaption>图 2：URP 3D Sample 中包含的四个环境之一，可在 Unity Hub 中获取</figcaption></figure>
+
+<p>你可以通过 File &gt; New Scene 创建新场景，其中包含 Camera 和 Directional light 等基本 GameObject，甚至可以用预先填充的对象创建自己的场景模板。更多内容请参阅 URP Scene Templates 文档。</p>
+
+<p>转到 Edit &gt; Project Settings，打开 Graphics 面板。要在编辑器内使用 URP，你必须在 Scriptable Render Pipeline Settings 中选择一个 URP Asset。URP Asset 控制项目的全局渲染与质量（Quality）设置，并创建渲染管线实例。而渲染管线实例则包含中间资源和渲染管线的具体实现。</p>
+
+<p>默认选中的 URP Asset 是 UniversalRP-HighFidelity，但你可以切换到 UniversalRP-Balanced 或 UniversalRP-Performant。</p>
+
+<figure><figcaption>图 3：显示场景模板的 New Scene 对话框</figcaption></figure>
+
+<figure><figcaption>图 4：Project Settings 中的 Graphics 面板</figcaption></figure>
+
+<p>本指南稍后的章节会详细介绍如何调整 URP Asset 的各项设置。</p>
+
+<h3>如何向现有的内置渲染管线（Built-in Render Pipeline）项目添加 URP</h3>
+
+<p><strong>重要：</strong>在执行本节步骤之前，务必使用版本控制系统备份项目。此过程会转换资源，而 Unity 不提供撤销选项。如果你使用了版本控制，则可以在需要时回退到资源的先前版本。</p>
+
+<p>如果要升级现有的内置渲染管线项目，你需要自行将 URP 包添加到项目中，因为 Unity 2022.2 或 2022 LTS 并未内置该包。</p>
+
+<figure><figcaption>图 5：显示 Unity Registry 包的 Package Manager</figcaption></figure>
+
+<p>转到 Window &gt; Package Manager，点击 Packages 下拉菜单，将 URP 添加到项目中。确保选择 Unity Registry，然后选择 Universal RP。如果开发计算机上尚未安装 URP 包，请点击窗口右下角的 Download。下载完成后点击 Install。</p>
+
+<figure><figcaption>图 6：通过 Package Manager 安装 URP</figcaption></figure>
+
+<p>要创建 URP Asset，在 Project 窗口中右键单击，选择 Create &gt; Rendering &gt; URP Asset (with Universal Renderer)。为该资源命名。</p>
+
+<figure><figcaption>图 7：创建 URP Asset</figcaption></figure>
+
+<p><strong>请记住：</strong>如果你使用 Universal Render Pipeline 或 3D (URP) 模板创建新项目，这些 URP Asset 以及 URP 包已经存在于项目中。</p>
+
+<p>URP 并不创建单个 URP Asset，而是使用两个文件，二者都以 Asset 为扩展名。</p>
+
+<figure><figcaption>图 8：URP 中的两个 Asset，一个用于 URP 设置，另一个用于 Renderer Data</figcaption></figure>
+
+<p>其中一个称为 UniversalRP_Renderer，是一个 Renderer Data Asset，你可以用它筛选渲染器所作用的层，并拦截渲染管线以自定义场景的渲染方式。通过这种方式，你可以更方便地创建高质量效果。更多信息请参阅「管线回调」（Pipeline callbacks）一节。</p>
+
+<p>此外，UniversalRP_Renderer 还控制 URP 的高层渲染逻辑与各个 Pass。它支持前向（Forward）和延迟（Deferred）路径，以及一个 2D 渲染器，后者可启用 2D 光源、2D 阴影和光源混合样式（Light Blend Styles）等功能。你甚至可以扩展 URP 来创建自己的渲染器。</p>
+
+<figure><figcaption>图 9：UniversalRP_Renderer Data Asset 的 Inspector</figcaption></figure>
+
+<p>另一个 URP Asset 用于控制质量（Quality）、光照（Lighting）、阴影（Shadows）和后处理（Post-processing）等设置。你可以使用不同的 URP Asset 来控制质量设置，本节稍后会概述这一流程。该设置资源（Settings Asset）通过 Renderer List 与渲染器数据资源（Renderer Data Asset）相链接。创建新的 URP Asset 时，设置资源会拥有一个仅含单个条目的 Renderer List——即同时创建的那个渲染器数据资源，并被设为默认值。你可以向此列表添加其他渲染器数据资源。</p>
+
+<p>默认渲染器用于所有摄像机（Camera），包括场景视图（Scene view）。摄像机可以通过从 Renderer List 中选择另一个渲染器来覆盖默认渲染器。如有需要，也可以通过脚本实现这一点。</p>
+
+<figure><figcaption>图 10：Inspector 中的 URP Asset</figcaption></figure>
+
+<p>尽管已按上述步骤创建了 URP Asset，场景视图或游戏视图中打开的场景仍会使用内置渲染管线。你还必须完成最后一步才能切换到 URP：转到 Edit &gt; Project Settings，打开 Graphics 面板。点击 None (Render Pipeline Asset) 旁边的小圆点，在打开的面板中选择 UniversalRP。</p>
+
+<figure><figcaption>图 11：选择 Scriptable Render Pipeline Asset</figcaption></figure>
+
+<p>此时会弹出关于此次切换的警告信息，直接点击 Continue 即可。</p>
+
+<p>由于项目中还没有任何内容，更改渲染管线几乎是瞬间完成的。现在你已准备好使用 URP 了。</p>
+
+<h3>转换现有项目的场景</h3>
+
+<p>完成上述步骤后，你会发现原本精美的场景突然变成了洋红色。这是因为内置渲染管线项目中材质所使用的着色器不受 URP 支持。幸运的是，有一种方法可以让场景恢复到原本的质量。</p>
+
+<figure><figcaption>图 12：场景中的材质显示为洋红色，因为其基于内置渲染管线的着色器必须经过转换才能在 URP 中使用</figcaption></figure>
+
+<p>转到 Window &gt; Rendering &gt; Render Pipeline Converter。2D 项目选择 Convert Built-In to 2D (URP)，3D 项目选择 Built-In to URP。假定你的项目是 3D 项目，则需要选择相应的转换器：</p>
+
+<ul>
+<li><strong>Rendering Settings：</strong>选择此项会创建多个渲染管线设置资源，尽可能匹配内置渲染管线的质量设置。这样你就能更高效地测试不同的质量级别。更多细节请参阅「比较内置渲染管线与 URP 的质量选项」一节。</li>
+<li><strong>Material Upgrade：</strong>用它把材质从内置渲染管线转换为 URP。</li>
+<li><strong>Animation Clip Converter：</strong>用于转换动画剪辑。它在 Material Upgrade 转换器完成后运行。</li>
+<li><strong>Read-only Material Converter：</strong>用于转换 Unity 项目中包含的预制只读材质。它会为项目建立索引并创建临时 .index 文件。注意，这可能耗时较长。</li>
+</ul>
+
+<h3>转换自定义着色器</h3>
+
+<p>自定义着色器不会通过 Material Upgrade 转换器进行转换。「Shaders」和「New tools」两节概述了将自定义内置渲染管线着色器转换为 URP 的步骤。使用 Shader Graph 通常是将自定义着色器更新到 URP 的最快方式。</p>
+
+<p>URP 提供了若干不同的着色器，包括：</p>
+
+<ul>
+<li><strong>Universal Render Pipeline/Lit：</strong>这个基于物理的渲染（PBR）着色器类似于内置的 Standard Shader，可用于表现大多数真实材质。它支持 Standard Shader 的所有功能，并同时支持金属（metallic）和镜面反射（specular）工作流。</li>
+<li><strong>Universal Render Pipeline/Simple Lit：</strong>使用 Blinn-Phong 模型，适合低端移动设备或不使用 PBR 工作流的游戏。</li>
+<li><strong>Universal Render Pipeline/Unlit：</strong>这是一个对 GPU 性能友好的着色器，不使用光照方程。</li>
+<li><strong>Universal Render Pipeline/Terrain/Lit：</strong>适合与 Terrain Tools 包配合使用。</li>
+<li><strong>Universal Render Pipeline/Particles/Lit：</strong>这个粒子着色器使用 PBR 光照模型。</li>
+<li><strong>Universal Render Pipeline/Particles/Unlit：</strong>这个无光照粒子着色器对 GPU 的负担很小。</li>
+</ul>
+
+<p>尽管 Simple Lit 可以替代许多旧版/移动端着色器，但性能并不相同。旧版/移动端着色器只对光照进行部分计算，而 Simple Lit 会按照 URP Asset 的定义考虑所有光源。</p>
+
+<p>请参阅 URP 文档中的这张表格，了解每个 URP 着色器与其内置渲染管线对应项的映射关系。</p>
+
+<p>选择一个或多个上述转换器后，点击 Initialize Converters 或 Initialize And Convert。无论选择哪一种，项目都会被扫描，需要转换的资源会被添加到各个转换器面板中。如果选择 Initialize Converters，你可以通过取消勾选每个条目提供的复选框来限制转换范围。在此阶段，点击 Convert Assets 开始转换过程。如果选择 Initialize And Convert，则在转换器初始化完成后会自动开始转换。转换完成后，系统可能会要求你重新打开编辑器中当前活跃的场景。</p>
+
+<figure><figcaption>图 13：Render Pipeline Converter</figcaption></figure>
+
+<h3>比较内置渲染管线与 URP 的质量选项</h3>
+
+<p>内置渲染管线提供了若干默认质量选项，从 Very low 到 Ultra 不等。质量设置会影响场景的保真度，包括纹理分辨率、光照、阴影渲染等。</p>
+
+<p>转到 Edit &gt; Project Settings，选择 Quality 面板。在这里，你可以通过选择当前质量级别在这些质量选项之间切换。这会改变场景视图和游戏视图所使用的渲染设置。你也可以在此面板中编辑每一个质量选项。</p>
+
+<p>如果在使用 Render Pipeline Converter 从内置渲染管线切换到 URP 时选择了 Rendering Settings 选项，系统会创建一组 URP Asset，尽量匹配内置渲染管线的质量选项。下面的第一张表展示了 Low 设置下内置渲染管线与 URP 的对应关系，第二张表则展示了 High 设置的对比。在内置渲染管线和 URP 中，设置都通过 Quality 面板选择。选中 URP Asset 时，可以在 Inspector 中查看 URP Asset 的设置。更多细节请参阅 URP 文档。</p>
+
+<h3>内置渲染管线到 URP：Low 设置</h3>
+
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>内置渲染管线</th>
+<th>URP</th>
+<th>URP Asset 设置</th>
+</tr>
+</thead>
+<tbody>
+<tr><th colspan="4">渲染（Rendering）</th></tr>
+<tr><td>Pixel Light Count</td><td>0</td><td>不适用（NA）*</td><td>NA</td></tr>
+<tr><td>Anti-aliasing</td><td>Disabled</td><td>NA</td><td>Disabled</td></tr>
+<tr><td>Render Scale</td><td>NA</td><td>NA</td><td>1</td></tr>
+<tr><td>Real-time Reflection Probes</td><td>No</td><td>No</td><td></td></tr>
+<tr><td>Resolution Scaling Fixed DPI Factor</td><td>1</td><td>1</td><td>NA</td></tr>
+<tr><td>VSync Count</td><td>Don't sync</td><td>Don't sync</td><td></td></tr>
+<tr><td>Depth Texture</td><td>NA</td><td>NA</td><td>No</td></tr>
+<tr><td>Opaque Texture</td><td>NA</td><td>NA</td><td>No</td></tr>
+<tr><td>Opaque Downsampling</td><td>NA</td><td>NA</td><td>NA</td></tr>
+<tr><td>Terrain Holes</td><td>NA</td><td>NA</td><td>Yes</td></tr>
+<tr><td>HDR</td><td>NA</td><td>NA</td><td>Yes</td></tr>
+<tr><th colspan="4">纹理（Textures）</th></tr>
+<tr><td>Texture Quality</td><td>Half res</td><td>Half res</td><td>NA</td></tr>
+<tr><td>Anisotropic Textures</td><td>Disabled</td><td>Disabled</td><td>NA</td></tr>
+<tr><td>Texture Streaming</td><td>No</td><td>No</td><td>NA</td></tr>
+<tr><th colspan="4">粒子（Particles）</th></tr>
+<tr><td>Soft Particles</td><td>No</td><td>NA</td><td>NA</td></tr>
+<tr><td>Particle Raycast Budget</td><td>16</td><td>16</td><td>NA</td></tr>
+<tr><th colspan="4">地形（Terrain）</th></tr>
+<tr><td>Billboards Face Camera Position</td><td>No</td><td>No</td><td>NA</td></tr>
+</tbody>
+</table>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-02.html"><span class="dir">← 上一节</span>渲染的演进：从内置管线到 SRP</a>
+    <a href="ch-03-2.html"><span class="dir">下一节 →</span>迁移流程（2/2）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>单例模式 · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">06 · 单例模式</div>
+    <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>单例模式（Singleton Pattern）</h2>
+
+<p>单例（Singleton）的名声不太好。如果你刚开始做 Unity 开发，单例很可能是你在实际项目中最早能辨认出来的模式之一。它同时也是最受诟病的设计模式之一。</p>
+
+<p>根据最初的“四人帮”（Gang of Four）的说法，单例模式：</p>
+
+<ul>
+<li>确保一个类只能实例化它自身的一个实例；</li>
+<li>提供对该单一实例的便捷全局访问。</li>
+</ul>
+
+<p>如果你需要恰好有一个对象来协调整个场景中的各种操作，这会很有用。例如，你可能希望场景中恰好有一个游戏管理器（game manager）来指挥主游戏循环。你也可能希望同一时间只有一个文件管理器（file manager）在向文件系统写入数据。像这样处于中心位置、管理器层级的对象，往往就是单例模式的合适候选。</p>
+
+<figure><figcaption>图 1：SimpleSingleton 会销毁第一个实例之外的所有实例。</figcaption></figure>
+
+<p>在《Game Programming Patterns》一书中，作者指出单例弊大于利，并将其列为反模式（anti-pattern）。这种糟糕的声誉源于该模式用起来太容易，因而容易被滥用。开发者往往在不恰当的场合套用单例，从而引入不必要的全局状态或依赖。</p>
+
+<p>下面我们来考察如何在 Unity 中构建单例，并权衡它的优缺点。之后你就可以判断是否值得把它引入自己的应用。</p>
+
+<h3>示例：简单单例</h3>
+
+<p>最简单的单例之一可能长这样：</p>
+
+<pre><code>using UnityEngine;
+public class SimpleSingleton : MonoBehaviour
+{
+    public static SimpleSingleton Instance;
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this; 
+        }
+            else
+        {
+            Destroy(gameObject); 
+        }
+    }
+}
+</code></pre>
+
+<p>公共静态字段 <code>Instance</code> 将持有场景中这个 Singleton 的唯一实例。在 <code>Awake</code> 方法中，检查它是否已经被赋值。如果 <code>Instance</code> 当前为 null，就把 <code>Instance</code> 设为这个特定的对象——它必须是场景中的第一个单例。否则，这个实例必定是重复的；你调用 <code>Destroy(gameObject)</code> 来保证你的单例在场景中只有一个这样的组件。</p>
+
+<p>如果在运行时把这个脚本挂到层级视图（Hierarchy）中的多个 GameObject 上，<code>Awake</code> 中的逻辑会保留第一个对象，然后丢弃其余的。</p>
+
+<p><code>Instance</code> 字段是 public 且 static 的。任何组件都可以从场景中的任意位置全局访问这个唯一的单例。</p>
+
+<h3>持久化与延迟实例化</h3>
+
+<p><code>SimpleSingleton</code> 按目前写法可以正常工作。不过，它确实存在两个问题：</p>
+
+<ul>
+<li>加载新场景会销毁该 GameObject。</li>
+<li>你需要在层级视图中预先设置好单例，然后才能使用它。</li>
+</ul>
+
+<p>由于单例常常充当无处不在的管理器脚本，把它做成持久化的对象（使用 <code>DontDestroyOnLoad</code>）会带来好处。</p>
+
+<p>此外，你还可以使用延迟实例化（lazy instantiation），在第一次需要它时才自动构建这个单例。你只需要一些逻辑来创建一个 GameObject，然后添加相应的 Singleton 组件。</p>
+
+<figure><figcaption>图 2：单例模式只允许存在一个实例。</figcaption></figure>
+
+<p>改进后的单例大致如下：</p>
+
+<pre><code>  public class Singleton : MonoBehaviour
+  {
+        private static Singleton instance;
+        public static Singleton Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    SetupInstance();
+                }
+                return instance;
+            }
+        }
+        private void Awake()
+        {
+            if (instance == null)
+            {
+                instance = this;
+                DontDestroyOnLoad(this.gameObject);
+            }
+            else
+            {
+                Destroy(gameObject);
+            }
+        }
+        private static void SetupInstance()
+        {
+            instance = FindObjectOfType&lt;Singleton&gt;();
+            if (instance == null)
+            {
+                GameObject gameObj = new GameObject();
+                gameObj.name = "Singleton";
+                instance = gameObj.AddComponent&lt;Singleton&gt;();
+                DontDestroyOnLoad(gameObj);
+            }
+        }
+</code></pre>
+
+<p>现在 <code>Instance</code> 是一个公共属性，指向私有的 <code>instance</code> 后备字段。第一次引用这个单例时，会在 getter 中检查 <code>Instance</code> 是否存在。如果它不存在，<code>SetupInstance</code> 方法就会创建一个带有相应组件的 GameObject。</p>
+
+<p><code>DontDestroyOnLoad(gameObject)</code> 可以防止场景加载时把单例从层级视图中清除。单例实例现在是持久化的，即使你在游戏中切换场景，它也会保持活动状态。</p>
+
+<h3>使用泛型</h3>
+
+<p>这两个版本的脚本都没有解决如何在同一个场景中创建不同单例的问题。例如，如果你想要一个充当 <code>AudioManager</code> 的单例，以及另一个充当 <code>GameManager</code> 的单例，它们目前无法共存。你只能复制相关代码，把其中的逻辑粘贴到每个类里。</p>
+
+<p>换个做法，把脚本改成泛型版本，如下所示：</p>
+
+<pre><code>public class Singleton&lt;T&gt; : MonoBehaviour where T : Component
+{
+    private static T instance;
+    public static T Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = (T)FindObjectOfType(typeof(T));
+                if (instance == null)
+                {
+                    SetupInstance();
+                }
+            }
+            return instance;
+        }
+    }
+    public virtual void Awake()
+    {
+        RemoveDuplicates();
+    }
+    private static void SetupInstance()
+    {
+        instance = (T)FindObjectOfType(typeof(T));
+        if (instance == null)
+        {
+           GameObject gameObj = new GameObject();
+           gameObj.name = typeof(T).Name;
+           instance = gameObj.AddComponent&lt;T&gt;();
+           DontDestroyOnLoad(gameObj);
+        }
+    }
+    private void RemoveDuplicates()
+    {
+        if (instance == null)
+        {
+            instance = this as T;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+</code></pre>
+
+<p>这样一来，你可以把任何类变成单例。声明类时，只需继承这个泛型单例即可。例如，你可以像下面这样声明，把一个名为 <code>GameManager</code> 的 MonoBehaviour 变成单例：</p>
+
+<pre><code>public class GameManager: Singleton&lt;GameManager&gt;
+{
+    // ...
+}
+</code></pre>
+
+<p>之后，无论何时需要，你都可以直接引用公共静态的 <code>GameManager.Instance</code>。</p>
+
+<h3>优点与缺点</h3>
+
+<p>单例与本书中的其他模式不同，它在多个方面违背了 SOLID 原则。许多开发者出于各种原因不喜欢它：</p>
+
+<ul>
+<li><strong>单例需要全局访问：</strong>由于你把它们当作全局实例来使用，它们会隐藏许多依赖关系，使 bug 更难排查。</li>
+<li><strong>单例让测试变得困难：</strong>单元测试必须彼此独立。由于单例可能改变场景中许多 GameObject 的状态，它们会干扰你的测试。</li>
+<li><strong>单例助长紧耦合：</strong>本书中的大多数模式都试图解耦依赖关系。单例恰恰相反。紧耦合会让重构变得困难。如果你改动了一个组件，就可能影响到与它相连的任何组件，从而导致代码不整洁。</li>
+</ul>
+
+<p>反对单例的理由相当充分。如果你正在构建一款企业级游戏，并预期未来多年都要维护它，那你也许应该避开单例。</p>
+
+<p>但许多游戏并不是企业级应用。你不需要像对待商业软件那样持续地扩展它们。</p>
+
+<p>事实上，如果你正在做一款不需要扩展性的小游戏，单例提供的一些好处可能对你很有吸引力：</p>
+
+<ul>
+<li><strong>单例学起来相对快：</strong>核心模式本身比较直白。</li>
+<li><strong>单例对使用者友好：</strong>要在另一个组件中使用你的单例，只需引用那个公共且静态的实例。单例实例随时可以从场景中的任何对象按需获取。</li>
+<li><strong>单例性能好：</strong>由于你始终可以全局访问静态的单例实例，就能避免缓存 <code>GetComponent</code> 或 <code>Find</code> 操作的结果，而这些操作往往很慢。</li>
+</ul>
+
+<p>通过这种方式，你可以做一个管理器对象（例如游戏流程管理器或音频管理器），让它始终可以从场景中的其他任何 GameObject 访问。另外，如果你已经实现了对象池（Object Pool），也可以把池化系统设计成单例，让获取池化对象更容易。</p>
+
+<p>如果你决定在项目中使用单例，请把它们保持在最低数量。不要不加区分地使用。把单例留给少数确实能从全局访问中受益的脚本。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05.html"><span class="dir">← 上一节</span>对象池</a>
+    <a href="ch-07.html"><span class="dir">下一节 →</span>命令模式</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

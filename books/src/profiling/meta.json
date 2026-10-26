@@ -1,0 +1,104 @@
+{
+  "slug": "profiling",
+  "title_en": "Ultimate Guide to Profiling Unity Games",
+  "title_zh": "Unity 游戏性能分析终极指南",
+  "subtitle_zh": "Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "Introduction",
+      "title_zh": "引言",
+      "pages": "6-6",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "引言",
+          "chars": 1840
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Profiling 101",
+      "title_zh": "性能分析入门",
+      "pages": "7-11",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "性能分析入门",
+          "chars": 6369
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "Profiling workflow",
+      "title_zh": "性能分析工作流",
+      "pages": "12-28",
+      "parts": [
+        {
+          "id": "03-1",
+          "title_zh": "性能分析工作流（1/3）",
+          "chars": 10478
+        },
+        {
+          "id": "03-2",
+          "title_zh": "性能分析工作流（2/3）",
+          "chars": 10623
+        },
+        {
+          "id": "03-3",
+          "title_zh": "性能分析工作流（3/3）",
+          "chars": 10062
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Memory Profiling",
+      "title_zh": "内存分析",
+      "pages": "29-35",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "内存分析",
+          "chars": 10861
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Unity Profiling & Debug Tools",
+      "title_zh": "Unity 性能分析与调试工具",
+      "pages": "36-70",
+      "parts": [
+        {
+          "id": "05-1",
+          "title_zh": "Unity 性能分析与调试工具（1/5）",
+          "chars": 11226
+        },
+        {
+          "id": "05-2",
+          "title_zh": "Unity 性能分析与调试工具（2/5）",
+          "chars": 11595
+        },
+        {
+          "id": "05-3",
+          "title_zh": "Unity 性能分析与调试工具（3/5）",
+          "chars": 10431
+        },
+        {
+          "id": "05-4",
+          "title_zh": "Unity 性能分析与调试工具（4/5）",
+          "chars": 11502
+        },
+        {
+          "id": "05-5",
+          "title_zh": "Unity 性能分析与调试工具（5/5）",
+          "chars": 7190
+        }
+      ]
+    }
+  ],
+  "book_pages": 75
+}

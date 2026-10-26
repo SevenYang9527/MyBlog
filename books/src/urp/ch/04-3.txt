@@ -1,0 +1,217 @@
+46 of 140 | unity. com
+© 2024 Unity Technologies
+The image above shows the six maps used by the Point light where the 
+resolution is set to medium and the tier value to 256px. The Spot light has a 
+resolution set to high, with a tier value of 512px.
+Shadow Atlas for Additional Lights
+This is a low-polygon version of the haunted room, lit with a Main Directional light, a Point light over the desk, and a Spot 
+light over the mirror. All lights are real-time and casting shadows.
+
+47 of 140 | unity. com
+© 2024 Unity Technologies
+Light Modes
+Environments have predominantly static geometry, so that if a light is static, 
+you don’t need to calculate the lighting and shadows for it repeatedly. You can 
+calculate this once at design time, and then use that data when rendering the 
+geometry. This is called lightmapping or baking.
+The workflow for lightmapping is unchanged between the Built-in Render Pipeline 
+and URP. Let’s go through the steps using an FPS Sample project by Unity.
+The following screenshots are from the Unity project FPS Sample: The Inspection, 
+which you can download here. The scene demonstrates how to use real-time and 
+baked lighting in URP.
+1.	
+The scene from the FPS sample project contains largely static geometry. To 
+include the geometry in lightmapping, click the Static box to the right side 
+of the Inspector.
+Note: Low frequency refers to the fact that lightmaps are updated at 
+a much lower rate than screen updates. Specular Lobes can only be 
+computed by real-time lights. You can apply Global Illumination (GI) to 
+dynamic objects by using Light Probes, but those also only capture low 
+frequency diffuse light. The Built-in Render Pipeline supports Light Probe 
+Proxy Volume (LPPV), which provides the same level of quality for Light 
+Probes as lightmaps do for dynamic objects. However, in URP, LPPV is 
+not supported due to it being a relatively slow system that doesn’t scale. 
+Instead, URP plans to support Adaptive Probe Volumes, which could 
+replace lightmaps and work for both static and dynamic objects.
+The scene from FPS Sample: The Inspection by Unity
+
+48 of 140 | unity. com
+© 2024 Unity Technologies
+2.	
+Choose the lightmapping settings via Window > Rendering > Lighting > 
+Scene. Keep the Lightmap Resolution low while adjusting the settings. Once 
+you have your desired settings, increase the value when generating the final 
+lightmaps. Choose Progressive GPU (Preview) to speed up the lightmap 
+generation, if your GPU supports it.
+
+49 of 140 | unity. com
+© 2024 Unity Technologies
+3.	
+Filtering blurs the map to minimize noise. This can result in gaps in a 
+shadow where one object meets another. Use A-Trous filtering to minimize 
+this artifact. See Progressive Lightmapping documentation for more details 
+on the settings available for lightmapping.
+How filtering affects the shadow between objects
+4.	
+Make sure all static geometry has no overlapping UV values, or is generating 
+lighting UVs on import.
+5.	
+Set Light Mode to Baked or Mixed. Select the light in the Hierarchy window 
+and use the Inspector. Mixed Lights will illuminate dynamic objects as well as 
+static ones.
+
+50 of 140 | unity. com
+© 2024 Unity Technologies
+6.	
+When using Mixed Lights, set the Light Mode to Baked Indirect, 
+Subtractive, or Shadowmask via Window > Rendering > Lighting > Scene.
+a.	
+Baked Indirect: Only the indirect light contribution will be baked into 
+the lightmaps and Light Probes (the bounces of the lights only). Direct 
+lighting and shadows will be real-time. This is an expensive option 
+and not ideal for mobile platforms. However, it does mean that you get 
+correct shadows and direct light for both static and dynamic geometry.
+b.	
+Subtractive: Here, you bake the direct lighting from a Directional 
+light set to Mixed into the static geometry, and subtract the lighting 
+from shadows cast by dynamic geometry. This results in the static 
+geometry unable to cast a shadow on dynamic objects, unless Light 
+Probes are used, which can cause unpleasant visual discontinuities. 
+URP calculates an estimate of the contribution of the light from the 
+Directional Light and subtracts that from the baked Global Illumination. 
+The estimate is clamped by the Real-time Shadow Color setting in the 
+Environment section of the Lighting window, so the color subtracted is 
+never darker than this color. Then choose the minimum color of your 
+subtracted value and the original baked color. This is the most suitable 
+option for low-end hardware.
+c.	
+Shadowmask: Though similar to Baked Indirect Mode, Shadowmask 
+combines both dynamic and baked shadows, rendering shadows at 
+a distance. It does this by using an additional Shadowmask texture 
+and storing additional information in the Light Probes. This provides 
+the highest fidelity shadows, but is also the most expensive option in 
+terms of memory use and performance. Visually, it’s identical to Baked 
+Indirect for shots up close. The difference is apparent when looking in 
+the far distance, making it well-suited for open-world scenes. Due to the 
+processing cost, it’s recommended for mid- to high-end hardware only.
+7.	
+Adjust the Lightmap Scale via Asset > Inspector > Mesh Renderer > 
+Lightmapping > Scale In Lightmap, so that distant objects take up less 
+space on the lightmap. The following image shows the texel size of the 
+background rock lightmap with a setting varying from 0. 05 to 0. 5.
+
+51 of 140 | unity. com
+© 2024 Unity Technologies
+8.	
+Click Generate Lighting to bake. The baking time depends on the number 
+of static objects, lights set to Mixed or Baked mode, and the settings 
+chosen for lightmapping, particularly the Max Lightmap Size and the 
+Lightmap Resolution.
+Highlighting an object using Light Layers
+ 
+More resources:
+	
+—
+Lightmapping documentation 
+	
+—
+Lighting Settings Asset documentation 
+	
+—
+Lighting Explorer documentation
+	
+—
+5 common lightmapping problems and tips to help you fix them
+
+52 of 140 | unity. com
+© 2024 Unity Technologies
+Rendering Layers
+The Rendering Layers feature lets you configure certain lights to affect only 
+specific GameObjects so you can emphasize and draw attention to them in a 
+scene. In the image below, the syringe, a key collectable, appears in a shaded 
+part of the scene. With a Rendering Layer, it becomes visible and helps ensure 
+that the player doesn’t miss picking it up.
+ 
+ 
+Here are the steps for setting up Rendering Layers.
+1.	
+Select the URP Asset. In the Lighting section, click the vertical ellipsis icon  
+(  ) and select Show Additional Properties.
+2.	
+A new setting, Use Rendering Layers, will appear under the Lighting section. 
+3.	
+Rename a Rendering Layer via Project Settings > Graphics > URP Global 
+Settings.
+Highlighting an object using Rendering Layers
+
+53 of 140 | unity. com
+© 2024 Unity Technologies
+4.	
+Now that Rendering Layers are enabled, the Light Inspector will include a 
+Rendering Layer drop-down. A light can contribute to more than one layer.
+5.	
+With Rendering Layers enabled, you need to set up a custom shadow layer. 
+The new light can cast shadows from the scene’s Main Light or from its own 
+frustum.
+6.	
+Lastly, select the object this applies to in the Hierarchy window and then 
+set the Rendering Layer Mask.
+
+54 of 140 | unity. com
+© 2024 Unity Technologies
+Light Probes
+As covered in an earlier section, you can combine baked and dynamic objects 
+in the Light Mode section using Mixed Lighting Mode. It’s recommended to also 
+add Light Probes to your scene when using this mode. Light Probes save the light 
+data at a particular position within an environment when you bake the lighting 
+by clicking Generate Lighting via Window > Rendering > Lighting panel. This 
+ensures that the illumination of a dynamic object moving through an environment 
+reflects the lighting levels used by the baked objects. In a dark area it will be dark, 
+and in a lighter area it will be brighter. Below, you can see the robot character 
+inside and outside of the hangar in the FPS Sample: The Inspection.
+The robot inside and outside of the cave, with lighting level affected by Light Probes
+Renderer renderer = GetComponent<Renderer>(); 
+int layerID = 1; 
+int mask = 1 << layerID; 
+renderer.renderingLayerMask = (uint)mask;
+This can also be dynamically set in code.
+
+55 of 140 | unity. com
+© 2024 Unity Technologies
+To create Light Probes, right-click in the Hierarchy window and choose Light > 
+Light Probe Group.
+Creating a new GameObject for the Light Probe Group
+Initially, there will be a cube of Light Probes, eight in total. To view and edit the 
+positioning of the Light Probes and add additional ones, select the Light Probe 
+Group in the Hierarchy window, and in the Inspector click Light Probe Group > 
+Edit Light Probes.
+Add or remove Light Probes and modify their position from the Inspector.
+The Scene view will now be in an editing mode where only Light Probes can be 
+selected. Use the Move tool to move them around. 
+Moving a Light Probe
+
+56 of 140 | unity. com
+© 2024 Unity Technologies
+Light Probes should be positioned, first, in an area where a dynamic object 
+might move to, and second, where there is a significant change in lighting level. 
+When calculating the lighting level for an object, the engine finds a pyramid of 
+the nearest Light Probes and uses those to determine an interpolated value for 
+the illumination level. 
+The nearest Light Probes for the selected crate
+Positioning Light Probes can be time-consuming, but a code-based approach 
+such as this one can speed up your editing, especially for a large scene.
+Further details on how a Mesh Renderer works with Light Probes and how to 
+adjust the configuration can be found in this documentation.
+Reflection Probes
+A ray-tracing tool, such as Maya or Blender, can take the time to accurately 
+calculate the values for each frame pixel of a reflective surface. This process 
+takes far too long for a real-time renderer, which is why shortcuts are often used.
+Reflections in a real-time renderer use environment maps (pre-rendered 
+cubemaps). Unity supplies a default map using the SkyManager. Having a 
+single map as the source of reflections from all locations in a scene can lead to 
+unconvincing reflections. Take the example of the robot shown in this section. 
+If the metal parts of this character always reflect the sky, then it will look very 
+strange when inside the hangar where the sky is not visible. This is where 
+Reflection Probes are helpful.
+A Reflection Probe is simply a pre-rendered cubemap placed at a key position in the 
+scene. You can use several Reflection Probes in a single scene. As a dynamic object

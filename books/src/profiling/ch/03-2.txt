@@ -1,0 +1,189 @@
+18 of 75 | unity. com
+© 2022 Unity Technologies
+Find the bottlenecks
+On some platforms, determining whether your application is CPU- or GPU-
+bound is easy. For example, when running an iOS game from Xcode, the fps 
+panel shows a bar chart with the total CPU and GPU time so you can see which 
+is the highest. Note that the CPU time includes time spent waiting for VSync, 
+which is always enabled on mobile devices.
+However, on some platforms it can be challenging to get GPU timing data. 
+Fortunately, the Unity Profiler shows enough information to identify the location 
+of performance bottlenecks. The flow chart below illustrates the initial profiling 
+process with the sections following it providing detailed information on each 
+step. They also present Profiler captures from real Unity projects to illustrate the 
+kinds of things to look for.
+Xcode’s fps view, showing a game running comfortably within 33. 3 ms on both CPU and GPU
+What is VSync?
+VSync synchronizes the application’s frame rate with the monitor’s refresh 
+rate. This means that if you have a 60Hz monitor and your game runs within 
+the frame budget of 16. 66 ms, then it will be forced to run at 60 fps rather 
+than allowed to run faster. Synchronizing your fps with your monitor’s refresh 
+rate lightens the burden on your GPU and stops visual artifacts such as screen 
+tearing. In Unity, you can configure the VSync Count as a property in the  
+Quality settings (Edit > Project Settings > Quality).
+
+19 of 75 | unity. com
+© 2022 Unity Technologies
+Yes
+No
+START HERE
+Where is
+the bottleneck?
+What now?
+What might
+the fix be?
+Follow this flowchart and use the Profiler to help pinpoint where to focus your optimization efforts:
+
+20 of 75 | unity. com
+© 2022 Unity Technologies
+To get a holistic picture of all CPU activity, including when it’s waiting for the 
+GPU, use the Timeline view in the CPU Usage module of the Profiler. Familiarize 
+yourself with the common Profiler markers to interpret captures correctly. 
+Some of the Profiler markers may appear differently depending on your target 
+platform, so spend time exploring captures of your game on each of your target 
+platforms to get a feel for what a “normal” capture looks like for your project.
+A project’s performance is bound by the chip and/or thread that takes the 
+longest. That’s the area on where optimization efforts should focus. For 
+example, imagine a game with a target frame time budget of 33. 33 ms and 
+VSync enabled:
+	
+—
+If the CPU frame time (excluding VSync) is 25 ms and GPU time is 20 
+ms, no problem! You’re CPU-bound, but everything is within budget, and 
+optimizing things won’t improve the frame rate (unless you get both CPU 
+and GPU below 16. 66 ms and jump up to 60 fps).
+	
+—
+If the CPU frame time is 40 ms and GPU is 20 ms, you’re CPU-bound 
+and will need to optimize the CPU performance. Optimizing the GPU 
+performance won’t help; in fact, you might want to move some of the CPU 
+work onto the GPU, for example by using Compute shaders instead of C# 
+code for some things, to balance things out.
+	
+—
+If the CPU frame time is 20 ms and GPU is 40 ms, you’re GPU-bound and 
+need to optimize the GPU work.
+	
+—
+If CPU and GPU are both at 40 ms, you’re bound by both and will need to 
+optimize both below 33. 33 ms to reach 30 fps.
+See these resources that further explore being CPU- or GPU-bound:
+	
+—
+Structure of a frame, the CPU and GPU
+	
+—
+Is your game draw call-bound?
+Are you within frame budget?
+Profiling and optimizing your project early and often throughout development 
+will help you ensure that all of your application’s CPU threads and the overall 
+GPU frame time are within the frame budget.  
+Below is an image of a profiling capture from a Unity mobile game developed by 
+a team that did ongoing profiling and optimization. The game targets 60 fps on 
+high-spec mobile phones, and 30 fps on medium/low-spec phones, such as the 
+one in this capture.
+
+21 of 75 | unity. com
+© 2022 Unity Technologies
+Note how nearly half of the time on the selected frame is occupied by the 
+yellow WaitForTargetfps Profiler marker. The application has set Application.
+targetFrameRate to 30 fps, and VSync is enabled. The actual processing work 
+on the main thread finishes at around the 19 ms mark, and the rest of the time is 
+spent waiting for the remainder of the 33. 33 ms to elapse before beginning the 
+next frame. Although this time is represented with a Profiler marker, the main CPU 
+thread is essentially idle during this time, allowing the CPU to cool and using a 
+minimum of battery power.
+The marker to look out for might be different on other platforms or if VSync is 
+disabled. The important thing is to check whether the main thread is running 
+within your frame budget or, exactly on your frame budget with some kind of 
+marker that indicates that the application is waiting for VSync and whether the 
+other threads have any idle time. 
+Idle time is represented by gray or yellow Profiler markers. The screenshot above shows 
+that the render thread is idling in Gfx. WaitForGfxCommandsFromMainThread, 
+which indicates times when it has finished sending draw calls to the GPU on 
+one frame, and is waiting for more draw call requests from the CPU on the 
+next. Similarly, although the Job Worker 0 thread spends some time in Canvas.
+GeometryJob, most of the time it’s Idle. These are all signs of an application that’s 
+comfortably within the frame budget.
+If your game is in frame budget
+If you are within the frame budget, including any adjustments made to the 
+budget to account for battery usage and thermal throttling, you have finished 
+performance profiling until next time – congratulations. Consider running the 
+Memory Profiler to ensure that the application is also within its memory budget.
+A game running comfortably within the ~22 ms frame budget required for 30 fps without overheating. Note the 
+WaitForTargetfps padding the main thread time until VSync and the gray idle times in the render thread and worker thread. 
+Also note that the VBlank interval can be observed by looking at the end times of Gfx. Present frame over frame, and that 
+you can draw up a time scale in the Timeline area or on the Time ruler up top to measure from one of these to the next.
+
+22 of 75 | unity. com
+© 2022 Unity Technologies
+CPU-bound
+If your game is not within the CPU frame budget, the next step is to investigate 
+what part of the CPU is the bottleneck – in other words, which thread is 
+the most busy. The point of profiling is to identify bottlenecks as targets for 
+optimization; if you rely on guesswork, you can end up optimizing parts of the 
+game that are not bottlenecks, resulting in little or no improvement on overall 
+performance. Some “optimizations” might even worsen your game’s overall 
+performance.
+It’s rare for the entire CPU workload to be the bottleneck. Modern CPUs 
+have a number of different cores, capable of performing work independently 
+and simultaneously. Different threads can run on each CPU core. A full Unity 
+application uses a range of threads for different purposes, but the threads that 
+are the most common ones for finding performance issues are:
+	
+—
+The main thread: This is where all of the game logic/scripts perform their 
+work by default and where the majority of the time is spent for features 
+and systems such as physics, animation, UI, and rendering. 
+	
+—
+The render thread: During the rendering process, the main thread 
+examines the scene and performs Camera culling, depth sorting, and draw 
+call batching, resulting in a list of things to render. This list is passed to the 
+render thread, which translates it from Unity’s internal platform-agnostic 
+representation to the specific graphics API calls required to instruct the 
+GPU on a particular platform.
+	
+—
+The Job worker threads: Developers can make use of the C# Job System 
+to schedule certain kinds of work to run on worker threads, which reduces 
+the workload on the main thread. Some of Unity’s systems and features 
+also make use of the job system, such as  physics, animation, and 
+rendering.
+Main thread
+The image below shows how things might look in a project that is bound by the 
+main thread. This project is running on a Meta Quest 2, which normally targets 
+frame budgets of 13. 88 ms (72 fps) or even 8. 33 ms (120 fps), because high 
+frame rates are important to avoid motion sickness in VR devices. However, 
+even if this game was targeting 30 fps, it’s clear that this project is in trouble.
+
+23 of 75 | unity. com
+© 2022 Unity Technologies
+Although the render thread and worker threads look similar to the example 
+which is within frame budget, the main thread is clearly busy with work during 
+the whole frame. Even accounting for the small amount of profiler overhead at 
+the end of the frame, the main thread is busy for over 45 ms, meaning that this 
+project achieves frame rates of less than 22 fps. There is no marker that shows 
+the main thread idly waiting for VSync; it’s busy for the whole frame.
+The next stage of investigation is to identify the parts of the frame that take the 
+longest time and to understand why this is so. On this frame, PostLateUpdate.
+FinishFrameRendering takes 16. 23 ms, more than the entire frame budget. 
+Closer inspection reveals that there are five instances of a marker called Inl_
+RenderCameraStack, Indicating that there are five cameras active and rendering 
+the scene. Since every camera in Unity invokes the whole render pipeline, 
+including culling, sorting, and batching, the highest-priority task for this project 
+is reducing the number of active cameras, ideally to just one.  
+BehaviourUpdate, the marker which encompasses all MonoBehaviour Update() 
+methods, takes 7. 27 ms, and the magenta sections of the timeline indicate 
+where scripts allocate managed heap memory. Switching to the Hierarchy 
+view and filtering by typing GC. Alloc in the search bar shows that allocating 
+this memory takes about 0. 33 ms in this frame. However, that is an inaccurate 
+measurement of the impact the memory allocations have on your CPU 
+performance. 
+GC. Alloc markers are not actually timed by measuring the time from a Begin to 
+an End point. To keep their overhead small, they are recorded as just their Begin 
+time stamp, plus the size of their allocation. The Profiler ascribes a minimal 
+amount of time to them to make sure they are visible. The actual allocation 
+can take longer, especially if a new range of memory needs to be requested 
+from the system. To see the impact more clearly, place Profiler markers around 
+Capture from a project which is main thread bound

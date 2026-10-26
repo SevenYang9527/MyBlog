@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>对象池 · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">05 · 对象池</div>
+    <div class="pager"><a href="ch-04.html">← 上一节</a><a href="ch-06.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>对象池</h2>
+
+<p>对象池（Object Pool）是一种优化技术，用于在大量创建和销毁 GameObject 时减轻 CPU 负担。</p>
+
+<p>对象池模式使用一组已初始化、处于非激活状态并随时待命的对象，它们被保存在一个“池”中。当你需要一个对象时，应用程序不再实例化它，而是从池中请求该 GameObject 并将其启用。使用完毕后，你将对象设为非激活并归还到池中，而不是销毁它。</p>
+
+<p>对象池可以减少因垃圾回收（garbage collection）尖峰而导致的卡顿。GC 尖峰通常伴随大量对象的创建或销毁出现，因为这涉及内存分配。你可以在合适的时机预先实例化对象池，例如在加载界面期间，此时用户不会察觉到卡顿。</p>
+
+<figure><figcaption>图 1：对象池可以帮助你在不引起游戏卡顿的情况下发射子弹。</figcaption></figure>
+
+<h3>示例：简单的对象池系统</h3>
+
+<p>考虑一个简单的池化系统，其中定义了两个 MonoBehaviour：</p>
+
+<ul>
+  <li>一个 ObjectPool，它持有可供取用的 GameObject 集合</li>
+  <li>添加到预制体（Prefab）上的一个 PooledObject 组件。它帮助每个克隆出来的项保持对池的引用</li>
+</ul>
+
+<pre><code>public class ObjectPool : MonoBehaviour
+{
+    [SerializeField] private uint initPoolSize;
+    [SerializeField] private PooledObject objectToPool;
+    // 将池化对象存储在一个集合中
+    private Stack&lt;PooledObject&gt; stack;
+
+    private void Start()
+    {
+        SetupPool();
+    }
+
+    // 创建池（在卡顿不明显时调用）
+    private void SetupPool()
+    {
+        stack = new Stack&lt;PooledObject&gt;();
+        PooledObject instance = null;
+
+        for (int i = 0; i &lt; initPoolSize; i++)
+        {
+            instance = Instantiate(objectToPool);
+            instance.Pool = this;
+            instance.gameObject.SetActive(false);
+            stack.Push(instance);
+        }
+    }</code></pre>
+
+<p>SetupPool 方法用于填充对象池。创建一个新的 PooledObject 栈，然后实例化 objectToPool 的副本，用 initPoolSize 个元素填充它。在 Start 中调用 SetupPool，以确保它在游戏运行期间只执行一次。</p>
+
+<p>在 ObjectPool 中，你设置了若干字段，分别描述池的大小、要存储的 PooledObject 预制体，以及构成池本身的集合（本例中是一个栈）。</p>
+
+<pre><code>    // 从池中返回第一个激活的 GameObject
+    public PooledObject GetPooledObject()
+    {
+        // 如果池不够大，就实例化一个新的 PooledObject
+        if (stack.Count == 0)
+        {
+            PooledObject newInstance = Instantiate(objectToPool);
+            newInstance.Pool = this;
+            return newInstance;
+        }
+        // 否则，直接从列表中取下一个
+        PooledObject nextInstance = stack.Pop();
+        nextInstance.gameObject.SetActive(true);
+        return nextInstance;
+    }
+
+    public void ReturnToPool(PooledObject pooledObject)
+    {
+        stack.Push(pooledObject);
+        pooledObject.gameObject.SetActive(false);
+    }
+}</code></pre>
+
+<p>GetPooledObject 仅在池为空时才创建一个新的 PooledObject。否则，它只是返回下一个可用的元素。如果池的大小足够，大多数情况下你应当只是获得一个已有 GameObject 的引用。</p>
+
+<p>随后，调用 GetPooledObject 的客户端需要把这个池化对象移动/旋转到位。</p>
+
+<p>每个池化元素都会带有一个小的 PooledObject 组件，仅用于引用 ObjectPool：</p>
+
+<p>你还需要一些方法来取出池化项（GetPooledObject）以及将某项归还到池中（ReturnToPool）：</p>
+
+<pre><code>public class PooledObject : MonoBehaviour
+{
+    private ObjectPool pool;
+    public ObjectPool Pool { get =&gt; pool; set =&gt; pool = value; }
+
+    public void Release()
+    {
+        pool.ReturnToPool(this);
+    }
+}</code></pre>
+
+<p>调用 Release 会禁用该 GameObject 并将其归还到池队列中。</p>
+
+<p>配套项目展示了一个基本用法示例。这里，一个 ExampleGun 脚本被挂载到某个 GameObject 上，该脚本保存着对对象池的引用。当用户射击时，武器脚本调用其 GetPooledObject 方法，而不是调用 Object.Instantiate。</p>
+
+<p>抛射体（projectile）本身带有 ExampleProjectile 脚本和 PooledObject 脚本。ExampleProjectile 有一个 Deactivate 方法，用于在几秒后禁用每一颗发射出去的子弹 GameObject，将其归还到可用池中。</p>
+
+<h4>禁用并复用池化对象</h4>
+
+<p>这样一来，你就可以做到看似向屏幕外发射了数百颗子弹，而实际上只是禁用并循环复用它们。只需确保池的大小足以显示同时处于激活状态的对象。</p>
+
+<p>如果你需要超出池的大小，池可以实例化额外的对象。不过大多数时候，它会从已有的非激活对象中取用。</p>
+
+<p>如果你用过 Unity 的 ParticleSystem，那么你已经亲身体验过对象池。ParticleSystem 组件包含一个最大粒子数设置。它只是循环复用可用的粒子，防止效果超过某个最大数量。对象池的工作方式类似，但适用于你选择的任意 GameObject。</p>
+
+<figure><figcaption>图 2：对象池示意图，区分处于激活状态的池化对象与处于非激活状态的池化对象。</figcaption></figure>
+
+<h3>改进</h3>
+
+<p>上面的示例很简单。在实际项目中部署对象池时，请考虑以下升级：</p>
+
+<ul>
+  <li>使其成为静态或单例：如果你需要从多种来源生成池化对象，可以考虑将对象池设为静态。这样可以在应用程序的任何位置访问它，但会妨碍使用 Inspector。或者，将对象池模式与单例（singleton）模式结合，使其全局可访问以便于使用。</li>
+  <li>使用字典管理多个池：如果你有多个不同的预制体需要池化，请将它们存放在各自的池中，并保存键值对，以便知道该查询哪个池（预制体的 InstanceID 可以作为唯一键）。</li>
+  <li>创造性地移除未使用的 GameObject：有效利用对象池的一部分工作，就是隐藏未使用的对象并将它们归还到池中。利用每一个机会将池化对象设为非激活（例如离开屏幕、被爆炸遮挡等）。</li>
+  <li>检查错误：避免释放已经在池中的对象。否则，它可能导致运行时错误。</li>
+  <li>添加最大大小/上限：大量池化对象会消耗内存。你可能需要移除超过某个限制的对象，以免池占用过多资源。</li>
+</ul>
+
+<p>对象池的使用方式因应用而异。这种模式常见于枪械或武器需要发射多枚抛射体的场合，比如弹幕射击游戏。</p>
+
+<p>每次你实例化大量对象，都冒着因垃圾回收尖峰而造成短暂停顿的风险。对象池可以缓解这个问题，让你的游戏保持流畅。</p>
+
+<p>如果你使用的是 Unity 2021 及以上版本，它包含内置的对象池系统，因此无需像前面的示例那样自己创建 PooledObject 或 ObjectPool 类。</p>
+
+<h3>UnityEngine.Pool</h3>
+
+<p>对象池模式如此普遍，以至于 Unity 2021 现在支持自己的 UnityEngine.Pool API。它为你提供了一个基于栈的 ObjectPool，用于以对象池模式跟踪对象。根据你的需要，你也可以使用 CollectionPool（List、HashSet、Dictionary 等）。</p>
+
+<p>在示例项目中（参见该场景），你不再需要自定义的池组件。相反，在枪械脚本顶部添加一行 using UnityEngine.Pool; 来更新它。这样你就能用内置的 ObjectPool 创建一个抛射体池：</p>
+
+<pre><code>using UnityEngine.Pool;
+
+public class RevisedGun : MonoBehaviour
+{
+    …
+    // Unity 2021 及以上版本可用的基于栈的 ObjectPool
+    private IObjectPool&lt;RevisedProjectile&gt; objectPool;
+    // 如果我们试图归还一个已经在池中的现有项，就抛出异常
+    [SerializeField] private bool collectionCheck = true;
+    // 用于控制池容量和最大大小的额外选项
+    [SerializeField] private int defaultCapacity = 20;
+    [SerializeField] private int maxSize = 100;
+
+    private void Awake()
+    {
+        objectPool = new ObjectPool&lt;RevisedProjectile&gt;(CreateProjectile,
+            OnGetFromPool, OnReleaseToPool, OnDestroyPooledObject,
+            collectionCheck, defaultCapacity, maxSize);
+    }
+
+    // 创建项以填充对象池时调用
+    private RevisedProjectile CreateProjectile()
+    {
+        RevisedProjectile projectileInstance = Instantiate(projectilePrefab);
+        projectileInstance.ObjectPool = objectPool;
+        return projectileInstance;
+    }
+
+    // 将项归还到对象池时调用
+    private void OnReleaseToPool(RevisedProjectile pooledObject)
+    {
+        pooledObject.gameObject.SetActive(false);
+    }
+
+    // 从对象池取出下一项时调用
+    private void OnGetFromPool(RevisedProjectile pooledObject)
+    {
+        pooledObject.gameObject.SetActive(true);
+    }
+
+    // 超过池化项最大数量时调用（即销毁该池化对象）
+    private void OnDestroyPooledObject(RevisedProjectile pooledObject)
+    {
+        Destroy(pooledObject.gameObject);
+    }
+
+    private void FixedUpdate()
+    {
+        …
+    }
+}</code></pre>
+
+<p>该脚本的大部分内容对原来的 ExampleGun 脚本仍然适用。不过，ObjectPool 构造函数现在还包含一项有用的能力，可以在以下时机设置一些逻辑：</p>
+
+<ul>
+  <li>首次创建池化项以填充池时</li>
+  <li>从池中取出某项时</li>
+  <li>将某项归还到池中时</li>
+  <li>销毁池化对象时（例如，达到最大限制）</li>
+</ul>
+
+<p>然后你必须定义一些相应的方法传入构造函数。注意，内置的 ObjectPool 还包含默认池大小和最大池大小的选项。超过最大池大小的项会触发自毁操作，从而控制内存占用。</p>
+
+<p>抛射体脚本做了一点小修改，以保存对 ObjectPool 的引用。这让将对象释放回池中稍微更方便一些。</p>
+
+<pre><code>public class RevisedProjectile : MonoBehaviour
+{
+    …
+    private IObjectPool&lt;RevisedProjectile&gt; objectPool;
+    // 公有属性，让抛射体获得对其 ObjectPool 的引用
+    public IObjectPool&lt;RevisedProjectile&gt; ObjectPool { set =&gt; objectPool = value; }
+
+    …
+}</code></pre>
+
+<p>UnityEngine.Pool API 让设置对象池变得更快，因为你不必从头重新实现该模式。这样又少了一个需要重新发明的轮子。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-04.html"><span class="dir">← 上一节</span>工厂模式</a>
+    <a href="ch-06.html"><span class="dir">下一节 →</span>单例模式</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

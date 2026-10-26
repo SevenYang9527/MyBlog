@@ -1,0 +1,140 @@
+50 of 80 | unity. com
+© 2023 Unity Technologies
+Disable shadow casting to reduce draw calls.
+Avoid too many dynamic lights 
+It is crucial to avoid adding too many dynamic lights to your mobile application 
+when using forward rendering. Consider alternatives like custom shader 
+effects and light probes for dynamic meshes, as well as baked lighting for 
+static meshes.
+See this feature comparison table for the specific limits of URP and Built-in 
+Render Pipeline real-time lights.
+Disable shadows 
+Shadow casting can be disabled per MeshRenderer and light. Disable shadows 
+whenever possible to reduce draw calls. 
+You can also create fake shadows using a blurred texture applied to a simple 
+mesh or quad underneath your characters. Alternately, create blob shadows 
+with custom shaders.
+
+51 of 80 | unity. com
+© 2023 Unity Technologies
+Enable Contribute GI. 
+Bake your lighting into Lightmaps 
+Add dramatic lighting to your static geometry using Global Illumination (GI). 
+Mark objects with Contribute GI so you can store high-quality lighting in the 
+form of Lightmaps.
+Baked shadows and lighting can then render without a performance hit at 
+runtime. The Progressive CPU and GPU Lightmapper can accelerate the baking 
+of Global Illumination.
+Follow the manual guide and this article on light optimization to get started with 
+Lightmapping in Unity.
+Adjust the Lightmapping Settings (Windows > Rendering > Lighting Settings) and Lightmap size to limit memory usage.
+
+52 of 80 | unity. com
+© 2023 Unity Technologies
+Use Light Layers 
+For complex scenes with multiple lights, separate your objects using layers,  
+then confine each light’s influence to a specific culling mask.
+Use Light Probes for moving objects
+Light Probes store baked lighting information about the empty space in your 
+scene while providing high-quality lighting (both direct and indirect). They 
+use Spherical Harmonics, which calculate quickly compared to dynamic lights. 
+This is especially useful for moving objects that normally cannot receive baked 
+lightmapping.
+Layers can limit your light’s influence to a specific culling mask.
+A Light Probe Group with Light Probes spread across the level.
+
+53 of 80 | unity. com
+© 2023 Unity Technologies
+Light Probes can apply to static meshes as well. In the MeshRenderer 
+component, locate the Receive Global Illumination dropdown, and toggle it 
+from Lightmaps to Light Probes. 
+Continue using lightmapping for your prominent level geometry, but use probes 
+for smaller details. Light Probe illumination does not require proper UVs, saving 
+you the extra step of unwrapping your meshes. Probes also reduce disk space 
+since they don’t generate lightmap textures. 
+See the “Static Lighting with Light Probes” blog post for information about 
+selectively lighting scene objects with Light Probes.
+For more about lighting workflows in Unity, read “Making believable visuals  
+in Unity. ”
+
+54 of 80 | unity. com
+© 2023 Unity Technologies
+Use Level of Detail (LOD)  
+As objects move into the distance, Level of Detail (LOD) can switch them to use 
+simpler meshes with simpler materials and shaders to aid GPU performance.
+See the Working with LODs course on Unity Learn for more detail.
+Source meshes, modeled at varying resolutions.
+Example of a mesh using a LOD Group.
+
+55 of 80 | unity. com
+© 2023 Unity Technologies
+Use Occlusion Culling to remove hidden objects 
+Objects hidden behind other objects can potentially still render and cost 
+resources. Use Occlusion Culling to discard them. 
+While frustum culling outside the camera view is automatic, occlusion culling is 
+a baked process. Simply mark your objects as Static Occluders or Occludees, 
+then bake via Window > Rendering > Occlusion Culling. Though not necessary 
+for every scene, culling can improve performance in specific cases, so be sure 
+to profile before and after enabling occlusion culling to check if it has improved 
+performance.
+Check out the Working with Occlusion Culling tutorial for more information.
+Avoid mobile native resolution 
+Phones and tablets have become increasingly advanced, with newer devices 
+sporting very high resolutions. 
+Use Screen. SetResolution(width, height, false) to lower the output resolution 
+and regain some performance. Profile multiple resolutions to find the best 
+balance between quality and speed.
+Limit use of cameras
+Each enabled camera incurs some overhead, whether it’s doing meaningful work 
+or not. Only use camera components necessary for rendering. On lower-end 
+mobile platforms, each camera can use up to 1 ms of CPU time.
+
+56 of 80 | unity. com
+© 2023 Unity Technologies
+Keep shaders simple 
+The Universal Render Pipeline includes several lightweight Lit and Unlit 
+shaders that are already optimized for mobile platforms. Try to keep your 
+shader variations as low as possible, as they can have a dramatic effect on 
+runtime memory usage. If the default URP shaders don’t suit your needs, you 
+can customize the look of your materials using Shader Graph. Find out how to 
+build your shaders visually using Shader Graph here.
+Create custom shaders with the Shader Graph.
+
+57 of 80 | unity. com
+© 2023 Unity Technologies
+Minimize overdraw and alpha blending
+Avoid drawing unnecessary transparent or semi-transparent images, and 
+do not overlap barely visible images or effects. Mobile platforms are greatly 
+impacted by the resulting overdraw and alpha blending. You can check 
+overdraw using the RenderDoc graphics debugger. You can also utilize the 
+Rendering Debugger, which lets you visualize various lighting, rendering, and 
+material properties. The visualizations help you identify rendering issues and 
+optimize scenes and rendering configurations.
+Limit post-processing effects
+Fullscreen post-processing effects like glows can dramatically slow 
+performance. Use them cautiously in your title’s art direction. 
+Be careful with Renderer. material 
+Accessing Renderer. material in scripts duplicates the material and returns 
+a reference to the new copy. This breaks any existing batch that already 
+includes the material. If you wish to access the batched object’s material,  
+use Renderer. sharedMaterial instead.
+Keep post-processing effects simple in mobile applications.
+
+58 of 80 | unity. com
+© 2023 Unity Technologies
+Optimize SkinnedMeshRenderers 
+Rendering skinned meshes is expensive. Make sure that every object using 
+a SkinnedMeshRenderer requires it. If a GameObject only needs animation 
+some of the time, use the BakeMesh function to freeze the skinned mesh in  
+a static pose, and swap to a simpler MeshRenderer at runtime.
+Minimize Reflection Probes 
+A Reflection Probe can create realistic reflections, but this can be very costly 
+in terms of batches. Use low-resolution cubemaps, culling masks, and texture 
+compression to improve runtime performance.
+System Metrics Mali 
+You can also leverage the System Metrics Mali package to access low-level 
+system or hardware performance metrics on devices that use ARM GPUs. This 
+includes being able to monitor low-level GPU metrics in the Unity Profiler, use 
+the Recorder API to access low-level GPU metrics at runtime, and automate 
+performance testing with continuous integration test runs.
+Mali System Metrics Profiler Module

@@ -1,0 +1,23 @@
+6 of 80 | unity. com
+© 2023 Unity Technologies
+I N T R O D U C T I O N
+Optimizing your iOS and Android applications is an essential process that 
+underpins the entire development cycle. Mobile hardware continues to evolve, 
+and a mobile game’s optimization – along with its art, game design, audio, and 
+monetization strategy – plays a key role in shaping the player experience. 
+Both iOS and Android have active user bases in the billions. If your mobile  
+game is highly optimized, it has a better chance at passing certification from 
+platform-specific stores. To maximize your opportunity for success at launch 
+and beyond, your aim is always twofold: building the slickest, most immersive 
+experience and making it performant on the widest range of handhelds. 
+This guide assembles knowledge and advice from Unity’s expert team of 
+software engineers. Unity’s Accelerate Solutions games team has partnered 
+with developers across the industry to help launch the best games possible. 
+Follow the steps outlined here to get the best performance from your mobile 
+game while reducing its power consumption. 
+Start optimizing with support from the Unity team. 1
+
+7 of 80 | unity. com
+© 2023 Unity Technologies
+1 Note that many of the optimizations discussed here may introduce additional complexity, which can mean extra maintenance and potential bugs. Balance performance gains against 
+the time and labor cost when implementing these best practices.

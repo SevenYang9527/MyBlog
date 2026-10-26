@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>初识设计模式 · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">01 · 初识设计模式</div>
+    <div class="pager"><a href="ch-02-1.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>初识设计模式</h2>
+
+<p>在使用 Unity 时，你不必重新发明轮子。很可能已经有人为你造好了一个。</p>
+
+<p>你遇到的每一个软件设计问题，都有一千名开发者曾经面对过。虽然你无法总是直接向他们请教，但你可以通过设计模式（design patterns）学习他们的决定。</p>
+
+<p>设计模式是软件工程中针对常见问题的通用解决方案。它们并不是可以直接复制粘贴到代码里的成品方案，但你可以把设计模式看作工具箱里的额外工具。有些模式比另一些更显而易见。</p>
+
+<p>本指南汇集了 Unity 开发中广为人知的设计模式。指南中的示例经过了简化，也减少了技术术语，以便更易理解；不过在开始使用之前，你应当具备 C# 基础知识的实际运用能力。</p>
+
+<p>如果你对设计模式仍然陌生，或者需要快速复习，本指南也提供了可以在游戏开发中应用它们的常见场景。对于从其他面向对象（object-oriented）语言（Java、C++ 等）转向 C# 的读者，这些示例将向你展示如何专门针对 Unity 调整这些模式。</p>
+
+<p>归根结底，设计模式只是一些想法。它们并不适用于所有情况。但如果使用得当，它们可以帮助你构建更大、可扩展的应用程序。把它们融入你的项目，可以提升代码可读性，让你的代码库更整洁。随着你对模式的经验不断积累，你会判断出何时它们能加速你的开发流程。</p>
+
+<p>到那时，你就可以不再重复发明轮子，而是，嗯，开始做点新东西了。</p>
+
+<h3>贡献者</h3>
+
+<p>本指南由 Wilmer Lin 撰写。他是一位 3D 与视觉特效艺术家，在电影和电视行业拥有超过 15 年的从业经验，目前是一名独立游戏开发者与教育者。高级技术内容营销经理 Thomas Krogh-Jacobsen，以及 Unity 高级工程师 Peter Andreasen 和 Scott Bilas 也做出了重要贡献。</p>
+
+<h3>使用本指南与 KISS 原则</h3>
+
+<p>本指南旨在为你提供思考和整理代码的新方式。指南中重点介绍的若干软件设计模式都针对 Unity 开发做了调整。</p>
+
+<p>随附的示例项目展示了部分代码在实际语境中的用法。你可以使用相应的场景来探索这些设计模式及其背后的原则。</p>
+
+<p>不过，在查阅这些示例时请记住，解决问题并不存在放之四海而皆准的“正确方式”。示例代码只是众多解决方案中的一种。</p>
+
+<p>拿不准的时候，就用 KISS 原则（Keep It Simple, Stupid）来过滤本指南中的一切内容：“保持简单，笨蛋。”只有在必要时才增加复杂度。每一种设计模式都伴随着权衡取舍，无论是需要维护额外的结构，还是在项目初期需要更多的搭建工作。在实施之前，请先判断收益是否值得额外的付出。</p>
+
+<p>如果你不确定某个模式是否适用于你的具体问题，那么更好的做法也许是等待一个它感觉更自然契合的场景。不要因为某个模式对你来说很新、很新奇就去使用它；在你需要它的时候再用。</p>
+
+<p>这样，设计模式才能发挥它本来的目的：帮助你开发更好的软件。</p>
+
+<p>让我们开始吧。</p>
+
+  </article>
+  <div class="prevnext">
+    <span class="empty"></span>
+    <a href="ch-02-1.html"><span class="dir">下一节 →</span>SOLID 原则（1/3）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

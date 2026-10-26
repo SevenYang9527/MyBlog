@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>项目配置 · Unity 移动游戏性能优化指南</title>
+<meta name="description" content="Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 移动游戏性能优化指南</div>
+    <div class="book-en">Unity: Optimize Your Mobile Game Performance</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析</a></li>
+      <li><a href="ch-03.html">内存</a></li>
+      <li><a href="ch-04.html">自适应性能</a></li>
+      <li><a href="ch-05.html">代码与架构</a></li>
+      <li><a href="ch-06.html">项目配置</a></li>
+      <li><a href="ch-07.html">资源</a></li>
+      <li><a href="ch-08-1.html">图形与 GPU 优化（1/2）</a></li>
+      <li><a href="ch-08-2.html">图形与 GPU 优化（2/2）</a></li>
+      <li><a href="ch-09.html">用户界面</a></li>
+      <li><a href="ch-10.html">音频</a></li>
+      <li><a href="ch-11.html">动画</a></li>
+      <li><a href="ch-12.html">物理</a></li>
+      <li><a href="ch-13.html">工作流与协作</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 80 页 · 共 13 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">06 · 项目配置</div>
+    <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>项目配置</h2>
+
+<p>有一些项目设置会影响你的移动端性能。</p>
+
+<h3>降低或禁用加速度计频率</h3>
+
+<p>Unity 每秒会多次轮询移动设备的加速度计。如果应用中没有使用该功能，请将其禁用；或者降低其频率以获得更好的性能。</p>
+
+<p>如果在移动端游戏中没有用到加速度计频率，请务必将其禁用。</p>
+
+<h3>禁用不必要的 Player 或 Quality 设置</h3>
+
+<p>在 Player 设置中，对不支持的平台禁用自动图形 API（Auto Graphics API），以避免生成过多的着色器变体。如果你的应用不支持较旧的 CPU，请禁用对应的目标架构。</p>
+
+<p>在 Quality 设置中，禁用不需要的质量级别。</p>
+
+<h3>禁用不必要的物理模拟</h3>
+
+<p>如果你的游戏没有使用物理系统，请取消勾选自动模拟（Auto Simulation）和自动同步变换（Auto Sync Transforms）。它们只会拖慢你的应用，而不会带来任何明显的好处。</p>
+
+<h3>选择合适的帧率</h3>
+
+<p>移动项目必须在帧率与电池续航和热节流之间取得平衡。与其以 60 fps 把设备性能压到极限，不如考虑以 30 fps 运行作为折中方案。Unity 在移动平台上默认使用 30 fps。你也可以在运行时通过 Application.targetFrameRate 动态调整帧率。例如，对于缓慢或相对静态的场景，你甚至可以降到 30 fps 以下，而把更高的 fps 设置留给游戏玩法。</p>
+
+<h3>避免庞大的层级结构</h3>
+
+<p>拆分你的层级结构。如果你的 GameObject 不需要嵌套在层级结构中，请简化父子关系。较小的层级结构可以受益于多线程来刷新场景中的 Transform。复杂的层级结构会带来不必要的 Transform 计算，并增加垃圾回收的开销。</p>
+
+<p>有关 Transform 的最佳实践，请参阅 Unity 博客上的“Optimizing the hierarchy”以及这场 Unite 演讲。</p>
+
+<h3>只变换一次，而不是两次</h3>
+
+<p>此外，在移动 Transform 时，请使用 Transform.SetPositionAndRotation 一次性更新位置和旋转。这样可以避免修改两次 transform 所带来的开销。</p>
+
+<p>如果你需要在运行时实例化 GameObject，一个简单的优化方式是在实例化的同时设置父级和位置：</p>
+
+<pre><code>GameObject.Instantiate(prefab, parent);
+GameObject.Instantiate(prefab, parent, position, rotation);</code></pre>
+
+<p>有关 Object.Instantiate 的更多细节，请参阅脚本 API。</p>
+
+<h3>假定垂直同步已启用</h3>
+
+<p>移动平台不会渲染半帧。即使你在 Editor 中禁用了垂直同步（Vsync）（Project Settings &gt; Quality），垂直同步在硬件层面仍然是启用的。如果 GPU 无法足够快地刷新，当前帧就会被保持，实际上降低了你的 fps。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05.html"><span class="dir">← 上一节</span>代码与架构</a>
+    <a href="ch-07.html"><span class="dir">下一节 →</span>资源</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

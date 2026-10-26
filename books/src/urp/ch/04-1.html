@@ -1,0 +1,213 @@
+<h2>URP 中的光照</h2>
+
+<p>本节说明 URP 中光照的工作原理，并描述两种渲染管线的工作流程之间的差异。</p>
+
+<p>如果你是第一次接触 Unity 中的光照，建议先阅读以下资源：</p>
+
+<ul>
+<li>光照文档（Lighting documentation）</li>
+<li>光照与渲染简介（Introduction to lighting and rendering）</li>
+<li>游戏环境光照艺术（The art of lighting game environments）</li>
+<li>Unity 中的实时光照（Real-time lighting in Unity）</li>
+<li>利用 URP 与 GPU Lightmapper 驾驭光照（Harnessing light with the URP and the GPU Lightmapper）</li>
+</ul>
+
+<p>如果你把项目从内置渲染管线（Built-in Render Pipeline）转换为 URP，可能会注意到光照上的差异。这是因为内置渲染管线默认使用伽马（gamma）光照模型，而 URP 使用线性（linear）模型。因此，任何强度值不等于 1.0 的光源都需要调整。</p>
+
+<p>在编辑器内查找设置控件的位置也有所不同，处理差异巨大的硬件规格这一挑战的方式同样不同。本节余下部分将介绍一些可用于在画面保真度与性能之间取得平衡的技巧。</p>
+
+<p>与前面一样，你将在下面列出的三个位置设置属性。A 和 B 对两种渲染管线基本相同，而 C 仅适用于 URP：</p>
+
+<ul>
+<li><strong>A. Window &gt; Rendering &gt; Lighting：</strong>该面板允许你设置光照贴图（lightmapping）与环境设置，并查看实时与烘焙光照贴图。此面板从内置渲染管线到 URP 没有变化。</li>
+<li><strong>B. Light Inspector：</strong>内置渲染管线与 URP 的 Inspector 之间存在显著差异。详情请参见 Light Inspector 一节。</li>
+<li><strong>C. URP Asset Inspector：</strong>这是你设置阴影的主要位置。URP 中的光照在很大程度上依赖于该面板中所选的设置。</li>
+</ul>
+
+<p>在内置渲染管线中，质量设置通过 Edit &gt; Project Settings &gt; Quality 管理。在 URP 中，这取决于 URP Asset 的设置，可通过 Quality 面板切换（参见“质量设置”一节）。</p>
+
+<p>由于这里的重点是光照，所述方法适用于使用下表中着色器的材质。</p>
+
+<table>
+<thead>
+<tr>
+<th>着色器</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Complex Lit</td>
+<td>该着色器具备 Lit Shader 的全部功能。当你使用 Clear Coat 选项让汽车之类的物体呈现金属光泽时，可以选择它。高光反射会被计算两次——一次针对基础层，另一次用于模拟基础层之上的透明薄层。</td>
+</tr>
+<tr>
+<td>Lit</td>
+<td>Lit Shader 让你能够以照片级质量渲染真实世界的表面，例如石头、木材、玻璃、塑料和金属。光照强度与反射效果看起来栩栩如生，并能在各种光照条件下做出反应，从明亮的阳光到昏暗的洞穴。<br><br>这是大多数使用光照的材质的默认选择。它支持烘焙、混合和实时光照，并可与 Forward 或 Deferred 渲染配合使用。<br><br>它是一种基于物理的着色（physically based shading，PBS）模型。由于着色计算复杂，最好避免在低端移动硬件上使用该着色器。</td>
+</tr>
+<tr>
+<td>Simple Lit</td>
+<td>该着色器不是基于物理的。它使用不守恒能量的 Blinn-Phong 着色模型，得到的结果不那么写实。尽管如此，它仍能提供出色的视觉效果。它更适合在面向低端移动设备、且非基于物理的项目中使用。</td>
+</tr>
+<tr>
+<td>Baked Lit</td>
+<td>该着色器可为不需要支持实时光照的对象提供性能提升，包括永远不会受到动态对象、实时光源或动态阴影影响的远处静态对象。</td>
+</tr>
+</tbody>
+</table>
+
+<p>URP 中用于受光照场景的着色器</p>
+
+<h3>内置渲染管线与 URP 的光衰减对比</h3>
+
+<p>内置渲染管线与 URP 之间的另一个差异在于它们如何计算应用于聚光灯（Spot）和点光源（Point）的光衰减（falloff/attenuation）。</p>
+
+<p>URP 使用基于物理的 InverseSquared 衰减，相关说明见此处。内置渲染管线使用 Legacy 衰减，它不是基于物理的，同一页面中对此有说明。光源半径会影响衰减范围，这可能导致光源半径过大，从而影响剔除性能，因为光源会触及比实际所需更多的对象。</p>
+
+<h3>Lit 还是 Simple Lit？</h3>
+
+<p>在 Lit Shader 与 Simple Lit Shader 之间做选择，在很大程度上是美术层面的决定。美术师使用 Lit Shader 更容易获得写实的渲染效果；但如果想要更具风格化的渲染，Simple Lit 能提供极佳的效果。</p>
+
+<figure>
+<figcaption>图 1：使用不同着色器渲染的场景对比——左上图使用 Lit Shader，右上图使用 Simple Lit Shader，下图使用 Baked Lit Shader。</figcaption>
+</figure>
+
+<p>你也可以通过编写自定义着色器或使用 Shader Graph 来实现自己的自定义光照模型（参见“附加工具”一章）。</p>
+
+<h3>光照概述</h3>
+
+<p>在 URP 中，光源分为主光源（Main Light）与附加光源（Additional Lights）。主光源是最重要的平行光（Directional light）。它要么是最亮的光源，要么是通过 Window &gt; Rendering &gt; Lighting &gt; Environment &gt; Sun Source 设置的光源。</p>
+
+<figure>
+<figcaption>图 2：设置 Sun Source。</figcaption>
+</figure>
+
+<p>本指南稍后你将了解到，如何使用 URP Asset 的设置，通过 Object Per Light 限制来设定影响一个对象的动态光源数量，对于 URP Forward Renderer，该上限为 8。不过，每个摄像机（Camera）可使用的动态光源数量还受不同硬件的限制，如下表所示。</p>
+
+<p>使用 URP Forward Renderer 时的摄像机光源上限</p>
+
+<table>
+<thead>
+<tr>
+<th>光源类型</th>
+<th>类别</th>
+<th>可渲染光源数量上限（非移动平台）</th>
+<th>可渲染光源数量上限（移动平台）</th>
+<th>可渲染光源数量上限（OpenGLES 2.0）</th>
+<th>支持阴影</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Directional</td>
+<td>Main</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>是</td>
+</tr>
+<tr>
+<td>Spot</td>
+<td>Additional</td>
+<td>256*</td>
+<td>32*</td>
+<td>16*</td>
+<td>是</td>
+</tr>
+<tr>
+<td>Point</td>
+<td>Additional</td>
+<td>256*</td>
+<td>32*</td>
+<td>16*</td>
+<td>是</td>
+</tr>
+<tr>
+<td>Directional</td>
+<td>Additional</td>
+<td>256*</td>
+<td>32*</td>
+<td>16*</td>
+<td>否</td>
+</tr>
+</tbody>
+</table>
+
+<p>* 所有附加光源（Additional Lights）共享同一份预算。</p>
+
+<p>当你剔除场景时，最多选取该帧所支持的最大动态光源数量。而在渲染一个对象时，只从这些光源中挑选最重要的那些来动态照亮每个对象。</p>
+
+<p>动态光源数量较少的项目可能不会遇到任何问题；但随着你添加更多光源，可能会因为不同光源被动态剔除而出现光源跳变（light popping）。当然，场景中拥有更多动态光源会带来性能开销。每个动态光源都需要针对摄像机进行剔除，然后按优先级排序。此外还有逐对象渲染每个光源的开销。一如既往，请尽量在保真度与性能之间保持平衡。</p>
+
+<h3>实时光源与混合模式光源</h3>
+
+<p>实时光源与混合模式（Mixed Mode）光源首先要针对摄像机视锥体（frustum）进行剔除。如果启用了遮挡剔除（occlusion culling），被场景中其他对象遮挡的光源也会被剔除。</p>
+
+<p>通过剔除过程后仍然可见的光源列表，会按每个光源到摄像机的距离排序。如果存在可见光源，那么上表中的限制就会生效。例如，如果场景中有 1,000 个光源，但只有 200 个对摄像机可见，那么这些光源都在非移动平台的限制之内。</p>
+
+<p>接下来，可见光源列表会按对象进行剔除。光源会按其在对象轴心（pivot）处的强度排序——这样更亮的光源会优先。如果一个对象受到的光源数量超过每个对象允许的最大光源数，多余的光源会被丢弃。</p>
+
+<p>如果你触及了光源上限，可以考虑以下选项：</p>
+
+<ul>
+<li>如果光源的位置和强度是静态的，就将其烘焙，并使用光照探针（Light Probes）把该光源加入到动态几何体的渲染中。更多信息请参见光照探针一节。</li>
+<li>使用光照层（Light Layers）来限制哪些几何体受哪些光源影响。</li>
+<li>限制光源的范围。该选项不适用于平行光，因为它们是全局的。</li>
+<li>使用自发光（emissive）材质来伪造光照。</li>
+</ul>
+
+<p>这里讨论的光源限制是适用于 Forward Renderer 的限制——在使用 URP 时，它是默认的渲染器。</p>
+
+<p>Forward Renderer 使用单遍（single-pass）方式，在一次绘制调用中计算一个对象的光照。这是一个高性能的选项，不过，由于 GPU 的限制，一个对象在为像素设置颜色时能够考虑的光源数量受到限制。如果你的目标平台是高端硬件，可以使用 URP 中的 Deferred Rendering Path 来避开这些限制。</p>
+
+<h3>渲染路径对比</h3>
+
+<p>Unity 2022 LTS 提供三种渲染选项：Forward、Forward+ 和 Deferred。</p>
+
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>Forward</th>
+<th>Forward+</th>
+<th>Deferred</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>每个对象的最大实时光源数量</td>
+<td>9</td>
+<td>无限制；适用每摄像机上限</td>
+<td>无限制</td>
+</tr>
+<tr>
+<td>逐像素法线编码</td>
+<td>不编码（法线值精确）</td>
+<td>不编码（法线值精确）</td>
+<td>有两种选项：<br>&bull; 在 G-buffer 中量化法线（损失精度，性能更好）<br>&bull; 八面体编码（Octahedron encoding，法线精确，但在移动 GPU 上可能有显著的性能影响）<br>更多信息请参见 G-buffer 中的法线编码（Encoding of normals in G-buffer）。</td>
+</tr>
+<tr>
+<td>MSAA</td>
+<td>支持</td>
+<td>支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>顶点光照（Vertex lighting）</td>
+<td>支持</td>
+<td>不支持</td>
+<td>不支持</td>
+</tr>
+<tr>
+<td>摄像机堆叠（Camera stacking）</td>
+<td>支持</td>
+<td>支持</td>
+<td>有限制地支持：Unity 仅使用 Deferred 路径渲染基础摄像机（base Camera）；所有叠加摄像机（overlay Camera）都使用 Forward 渲染路径渲染</td>
+</tr>
+</tbody>
+</table>
+
+<p>使用 Universal Renderer Data 资源可以在各渲染路径之间切换。</p>
+
+<figure>
+<figcaption>图 3：选择渲染路径。</figcaption>
+</figure>

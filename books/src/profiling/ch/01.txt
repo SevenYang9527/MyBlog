@@ -1,0 +1,37 @@
+6 of 75 | unity. com
+© 2022 Unity Technologies
+Introduction
+Smooth performance is essential to creating immersive gaming experiences for 
+players. By profiling and honing your game’s performance for a broad range of 
+platforms and devices, you can expand your player base and increase your chance 
+for success. 
+This guide brings together advanced advice and knowledge on how to profile an 
+application in Unity, manage its memory, and optimize its power consumption from 
+start to finish.
+A consistent, end-to-end profiling workflow, which is a “must have” for efficient 
+game development, starts with a simple three-point procedure: 
+	
+—
+Profile before making major changes: Establish a baseline
+	
+—
+Profiling during development: Track and ensure changes don’t break 
+performance or budgets
+	
+—
+Profile after: Prove the changes had the desired effect
+Lean, performant code and optimized memory usage lead to better performance 
+across low- and high-end devices. Paying attention to thermal control helps precious 
+battery cycles on mobile devices. Overall, good performance increases your players’ 
+comfort levels, which can drive higher adoption and retention.   
+The main author of the guide is Sean Duffy, a software engineer and game 
+developer. Sean has developed courses, training, and tooling for professional Unity 
+developers for over six years and coauthored books on Unity game development, 
+including Unity Games by Tutorials. 
+Senior Unity engineers also contributed to the e-book, including Steven Cannavan, 
+Steve McGreal, and Martin Tilo Schmitz.
+Additional guides on performance optimization available from Unity include Optimize 
+your game performance for consoles and PC and Optimize your game performance 
+for mobile.
+All the best in your profiling and optimization efforts from the Unity team.
+I N T R O D U C T I O N

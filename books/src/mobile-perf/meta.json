@@ -1,0 +1,183 @@
+{
+  "slug": "mobile-perf",
+  "title_en": "Unity: Optimize Your Mobile Game Performance",
+  "title_zh": "Unity 移动游戏性能优化指南",
+  "subtitle_zh": "Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "Introduction",
+      "title_zh": "引言",
+      "pages": "6-7",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "引言",
+          "chars": 1452
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Profiling",
+      "title_zh": "性能分析",
+      "pages": "8-17",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "性能分析",
+          "chars": 9762
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "Memory",
+      "title_zh": "内存",
+      "pages": "18-21",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "内存",
+          "chars": 4514
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Adaptive Performance",
+      "title_zh": "自适应性能",
+      "pages": "22-23",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "自适应性能",
+          "chars": 1723
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Programming and Code Architecture",
+      "title_zh": "代码与架构",
+      "pages": "24-32",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "代码与架构",
+          "chars": 9602
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Project Configuration",
+      "title_zh": "项目配置",
+      "pages": "33-35",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "项目配置",
+          "chars": 2784
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Assets",
+      "title_zh": "资源",
+      "pages": "36-42",
+      "parts": [
+        {
+          "id": "07",
+          "title_zh": "资源",
+          "chars": 6276
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Graphics and GPU Optimization",
+      "title_zh": "图形与 GPU 优化",
+      "pages": "43-58",
+      "parts": [
+        {
+          "id": "08-1",
+          "title_zh": "图形与 GPU 优化（1/2）",
+          "chars": 7775
+        },
+        {
+          "id": "08-2",
+          "title_zh": "图形与 GPU 优化（2/2）",
+          "chars": 7244
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "User Interface",
+      "title_zh": "用户界面",
+      "pages": "59-64",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "用户界面",
+          "chars": 7649
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "Audio",
+      "title_zh": "音频",
+      "pages": "65-67",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "音频",
+          "chars": 2093
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Animation",
+      "title_zh": "动画",
+      "pages": "68-69",
+      "parts": [
+        {
+          "id": "11",
+          "title_zh": "动画",
+          "chars": 1157
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Physics",
+      "title_zh": "物理",
+      "pages": "70-73",
+      "parts": [
+        {
+          "id": "12",
+          "title_zh": "物理",
+          "chars": 2582
+        }
+      ]
+    },
+    {
+      "no": 13,
+      "title_en": "Workflow and Collaboration",
+      "title_zh": "工作流与协作",
+      "pages": "74-77",
+      "parts": [
+        {
+          "id": "13",
+          "title_zh": "工作流与协作",
+          "chars": 6468
+        }
+      ]
+    }
+  ],
+  "book_pages": 80
+}

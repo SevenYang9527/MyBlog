@@ -1,0 +1,211 @@
+43 of 80 | unity. com
+© 2023 Unity Technologies
+G R A P H I C S A N D  
+G P U O P T I M I Z AT I O N
+With each frame, Unity determines the objects that must be rendered and 
+then creates draw calls. A draw call is a call to the graphics API to draw 
+objects (e. g. , a triangle), whereas a batch is a group of draw calls to be 
+executed together.
+As your projects become more complex, you’ll need a pipeline that optimizes 
+the workload on your GPU. The Universal Render Pipeline (URP) supports three 
+options for rendering: Forward, Forward+, and Deferred.
+
+44 of 80 | unity. com
+© 2023 Unity Technologies
+Boat Attack demo project created using the Universal Render Pipeline.
+Forward rendering evaluates all lighting in a single pass and is generally 
+recommended as default for mobile games. Forward+, introduced with Unity 2022 
+LTS, improves upon standard Forward rendering by culling lights spatially rather 
+than per object. This significantly increases the overall number of lights that can 
+be utilized in rendering a frame. Deferred mode is a good choice for specific 
+cases, such as for games with lots of dynamic light sources. The same physically 
+based lighting and materials from consoles and PCs can also scale to your phone 
+or tablet.
+
+45 of 80 | unity. com
+© 2023 Unity Technologies
+The following table compares the three rendering options in URP. 
+Feature
+Forward
+Forward+
+Deferred
+Maximum 
+number of 
+real-time lights 
+per object
+9
+Unlimited; 
+the per-
+Camera limit 
+applies
+Unlimited
+Per pixel normal 
+encoding
+No encoding
+(accurate 
+normal values)
+No encoding
+(accurate 
+normal values)
+Two options:
+ 
+— Quantization of normals 
+in G-buffer (loss of accuracy, 
+better performance)
+ 
+— Octahedron encoding 
+(accurate normals, might 
+have significant performance 
+impact on mobile GPUs)
+For more information, see 
+Encoding of normals in 
+G-buffer.
+MSAA
+Yes
+Yes
+No
+Vertex lighting
+Yes
+No
+No
+Camera 
+stacking
+Yes
+Yes
+Supported with a limitation: 
+Unity renders only the base 
+Camera using the Deferred 
+path; Unity renders all overlay 
+Cameras using the Forward 
+Rendering path
+Learn about moving projects based on the Built-in Render Pipeline to URP with the 
+e-book Introduction to the Universal Render Pipeline for advanced Unity creators.
+
+46 of 80 | unity. com
+© 2023 Unity Technologies
+GPU optimization
+To optimize your graphics rendering, you’ll need to understand the limitations of 
+your target hardware and how to profile the GPU. Profiling helps you check and 
+verify that the optimizations you’re making are effective. 
+Use these best practices for reducing the rendering workload on the GPU.
+Benchmark the GPU
+When profiling, it’s useful to start with a benchmark. A benchmark tells you what 
+profiling results you should expect from specific GPUs.
+See GFXBench for a great list of different industry-standard benchmarks for 
+GPUs and graphics cards. The website provides a good overview of the current 
+GPUs available and how they stack up against each other. 
+Watch the rendering statistics
+Click the Stats button in the top right of the Game view. This window shows you 
+real-time rendering information about your application during Play mode. Use 
+this data to help optimize performance:
+	
+—
+fps: Frames per second
+	
+—
+CPU Main: Total time to process one frame (and update the Editor  
+for all windows)
+	
+—
+CPU Render: Total time to render one frame of the Game view
+	
+—
+Batches: Groups of draw calls to be drawn together
+	
+—
+Tris (triangles) and Verts (vertices): Mesh geometry
+	
+—
+SetPass calls: The number of times Unity must switch shader passes  
+to render the GameObjects onscreen; each pass can introduce extra  
+CPU overhead.
+Note: In-Editor fps does not necessarily translate to build performance.  
+We recommend that you profile your build for the most accurate results.  
+Frame time in milliseconds is a more accurate metric than frames per second 
+when benchmarking.
+
+47 of 80 | unity. com
+© 2023 Unity Technologies
+Use draw call batching
+To draw a GameObject, Unity issues a draw call to the graphics API  
+(e.g., OpenGL, Vulkan, or Direct3D). Each draw call is resource intensive. 
+State changes between draw calls, such as switching materials, can cause 
+performance overhead on the CPU side. 
+PC and console hardware can push a lot of draw calls, but the overhead of each 
+call is still high enough to warrant trying to reduce them. On mobile devices, 
+draw call optimization is vital. You can achieve this with draw call batching.
+Draw call batching minimizes these state changes and reduces the CPU cost of 
+rendering objects. Unity can combine multiple objects into fewer batches using 
+several techniques:
+	
+—
+SRP Batching: If you are using HDRP or URP, enable the SRP Batcher 
+in your Pipeline Asset under Advanced. When using compatible 
+shaders, the SRP Batcher reduces the GPU setup between draw calls 
+and makes material data persistent in GPU Memory. This can speed up 
+your CPU rendering times significantly. Use fewer Shader Variants with 
+a minimal amount of Keywords to improve SRP batching. Consult this 
+SRP documentation to see how your project can take advantage of this 
+rendering workflow.
+	
+—
+GPU instancing: If you have a large number of identical objects (e. g. , 
+buildings, trees, grass, and so on with the same mesh and material), use 
+GPU instancing. This technique batches them using graphics hardware. To 
+enable GPU Instancing, select your material in the Project window, and in 
+the Inspector, check Enable Instancing. 
+SRP Batcher helps you batch draw calls.
+
+48 of 80 | unity. com
+© 2023 Unity Technologies
+	
+—
+Static batching: For non-moving geometry, Unity can reduce draw 
+calls for any meshes sharing the same material. It is more efficient than 
+dynamic batching, but it uses more memory. 
+ 
+Mark all meshes that never move as Batching Static in the Inspector. 
+Unity combines all static meshes into one large mesh at build time. 
+The StaticBatchingUtility also allows you to create these static batches 
+yourself at runtime (for example, after generating a procedural level of 
+non-moving parts).
+	
+—
+Dynamic Batching: For small meshes, Unity can group and transform 
+vertices on the CPU, then draw them all in one go. Note: Do not use this 
+unless you have enough low-poly meshes (no more than 300 vertices 
+each and 900 total vertex attributes). Otherwise, enabling it will waste 
+CPU time looking for small meshes to batch. 
+You can maximize batching with a few simple rules:
+	
+—
+Use as few textures in a scene as possible. Fewer textures require fewer 
+unique materials, making them easier to batch. Additionally, use texture 
+atlases wherever possible.
+	
+—
+Always bake lightmaps at the largest atlas size possible. Fewer lightmaps 
+require fewer material state changes, but keep an eye on the memory 
+footprint.
+	
+—
+Be careful not to instance materials unintentionally.  
+Accessing Renderer. material in scripts duplicates the material and returns 
+a reference to the new copy. This breaks any existing batch that already 
+includes the material. If you wish to access the batched object’s material, 
+use Renderer. sharedMaterial instead.
+	
+—
+Keep an eye on the number of static and dynamic batch counts versus 
+the total draw call count by using the Profiler or the rendering stats during 
+optimizations.
+Please refer to the Draw Call Batching documentation for more information.
+
+49 of 80 | unity. com
+© 2023 Unity Technologies
+Use the Frame Debugger 
+The Frame Debugger shows how each frame is constructed from individual 
+draw calls. This is an invaluable tool for troubleshooting your shader properties 
+and can help you analyze how the game is rendered.
+New to the Frame Debugger? Check out this introduction here.
+The Frame Debugger breaks each frame into its separate steps.

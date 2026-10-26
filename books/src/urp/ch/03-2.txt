@@ -1,0 +1,618 @@
+22 of 140 | unity. com
+© 2024 Unity Technologies
+Setting
+Built-in Render 
+Pipeline
+URP
+URP Asset settings
+Shadows
+Shadowmask Mode
+Shadowmask
+Shadowmask
+NA
+Shadows
+Disabled
+NA
+NA
+Shadow Resolution
+Low resolution
+NA
+NA
+Shadow Projection
+Stable fit
+NA
+NA
+Shadow Distance
+20
+NA
+NA
+Shadow Near Plane Offset
+3
+NA
+NA
+Shadow Cascades
+No Cascades
+NA
+NA
+Cascade splits
+NA
+NA
+NA
+Working unit
+NA
+NA
+NA
+Depth Bias
+NA
+NA
+NA
+Normal Bias
+NA
+NA
+NA
+Soft Shadows
+NA
+NA
+NA
+Async Asset Upload
+Time Slice
+2
+2
+NA
+Buffer Size
+16
+16
+NA
+Persistent Buffer
+Yes
+Yes
+NA
+Level of Detail
+LOD Bias
+0. 4
+0. 4
+NA
+Maximum LOD level
+0
+0
+NA
+Meshes
+Skin Weights
+4 bones
+4 bones
+NA
+Lighting
+Main Light:
+NA
+NA
+Per pixel
+• Cast Shadows
+NA
+NA
+No
+• Shadow Resolution
+NA
+NA
+NA
+Additional Lights:
+NA
+NA
+Disabled
+• Per Object Limit
+NA
+NA
+NA
+• Cast Shadows
+NA
+NA
+NA
+• Shadow Atlas Resolution NA
+NA
+NA
+• Shadow Resolution tiers
+NA
+NA
+NA
+• Cookie Atlas Resolution
+NA
+NA
+NA
+• Cookie Atlas Format
+NA
+NA
+NA
+Reflection Probes:
+NA
+NA
+NA
+• Probe Blending
+NA
+NA
+No
+• Box Projection
+NA
+NA
+No
+Post-processing
+Grading Mode
+NA
+NA
+Low Dynamic Range
+LUT size
+NA
+NA
+16
+Fast sRGB/Linear 
+conversion
+NA
+NA
+No
+* In URP, Pixel Light Count is handled using Additional Lights > (Per pixel ) > 
+Per Object Limit.
+
+23 of 140 | unity. com
+© 2024 Unity Technologies
+Built-in Render Pipeline to URP: High settings
+Setting
+Built-in Render 
+Pipeline
+URP
+URP Asset settings 
+Rendering
+Pixel Light Count
+2
+Not applicable 
+(NA)
+NA
+Anti-aliasing
+Disabled
+NA
+2x
+Render Scale
+NA
+NA
+1
+Real-time Reflection 
+Probes
+Yes
+Yes
+NA
+Resolution Scaling Fixed 
+DPI Factor
+1
+1
+NA
+VSync Count
+Every V Blank
+Every V Blank
+NA
+Depth Texture
+NA
+NA
+No
+Opaque Texture
+NA
+NA
+No
+Opaque Downsampling
+NA
+NA
+NA
+Terrain Holes
+NA
+NA
+Yes
+HDR
+NA
+NA
+Yes
+Textures
+Texture Quality
+Full res
+Full res
+NA
+Anisotropic Textures
+Disabled
+Disabled
+NA
+Texture Streaming
+No
+No
+NA
+Particles
+Soft Particles
+No
+NA
+NA
+Particle Raycast Budget
+256
+256
+NA
+Terrain
+Billboards Face Camera 
+Position
+Yes
+Yes
+NA
+Shadows
+Shadowmask Mode
+Distance 
+Shadowmask
+Distance 
+Shadowmask
+NA
+Shadows
+Hard and Soft 
+Shadows
+NA
+NA
+Shadow Resolution
+Medium 
+resolution
+NA
+2048
+Shadow Projection
+Stable fit
+NA
+NA
+Shadow Distance
+40
+NA
+50
+Shadow Near Plane Offset
+3
+NA
+NA
+Shadow Cascades
+2 Cascades
+NA
+2
+Cascade splits
+33/67
+NA
+12.5/33.8/3.8
+Working unit
+Percent
+Percent
+Metric
+
+24 of 140 | unity. com
+© 2024 Unity Technologies
+Setting
+Built-in Render 
+Pipeline
+URP
+URP Asset settings
+Depth Bias
+NA
+NA
+1
+Normal Bias
+NA
+NA
+1
+Soft Shadows
+NA
+NA
+Yes
+Async Asset Upload
+Time Slice
+2
+2
+NA
+Buffer Size
+16
+16
+NA
+Persistent Buffer
+Yes
+Yes
+NA
+Level of Detail
+LOD Bias
+1
+1
+NA
+Maximum LOD level
+0
+0
+NA
+Meshes
+Skin Weights
+Unlimited
+Unlimited
+NA
+Lighting
+Main Light:
+NA
+NA
+Per pixel
+• Cast Shadows
+NA
+NA
+Yes
+• Shadow Resolution
+NA
+NA
+Additional Lights:
+NA
+NA
+Per pixel
+• Per Object Limit
+NA
+NA
+4
+• Cast Shadows
+NA
+NA
+Yes
+• Shadow Atlas Resolution
+NA
+NA
+2048
+• Shadow Resolution tiers
+NA
+NA
+512/1024/2048
+• Cookie Atlas Resolution
+NA
+NA
+2048
+• Cookie Atlas Format
+NA
+NA
+Color high
+Reflection Probes:
+NA
+NA
+• Probe Blending
+NA
+NA
+Yes
+• Box Projection
+NA
+NA
+No
+Post-processing
+Grading Mode
+NA
+NA
+Low Dynamic 
+Range
+LUT size
+NA
+NA
+32
+Fast sRGB/Linear 
+conversion
+NA
+NA
+No
+
+25 of 140 | unity. com
+© 2024 Unity Technologies
+An option available in URP in Unity 2022 LTS is selecting Temporal Anti-aliasing 
+(TAA) as an anti-aliasing option for the Camera, via Camera > Rendering > Anti-
+aliasing. 
+TAA selected
+How to work with Quality settings
+Quality settings were previously handled in the Quality panel of the Project 
+Settings dialog box. When using URP, settings are divided between the Quality 
+panel and those for each URP Asset. The following table shows where each 
+setting can be found.
+Quality settings when using URP
+Setting
+Quality panel
+URP Asset 
+Rendering
+Anti-aliasing
+√
+Render Scale
+√
+Resolution Scaling  
+Fixed DPI Factor
+√
+VSync Count
+√
+Depth Texture
+ 
+√
+Opaque Texture
+√
+Opaque Downsampling
+√
+Terrain Holes
+√
+HDR
+√
+Textures
+Texture Quality
+√
+Anisotropic Textures
+√
+Texture Streaming
+√
+Particles
+Particle Raycast Budget
+√
+
+26 of 140 | unity. com
+© 2024 Unity Technologies
+Terrain
+Billboards Face  
+Camera Position
+√
+Shadows
+Shadowmask Mode
+√
+Shadow Resolution
+√
+Shadow Distance
+√
+Shadow Cascades
+√
+Cascade splits
+√
+Working unit
+√
+Depth Bias
+√
+Setting
+Quality panel
+URP Asset 
+Normal Bias
+√
+Soft Shadows
+√
+Async Asset Upload
+Time Slice
+√
+Buffer Size
+√
+Persistent Buffer
+√
+Level of Detail
+LOD Bias
+√
+Maximum LOD level
+√
+Meshes
+Skin Weights
+√
+Lighting
+Main Light:
+√
+• Cast Shadows
+√
+• Shadow Resolution
+√
+Additional Lights:
+√
+• Per Object Limit
+√
+• Cast Shadows
+√
+• Shadow Atlas Resolution
+√
+• Shadow Resolution tiers
+√
+• Cookie Atlas Resolution
+√
+• Cookie Atlas Format
+√
+Reflection Probes:
+√
+• Probe Blending
+√
+• Box Projection
+√
+
+27 of 140 | unity. com
+© 2024 Unity Technologies
+If you switch between Quality options, choose a Quality Level for the Render 
+Pipeline Asset in the Quality panel via Project Settings. Note that if the Quality 
+Level is not set, the Render Pipeline Asset will default to the one set as the 
+Scriptable Render Pipeline Asset in the Graphics panel. This can cause some 
+confusion as you attempt to adjust the Quality settings of a URP Asset.  
+For instance, you might accidentally assume that the Quality Level set in  
+the URP Asset is the one currently used by the Scene and Game views.
+Setting the Quality Level for the Render Pipeline Asset
+Modifying a URP Asset
+Post-processing
+Grading Mode
+√
+LUT size
+√
+Fast sRGB/Linear 
+conversion
+√
+Note: If you have the URP 2D Renderer 
+enabled, some of the options related 
+to 3D rendering in the URP Asset will 
+not impact your final app or game. The 
+2D Renderer Asset is available under 
+Scriptable Render Pipeline Settings 
+via Edit > Project Settings > Graphics.
+A URP Asset in the Inspector
+
+28 of 140 | unity. com
+© 2024 Unity Technologies
+This image shows a URP Asset in the Inspector with all of its available settings. 
+See the URP documentation to learn more about each setting.
+The Quality panel for a URP Asset allows you to set the HDR format to 64-bit 
+for better fidelity. However, be aware that this results in a performance hit and 
+requires additional memory, so avoid this setting on low-end hardware. 
+Another feature of the Quality panel is the option to enable LOD Cross Fade. 
+LOD is a technique to reduce the GPU cost needed to render distant meshes. 
+As the Camera moves, different LODs will be swapped to provide the right level 
+of quality. LOD Cross Fade allows for smoother transitions of different LOD 
+geometries and avoids the harsh snapping and popping that occurs during a 
+swap.
+Converting an example project from the Built-in Render  
+Pipeline to URP
+The Unity demo project Viking Village URP shows off URP capabilities with 
+Light Probes, Reflection Probes, water special effects that use a custom 
+ScriptableRenderPass, shaders converted via Shader Graph, and URP  
+post-processing. The project is available for free on the Unity Asset Store.
+Open Viking Village URP in the Editor to follow along with the steps in this 
+section. Start by clicking Add to My Assets to add this demo to the Packages 
+list available in-Editor.
+Viking Village URP on the Unity Asset Store
+Then create a new 3D project from the Unity Hub (you don’t need to use the 
+URP template). Go to Window > Package Manager, select My Assets > Viking 
+Village URP from the Packages drop-down, and click Import.
+
+29 of 140 | unity. com
+© 2024 Unity Technologies
+Viking Village URP in Package Manager
+A couple of warning messages will appear (see below). The first one warns 
+you that importing a complete project will affect your current Project Settings, 
+but since you’ve created an empty project it’s safe to proceed. The second 
+warning alerts you about installing or upgrading certain packages. Click on the 
+default blue button. This is required to avoid an incorrect lighting setup as the 
+URP default is a linear color space, opposite the Built-in Render Pipeline which 
+defaults to a gamma color space.
+Once the download is complete, the panel shown below will open.  
+Make sure to leave everything selected and click Import.
+Warning messages that appear while importing 
+Viking Village URP
+
+30 of 140 | unity. com
+© 2024 Unity Technologies
+Importing the demo project
+Wait for all the assets to finish importing, then go to the demo located in Viking 
+Village > Scenes > The_Viking_Village. Click Window > Package Manager, and 
+in the drop-down select Unity Registry, followed by Universal RP. Update the 
+URP package to 14. x.
+
+31 of 140 | unity. com
+© 2024 Unity Technologies
+Viking Village in Game view
+The URP Asset set in the Graphics panel, via the Scriptable Render Pipeline 
+Asset, is named Viking Village > Rendering > VikingVillageUniversal. It is 
+configured for high-end hardware, and therefore, might play at a low frame rate 
+on older hardware.
+Follow these steps to test different Quality Levels:
+1.	
+Generate a set of assets via Window > Rendering > Render Pipeline 
+Converter.
+2.	
+Choose the Built-in Render Pipeline to URP option, then select Rendering 
+Settings.
+3.	
+Click Initialize Converters.
+4.	
+A number of Settings options will appear in the panel; Click Convert 
+Assets to create the URP Assets.
+5.	
+The URP Assets will be assigned to the available Quality levels via the 
+Project Settings > Quality panel.
+6.	
+The highest quality asset will replace VikingVillageUniversal in the 
+Graphics panel. The Viking Village > Rendering > VikingVillageUniversal_
+Renderer makes use of Renderer Features and water effects.
+7.	
+To restore these, add the above renderer to the Renderer List and set it 
+as the default for each URP Asset used in Quality Levels. Now you can 
+quickly switch Quality Levels in the Quality panel.
+Viking Village in Scene view

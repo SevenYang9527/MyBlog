@@ -1,0 +1,160 @@
+66 of 75 | unity. com
+© 2022 Unity Technologies
+Which profiling tools to use and when?
+Profiling provides the best benefit when started at the beginning of a project 
+lifecycle. By starting early, you can establish baselines that are useful 
+for comparisons at checkpoints further into your game and application 
+development. It’s important to know which tool to select from the “profiling tool 
+belt” and when.
+Deep profiling on low-spec hardware
+Lower-spec hardware has limited memory and performance that can affect your 
+ability to use deep profiling. Unity’s Profiler samples are stored in a ring buffer, 
+which can fill up when using the Deep Profile setting on slower devices. If this 
+happens, Unity will display an error message.
+You can allocate more memory to the Profiler for this buffering data by setting 
+the Profiler. maxUsedMemory property (bytes). The default is 128 MB for 
+Players and 512 MB for the Editor. Increase this as required on slower-device 
+Player builds if you run into problems when deep profiling.
+If you need to profile code in higher detail on hardware that runs too slowly (or 
+not at all) due to the overhead that deep profiling adds, you can profile deeper 
+with your own markers.
+Instead of enabling the Deep Profile setting, add Profiler markers to the specific 
+areas of interest in your code. These markers will appear in the Profiler Timeline 
+or Hierarchy when viewing the CPU Usage module.
+Add Profiler markers to profile deeper layers of code when deep profiling adds too much overhead.
+
+67 of 75 | unity. com
+© 2022 Unity Technologies
+Once you understand the uses and benefits of each tool, it will be easier for you 
+to know when to use them. Be sure to learn about each profiling tool Unity has 
+to offer in the Unity profiling and debug tools section.
+To help answer the “when,” here is a list of checkpoint ideas in a project’s life 
+cycle, which may be useful to reference when planning a profiling strategy.
+	
+—
+Prototyping: Profiling is important to reduce risk in the prototype stage 
+of a project. If the game design document calls for 10,000 enemies on-
+screen, you need to be able to build and profile a prototype that proves 
+such a thing is possible on the target platform. If it’s not, you need to 
+change the design.
+	
+—
+Early stages of the project: Establish a baseline for project performance 
+across a selection of target device hardware. Get a rough idea of memory 
+usage using the Memory Profiler, and ensure that plans for the project’s 
+scope are not trending to a point where memory limits on target hardware 
+will become an issue further on.
+	
+—
+End of sprint: If you’re working in sprints on an Agile team, then the 
+end-of-sprint release candidate (RC) is a great point at which to run a 
+standardized suite of profiling tools. Ensure you have a standard format 
+to record results and metrics, in a database or spreadsheet, for example. 
+Perform the following profiling activities and data capturing with the Unity 
+Profiler:
+	
+—
+CPU Usage
+	
+—
+GPU Usage
+	
+—
+Memory Usage
+	
+—
+Rendering
+	
+—
+Physics
+Go deeper and use these tools to record results and key difference metrics 
+(differential against prior sprint releases):
+	
+—
+Profile Analyzer: Load previous release profiling data captures and 
+compare and record differences.
+	
+—
+Memory Profiler: Compare prior release candidate build memory 
+snapshots and record difference in memory increase or reduction.
+
+68 of 75 | unity. com
+© 2022 Unity Technologies
+Automating key performance and profiling metrics
+Level up your project profiling and data capture by automating common and 
+recurring tasks. This will save you time, and you’ll benefit from metrics that are 
+always up to date.
+Metrics can be graphed and added to a project dashboard, allowing the team to 
+see where performance has taken a nosedive (a newly added feature or bug for 
+example), or where things have improved after an optimization and bug fixing sprint.
+Chart a project’s overall memory usage profile across all levels of the game over 
+time. By capturing memory snapshots with the Memory Profiler and averaging 
+the figures out across all levels, you can record a memory footprint per target 
+device/platform, sprint, or release cycle.
+Automated weekly build profiling data captured and visualized in a Grafana dashboard
+Use Unity DevOps tools such as Cloud Build to automate profiling workflows.
+
+69 of 75 | unity. com
+© 2022 Unity Technologies
+If you wish to record high-level profiling statistics, use a ProfilerRecorder to 
+record metrics such as Total Reserved Memory or System Used Memory and 
+output these to a CI (Continuous Integration), directing them to a chart or 
+graphing tool such as Grafana.
+Use Unity DevOps tools such as Cloud Build to automate the creation of release 
+builds and integrate this process with an automated device profiling workflow.
+An automated profiling pipeline example
+Automation can help ensure your team realizes the benefits of profiling builds 
+without the worry that this process will be deprioritized due to time constraints.
+This example workflow shows how you can use automation to ensure that build 
+profiling happens frequently and accurately.
+	
+—
+Use Unity Cloud Build to create automated build releases.
+	
+—
+After each release, use a script to start a built player and capture raw 
+profiling data over 2000 frames:
+	
+—
+AngryBots2. exe -profiler-enable -profiler-log-file profile1. raw 
+-profiler-capture-frame-count 2000. To learn more about the 
+command line arguments, check Unity documentation.
+Note: Another option here would be to use a script to switch to a new 
+log file (e. g. , profile_<N+1>. raw) every 300–2000 frames, or to profile 
+key points in an application’s test cycle (checkpoints in an automated 
+level playthrough). This stored data can then be referenced if problem 
+areas are spotted in dashboard graphs later on.
+The Editor interface for ProfileReader
+
+70 of 75 | unity. com
+© 2022 Unity Technologies
+	
+—
+Profiling data is captured in the profile1. raw file and can now be parsed 
+for interesting metrics.
+	
+—
+The next step uses ProfileReader (a tool for parsing and converting raw 
+profile data to CSV format) to convert the raw profile data to a more 
+readable CSV format.
+	
+—
+ProfileReader can be used on the command line, so this stage of the 
+pipeline would be a script to execute it:
+	
+—
+Unity. exe -batchMode -projectPath "AngryBots2" -logFile .\Editor.
+log -executeMethod UTJ. ProfilerReader. CUIInterface. ProfilerToCsv 
+-PH. inputFile "profile1. raw" -PH. timeout 2400 -PH. log
+	
+—
+With data parsed from CSV, the automated pipeline uploads data for 
+your nightly, weekly, or sprint releases to a tool such as Grafana for 
+visualization.
+With data visualized and updated automatically, your team can easily spot when 
+graphs spike to identify issues more quickly. They can also view the results of 
+a performance optimization task or the results of the level design team doing a 
+memory optimization pass across various levels in a game.
+Profiling and 
+Visualizing automated profiling data in a Grafana dashboard. In this screenshot, it looks like someone let a physics 
+object creation bug creep into the build.

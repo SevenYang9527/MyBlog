@@ -1,0 +1,115 @@
+<h2>模式：委托对象（Delegate Objects）</h2>
+
+<h3>委托与事件</h3>
+
+<p>委托（Delegate）是一种定义方法签名的类型。这让你可以把方法作为参数传递给其他方法。你可以把它理解为一个变量，只不过它保存的是对某个方法的引用，而不是一个具体的值。</p>
+
+<p>事件（Event）则本质上是一种特殊的委托，它允许各个类以松耦合的方式相互通信。事件将在「模式：观察者（Observer）」一章中详细探讨。</p>
+
+<p>关于委托与事件之间差异的通用说明，参见《Distinguishing Delegates and Events in C#》。</p>
+
+<h3>模式：委托对象</h3>
+
+<p>由于你可以在 ScriptableObject 上创建方法，因此它们不仅适合保存数据，也同样适合承载逻辑或行为。这样一来，你就可以把它们当作委托对象（Delegate Object）来使用。</p>
+
+<p>其思路是：如果你需要执行某些特定任务，就把完成这些任务的算法封装进各自独立的对象中。最初的「四人帮（Gang of Four）」把这种通用设计称为策略模式（Strategy Pattern）。</p>
+
+<p>假设你想要一个能在迷宫中计算路线的寻路对象。这个对象本身其实不包含任何寻路逻辑。相反，它只是持有对另一个真正执行寻路工作的对象的引用。</p>
+
+<p>如果你想用某种特定的路径搜索技术（例如 A*、Dijkstra 等）来求解迷宫，就把对应的解法实现在这个独立的「策略」对象中。运行时，你只要替换对象，就能切换到另一种算法。</p>
+
+<h3>ScriptableObject 的方法</h3>
+
+<p>在 Unity 中，实现该模式的一种方式是让一个 MonoBehaviour 引用一个包含所需逻辑的 ScriptableObject。当 MonoBehaviour 执行某项任务时，它调用的是该 ScriptableObject 上的外部方法，而不是自己的方法。</p>
+
+<p>不过，这样做存在一些限制：</p>
+
+<ul>
+<li>ScriptableObject 上的方法不会由 MonoBehaviour 的玩家循环（player loop）自动调用。你需要自己调用它们。</li>
+<li>与 Prefab 一样，ScriptableObject 不能直接引用场景对象。如果它们需要对某个场景对象执行操作，你就必须把该对象作为参数传入。</li>
+</ul>
+
+<p>在调用 ScriptableObject 的方法时，MonoBehaviour 通常可以把自身作为参数传入，也可以传入其他任何依赖项。尽管 ScriptableObject 存在于项目层级，这仍然让你能够灵活地执行逻辑、运行协程等。</p>
+
+<p>ScriptableObject 可以包含可插拔（Pluggable）的行为或逻辑实现。例如，你可以在游戏中定义若干具有不同移动行为的敌人单位。假设其中一些需要巡逻、原地待命，或者逃离玩家。</p>
+
+<p>单个 EnemyUnit MonoBehaviour 可以引用一个 EnemyAI ScriptableObject，后者包含一个名为 MoveUnit 的方法。EnemyUnit 脚本本身不包含任何移动或行为逻辑。它只在合适的时机执行该 ScriptableObject 的 MoveUnit。</p>
+
+<p>如果该方法需要来自场景的数据，EnemyUnit 对象可以把自身的引用作为参数传入。场景中其他任何必要的依赖项也可以一并传入。</p>
+
+<h4>修改 ScriptableObject 数据</h4>
+
+<p>运行时你确实可以修改 ScriptableObject 的数据，但每次这样做都要格外小心。多个 MonoBehaviour 共享同一个 ScriptableObject 时，如果它们修改同一份数据，就可能引发问题。</p>
+
+<p>请记住，你可以在运行时创建 ScriptableObject 的实例来避免这个问题。此时最初的 ScriptableObject 就像一个包含全部逻辑和数据的模板。每个 MonoBehaviour 随后都可以创建自己的该 ScriptableObject 实例，并自由地修改它。</p>
+
+<h4>可插拔的行为</h4>
+
+<p>你可以把 EnemyAI ScriptableObject 定义为抽象类，从而让这个模式更加有用。这样它就能充当模板，供多种与 EnemyUnit MonoBehaviour 兼容的 ScriptableObject 继承，于是这个抽象 ScriptableObject 可以代表不止一种算法。</p>
+
+<figure><figcaption>图 1：可插拔的行为既可以在运行时切换，也可以在编辑器中切换。</figcaption></figure>
+
+<p>因此，你可以为 Patrol、Idle、Flee 这类行为编写具体的 ScriptableObject 类，让它们派生自基类 EnemyAI。尽管它们都实现同一个 MoveUnit 方法，但各自可以产生截然不同的结果。</p>
+
+<p>在编辑器中，每个资源都是可以互换的。你只需把选中的 ScriptableObject 拖放到 EnemyAI 字段中即可。任何兼容的 ScriptableObject 都能以这种方式「插拔」。</p>
+
+<h4>用 ScriptableObject 实现 AI</h4>
+
+<p>关于用 ScriptableObject 驱动行为的更详细示例，参见《Pluggable AI With Scriptable Objects》视频系列。这些录制的直播课程演示了一个基于有限状态机（Finite State Machine）的 AI 系统，其状态、动作以及状态之间的转换都可以用 ScriptableObject 来配置。</p>
+
+<h3>示例：声音委托</h3>
+
+<p>ScriptableObject 中包含的行为不必很复杂。它可以简单到只是播放一段自定义音效。下面是一个「声音委托」ScriptableObject 的示例，它可以帮助你为 AudioClip 增加变化。AudioDelegateSO 定义了一个抽象类，其中包含一个以 AudioSource 为参数的 Play 方法。</p>
+
+<pre><code>using UnityEngine;
+using Random = UnityEngine.Random;
+using System;
+
+[Serializable]
+public struct RangedFloat
+{
+public float minValue;
+public float maxValue;
+}
+
+public abstract class AudioDelegateSO : ScriptableObject
+{
+public abstract void Play(AudioSource source);
+}
+</code></pre>
+
+<p>EnemyUnit 或其他组件可以充当「大脑」，负责监视何时切换 ScriptableObject，并在运行时替换行为。这是 EnemyUnit 响应游戏玩法事件的一种方式。只需在每次状态变化时切换 EnemyAI ScriptableObject 即可。</p>
+
+<p>在实际生产环境中，可以由另一位开发者或设计师在 ScriptableObject 内实现真正的移动或 AI 逻辑。当游戏新增更多移动或行为（例如 DuckAndCover、Chase 等）时，原有的 EnemyUnit 脚本保持不变。这个模式有助于让你的代码库更易于扩展，符合 SOLID 编程中的开闭原则（Open-Closed Principle）。由于一切都已经拆分成了更小的对象，随着团队成员的增加，最终的项目也更具可伸缩性。</p>
+
+<p>随后，这个具体的 SimpleAudioDelegate ScriptableObject 可以从可选的片段中随机挑选一个，并在播放时改变其音量和音高。这能减少重复播放同一音效带来的单调感。</p>
+
+<pre><code>[CreateAssetMenu(fileName ="AudioDelegate")]
+public class SimpleAudioDelegateSO : AudioDelegateSO
+{
+public AudioClip[] clips;
+public RangedFloat volume;
+public RangedFloat pitch;
+
+public void Play(AudioSource source)
+{
+if (clips.Length == 0 || source == null)
+return;
+
+source.clip = clips[Random.Range(0, clips.Length)];
+source.volume = Random.Range(volume.minValue, volume.maxValue);
+source.pitch = Random.Range(pitch.minValue, pitch.maxValue);
+source.Play();
+}
+}
+</code></pre>
+
+<p>之后，任何 MonoBehaviour 都可以使用一个派生自 AudioDelegateSO 类的 ScriptableObject 实例。你还可以为不同的音效制作 AudioDelegate 的变体。</p>
+
+<p>在 ScriptableObject 上拥有方法开辟了多种可能性。除了执行动作之外，它的方法还可以向场景中的任何对象发送消息。接下来，我们来看看基于 ScriptableObject 并采用观察者模式的事件系统。</p>
+
+<h4>辉煌的 ScriptableObject 革命</h4>
+
+<p>Richard Fine 在 Unite 2016 上的演讲《Overthrowing the MonoBehaviour tyranny in a glorious ScriptableObject revolution》为这本电子书的许多内容奠定了基础。其演示项目（在原项目中名为 AudioEvent）的一部分已针对本示例做了修改。</p>
+
+<p>关于实现细节以及使用 ScriptableObject 的示例，参见示例项目。</p>

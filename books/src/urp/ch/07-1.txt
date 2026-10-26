@@ -1,0 +1,217 @@
+77 of 140 | unity. com
+© 2024 Unity Technologies
+Pipeline callbacks
+A great feature of SRPs is that you can add code at just about any stage of the 
+rendering process using a C# script. Scripts can be injected at stages such as:
+	
+—
+Rendering shadows
+	
+—
+Rendering prepasses
+	
+—
+Rendering G-buffer
+	
+—
+Rendering Deferred lights
+	
+—
+Rendering opaques
+	
+—
+Rendering Skybox
+	
+—
+Rendering transparents
+	
+—
+Rendering post-processing	
+You can inject scripts in the rendering process via the Add Renderer Feature 
+option in the Inspector for the Universal Renderer Data Asset. Remember, when 
+using URP, there is a Universal Renderer Data object and a URP Asset. The 
+URP Asset has a Renderer List with at least one Universal Renderer Data object 
+assigned. It is the asset you assign in Project Settings > Graphics > Scriptable 
+Render Pipeline Settings.
+If you are experimenting with multiple setting assets for different scenes, then 
+attaching the following script to your Main Camera can be useful. Set the 
+Pipeline Asset in the Inspector. Then it will switch the asset when the new 
+scene is loaded.
+
+78 of 140 | unity. com
+© 2024 Unity Technologies
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
+ 
+[ExecuteAlways]
+public class AutoLoadPipelineAsset : MonoBehaviour
+{
+	
+public UniversalRenderPipelineAsset pipelineAsset;
+ 
+	
+// Start is called before the first frame update
+	
+void OnEnable()
+	
+{
+    	
+if (pipelineAsset)
+    	
+{
+        	
+GraphicsSettings.renderPipelineAsset = pipelineAsset;
+    	
+}  
+	
+}
+}
+Script to switch Universal Render Pipeline Asset on scene load
+The next section covers two different types of Renderer Features, one for artists 
+and the other for experienced programmers.
+Render Objects
+A common problem in games is losing sight of the player character as they 
+disappear behind environment objects. You could attempt to move the Camera 
+so that the character is always in view, or adjust the environment to be as open 
+as possible. But such options are not always available. A good trick is to show a 
+silhouette of the character when an environment model appears between  
+the character and the Camera, as shown in the image below. 
+Here’s how you can create this silhouette:
+1.	
+First, you need a material to use when the character is masked. Create a 
+material and set the shader to Universal Render Pipeline > Lit or Unlit (the 
+previous image shows the Lit option). Set the Surface Inputs > Base Map 
+color. In this example, the material is called Character.
+Showing a silhouette when an environment model masks the character
+
+79 of 140 | unity. com
+© 2024 Unity Technologies
+2.	
+To avoid rendering the character more times than necessary, let’s place it 
+on a special layer. Select the character, add a SeeBehind layer to the Layers 
+list and select it for the character.
+3.	
+Select the Renderer Data object used by the URP Asset. Go to the Opaque 
+Layer Mask and exclude the SeeBehind layer. The character will then 
+disappear.
+4.	
+Click Add Renderer Feature and select Render Objects (Experimental).
+
+80 of 140 | unity. com
+© 2024 Unity Technologies
+6.	
+At this stage, you only see the silhouette of the character when it’s behind 
+another object. You don’t see the character at all when it’s in full view. To 
+fix this, add another Render Objects feature. This time you don’t need to 
+update the Overrides panel. This Pass will draw the character when not 
+masked by another object.
+5.	
+Fill out the settings for this Render Object’s Pass. Give it a name and 
+choose when the render should be triggered. In this example, it’s called 
+AfterRenderingOpaques. 
+Set the Layer Mask to the SeeBehind layer, which was the layer chosen for the 
+character. Expand the Overrides and set the Override Mode to Material. Select 
+the material created in step 1. You’ll want to use Depth when rendering, without 
+having to update the depth buffer by writing to it. Set the Depth Test to Greater 
+so that this Pass only renders when the distance to the rendered pixel is further 
+from the Camera than the distance currently stored in the depth buffer.
+
+81 of 140 | unity. com
+© 2024 Unity Technologies
+Renderer Feature
+A Renderer Feature can be used at any stage in URP to affect the final render. 
+Let’s go through a simple example of adding a post-processing effect. In a 
+project using the Built-in Render Pipeline, you would have to add a Graphics.
+Blit using the OnRenderImage callback. This example uses the version of the 
+function with a material to process each pixel in the image.
+1.	
+Start by finding a suitable folder in the project Assets folder. Right-click 
+and choose Create > Rendering > URP Renderer Feature. Give it the name 
+TintFeature.
+2.	
+Double-click the default TintFeature file. It is a C# script containing 
+boilerplate for a Renderer Feature.
+Default code for a Renderer Feature
+The silhouette trick is a good example of using the URP workflow to add effects 
+that are difficult to achieve with the Built-in Render Pipeline workflow due to its 
+reliance on coding.
+
+82 of 140 | unity. com
+© 2024 Unity Technologies
+3.	
+Rename CustomRenderPass to TintPass and add these properties to the 
+CustomRenderPass class. The material will contain the shader you apply to 
+the current state of the rendered image.
+4.	
+Add a constructor to the TintPass to initialize the material, and set the 
+position of this pass in the render pipeline.
+5.	
+Add a SetTarget method to initialize the cameraColorTarget and color 
+properties of the TintPass class.
+6.	
+Create a new shader, name it TintBlit, and copy the code below. Notice 
+the RenderPipeline tag. ZWrite and Cull are both off. Core. hlsl is 
+imported from com. unity. render-pipelines. universal and Blit. hlsl from 
+com. unity. render-pipelines. core. If you select the Opaque Texture in 
+the URP Asset Inspector, then the pipeline creates a Render Texture, 
+_CameraOpaqueTexture.
+Selecting Opaque Texture for the URP Asset
+public TintPass(Material mat)
+{
+material = mat;
+renderPassEvent = RenderPassEvent.BeforeRenderingPostProcessing;
+}
+public void SetTarget(RTHandle colorHandle, Color col)
+{
+    cameraColorTarget = colorHandle;
+    color = col;
+}
+Material material;
+RTHandle cameraColorTarget;
+Color color;
+
+83 of 140 | unity. com
+© 2024 Unity Technologies
+7.	
+Replace CustomRenderPass m_ScriptablePass with the following properties. 
+You can set Shader and Color in the Inspector for the Renderer Data asset.
+public Shader shader;
+public Color color;
+Material material;
+TintPass renderPass = null;
+Shader "Custom/TintBlit"
+{
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" "RenderPipeline" = "UniversalPipe-
+line"}
+        LOD 100
+        ZWrite Off Cull Off
+        Pass
+        {
+            Name "TintBlitPass"
+            HLSLPROGRAM
+            #include "Packages/com.unity.render-pipelines.universal/Shad-
+erLibrary/Core.hlsl"
+            // The Blit.hlsl file provides the vertex shader (Vert),
+            // input structure (Attributes) and output structure (Vary-
+ings)
+            #include "Packages/com.unity.render-pipelines.core/Runtime/
+Utilities/Blit.hlsl"
+            #pragma vertex Vert
+            #pragma fragment frag
+            TEXTURE2D(_CameraOpaqueTexture);
+            SAMPLER(sampler_CameraOpaqueTexture);
+            float4 _Color;
+            half4 frag (Varyings input) : SV_Target
+            {
+                float4 color = SAMPLE_TEXTURE2D(_CameraOpaqueTexture, 
+sampler_CameraOpaqueTexture, input.texcoord);
+                return color * _Color;
+            }
+            ENDHLSL
+        }
+    }
+}
+The shader samples this and modulates it using the _Color value.

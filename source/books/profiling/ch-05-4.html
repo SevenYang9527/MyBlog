@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unity 性能分析与调试工具（4/5） · Unity 游戏性能分析终极指南</title>
+<meta name="description" content="Unity 官方电子书：帧预算、CPU/GPU 定位、内存分析，把「卡」变成一条可追的线索">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 游戏性能分析终极指南</div>
+    <div class="book-en">Ultimate Guide to Profiling Unity Games</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析入门</a></li>
+      <li><a href="ch-03-1.html">性能分析工作流（1/3）</a></li>
+      <li><a href="ch-03-2.html">性能分析工作流（2/3）</a></li>
+      <li><a href="ch-03-3.html">性能分析工作流（3/3）</a></li>
+      <li><a href="ch-04.html">内存分析</a></li>
+      <li><a href="ch-05-1.html">Unity 性能分析与调试工具（1/5）</a></li>
+      <li><a href="ch-05-2.html">Unity 性能分析与调试工具（2/5）</a></li>
+      <li><a href="ch-05-3.html">Unity 性能分析与调试工具（3/5）</a></li>
+      <li><a href="ch-05-4.html">Unity 性能分析与调试工具（4/5）</a></li>
+      <li><a href="ch-05-5.html">Unity 性能分析与调试工具（5/5）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 75 页 · 共 5 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">05 · Unity 性能分析与调试工具</div>
+    <div class="pager"><a href="ch-05-3.html">← 上一节</a><a href="ch-05-5.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>定位内存泄漏</h2>
+<p>内存泄漏通常发生在以下情况：</p>
+<ul>
+<li>对象没有通过代码手动从内存中释放。</li>
+<li>对象因为一个非预期的引用而一直留在内存中。</li>
+</ul>
+<p>Memory Profiler 的 Diff 视图可以通过比较特定时间段内的两个快照来帮助发现内存泄漏。</p>
+<p>Unity 游戏中一种常见的内存泄漏场景会发生在卸载场景之后。Memory Profiler 包提供了一套工作流程，引导你使用 Diff 视图发现这类泄漏。</p>
+
+<h2>定位应用生命周期内反复出现的内存分配</h2>
+<p>通过对多个内存快照进行差分比较，你可以找出应用运行期间持续发生内存分配的来源。</p>
+
+<h3>Memory Profiler 模块</h3>
+<p>Unity Profiler 中的 Memory Profiler 模块用一条红线表示每帧的托管分配（managed allocation）。这条线在大多数时候应当为 0，因此该线上出现的任何尖峰都表示这些帧值得你排查托管分配。</p>
+<figure><figcaption>图 1：Memory Profiler 模块以红线表示每帧的托管分配，出现尖峰的帧需要进一步排查。</figcaption></figure>
+
+<h3>CPU Usage Profiler 模块中的 Timeline 视图</h3>
+<p>CPU Usage Profiler 模块中的 Timeline 视图用粉色显示分配（包括托管分配），使它们易于被发现并聚焦。</p>
+<figure><figcaption>图 2：在 Timeline 视图中，托管分配显示为粉色标记。</figcaption></figure>
+<p>GC Allocated In Frame 中出现的任何尖峰都会为你排查托管分配提供线索。</p>
+<figure><figcaption>图 3：GC Allocated In Frame 的尖峰指示了需要排查托管分配的位置。</figcaption></figure>
+
+<h3>分配调用栈（Allocation Call Stacks）</h3>
+<p>分配调用栈提供了一种快速发现代码中托管内存分配的方法。与深度性能分析（deep profiling）通常带来的开销相比，它们能以更低的开销提供你所需的调用栈细节，并且可以在使用标准 Profiler 的过程中随时启用。</p>
+<p>分配调用栈在 Profiler 中默认处于禁用状态。要启用它们，请点击 Profiler 窗口主工具栏中的 Call Stacks 按钮，并将 Details 视图切换为 Related Data。</p>
+<p>注意：如果你使用的是较旧版本的 Unity（尚不支持分配调用栈），那么深度性能分析是获取完整调用栈、帮助发现托管分配的一个好方法。</p>
+<p>在 Hierarchy 或 Raw Hierarchy 中选中的 GC. Alloc 样本现在会包含其调用栈。你也可以在 Timeline 的选中项工具提示中看到 GC. Alloc 样本的调用栈。</p>
+<figure><figcaption>图 4：在 Profiler 中启用分配调用栈后，你可以沿调用栈回溯托管分配的来源。</figcaption></figure>
+<p>Hierarchy 视图中的 Related Data 面板也会显示分配调用栈的详细信息。</p>
+<figure><figcaption>图 5：Hierarchy 视图中的 Related Data 面板会显示分配调用栈详情。</figcaption></figure>
+
+<h3>CPU Usage Profiler 模块中的 Hierarchy 视图</h3>
+<p>在 CPU Usage Profiler 模块的 Hierarchy 视图中，你可以点击列标题将其用作排序条件。按 GC Alloc 排序是聚焦这些内容的好方法。</p>
+
+<h3>Project Auditor</h3>
+<p>Project Auditor 是一个实验性的静态分析工具。它能做很多有用的事情，其中一些超出了本指南的范围，但它可以列出一个项目中导致托管分配的每一行代码，而完全不需要运行项目。这是发现并调查这类问题的一种非常高效的方法。</p>
+<figure><figcaption>图 6：使用 CPU Usage Profiler 模块的 Hierarchy 视图是筛选并聚焦托管分配的绝佳方式。</figcaption></figure>
+
+<h2>内存与 GC 优化</h2>
+
+<h3>降低垃圾回收（GC）的影响</h3>
+<p>Unity 使用 Boehm-Demers-Weiser 垃圾回收器，它会停止运行你的程序代码，只有在其工作完成后才恢复正常执行。要注意那些会导致 GC 尖峰的不必要的堆分配。</p>
+<ul>
+<li><strong>字符串（Strings）：</strong>在 C# 中，字符串是引用类型而非值类型。这意味着每个新字符串都会分配到托管堆上，即使它只是临时使用。减少不必要的字符串创建或操作。避免解析 JSON、XML 这类基于字符串的数据文件，改为将数据存储在 ScriptableObject 或 MessagePack、Protobuf 等格式中。如果需要在运行时构建字符串，请使用 StringBuilder 类。</li>
+<li><strong>Unity 函数调用：</strong>某些 Unity API 函数会产生堆分配，尤其是那些返回托管对象数组的函数。应缓存对数组的引用，而不是在循环中间分配它们。此外，要利用那些可以避免产生垃圾的函数。例如，使用 GameObject.CompareTag 而不是手动将字符串与 GameObject.tag 进行比较（因为返回新字符串会产生垃圾）。</li>
+<li><strong>装箱（Boxing）：</strong>避免用值类型变量代替引用类型变量传递。这会创建一个临时对象，随之而来的潜在垃圾会隐式地将值类型转换为类型对象（例如 <code>int i = 123; object o = i;</code>）。相反，应尝试用你想传入的值类型提供具体的重载。泛型也可以用于这些重载。</li>
+<li><strong>协程（Coroutines）：</strong>虽然 yield 不会产生垃圾，但创建一个新的 WaitForSeconds 对象会产生垃圾。应缓存并复用 WaitForSeconds 对象，而不是在 yield 那一行创建它。</li>
+<li><strong>LINQ 与正则表达式：</strong>这两者都会因幕后装箱而产生垃圾。如果性能是个问题，请避免使用 LINQ 和正则表达式。可以写 for 循环并使用列表，作为创建新数组的替代方案。</li>
+<li><strong>泛型集合及其他托管类型：</strong>不要在每一帧的 Update 中声明并填充一个 List 或集合（例如玩家一定半径内的敌人列表）。相反，应让该 List 成为 MonoBehaviour 的成员，并在 Start 中初始化它。每帧在使用前只需用 Clear 清空集合即可。</li>
+</ul>
+
+<h3>尽可能为垃圾回收安排合适的时机</h3>
+<p>如果你确信垃圾回收造成的卡顿不会影响游戏中的某个特定时刻，可以用 System.GC.Collect 主动触发垃圾回收。关于如何利用这一点的示例，请参阅 Understanding Automatic Memory Management。</p>
+
+<h3>使用增量式垃圾回收器（Incremental Garbage Collector）拆分 GC 工作量</h3>
+<p>增量式垃圾回收不会在程序执行过程中造成一次长时间的单一中断，而是使用多次较短的中断，将工作量分摊到许多帧上。如果垃圾回收导致帧率不稳定，可以尝试这个选项，看看它能否减轻 GC 尖峰的问题。使用 Profile Analyzer 验证它对你的应用带来的收益。</p>
+<p>请注意，以 Incremental 模式使用 GC 会给部分 C# 调用增加读写屏障（read-write barrier），这会带来一定开销，累积起来可能达到每帧约 1 ms 的脚本调用开销。为了获得最佳性能，理想的做法是让主玩法循环中不产生任何 GC Alloc，这样你就不需要靠增量式 GC 来维持平滑的帧率，并且可以把 GC.Collect 隐藏在用户不会察觉的时刻，例如打开菜单或加载新关卡时。</p>
+<p>要进一步了解 Memory Profiler，请查看以下资源：</p>
+<ul>
+<li>Memory Profiler documentation</li>
+<li>Improve memory usage with the Memory Profiler in Unity tutorial</li>
+<li>Memory Profiler: The Tool for Troubleshooting Memory-related Issues Unite session</li>
+<li>Working with the Memory Profiler Unity Learn session</li>
+</ul>
+
+<h2>深度性能分析（Deep Profiling）</h2>
+<p>正如 Profiling 101 一节所述，默认情况下 Unity 只会分析被 Profiler 标记（Profiler marker）显式包裹的代码。这包括由引擎原生代码调用的托管代码的第一个调用栈深度。</p>
+<p>启用 Deep Profiling 会在每个函数调用的开始和结束处插入 Profiler 标记。这样可以捕获大量细节。使用 Deep Profile 设置可以弄清那些冗长、又未能显示足够调用栈的 Profiler 标记内部发生了什么。</p>
+<p>这种细粒度的游戏性能测量方式可能比基于快照的性能分析（采样分析，sample profiling）更可取，后者有可能在捕获中遗漏细节。</p>
+
+<h3>何时使用深度性能分析</h3>
+<p>只有在已经确定应用中需要更细致检查的具体部分或托管代码之后，你才应该启用 Deep Profile 设置。深度性能分析非常消耗资源，并且会占用大量内存。启用后，应用的运行速度会变慢。</p>
+<p>深度性能分析让你可以详细地向下遍历调用树，并发现代码中的低效之处或问题。</p>
+<p>请务必了解 ProfileMarker API，它可以作为手动对代码中有问题的区域进行埋点的方法。它们带来的性能影响可能远低于深度性能分析。有时，添加一个 ProfileMarker 并重新构建游戏，甚至比在启用 Deep Profiling 的情况下到达你想测试的游戏位置还要快。</p>
+<p>在设备构建版本中获取完整调用栈的另一种替代方案是运行原生 CPU 性能分析器（native CPU profiler）。在某些情况下，这比深度性能分析更简单，对性能的侵入性也更小。</p>
+
+<h3>使用深度性能分析</h3>
+<p>要在播放器构建版本（player build）中使用深度性能分析，你需要通过 File &gt; Build Settings &gt; Deep Profiling Support 启用它。</p>
+<p>启用支持后，你可以在 Profiler 窗口中随时为你的构建版本轻松开启或关闭 Deep Profiling。</p>
+<p>当连接到播放器时，Deep Profile 按钮呈灰色，表示你的构建版本没有启用 Deep Profiling Support。</p>
+<figure><figcaption>图 7：启用 Deep Profiling Support。</figcaption></figure>
+<figure><figcaption>图 8：当你需要追踪并理解具体问题时，深度性能分析会展开海量细节。</figcaption></figure>
+<p>注意：从 Unity 2019.3 起，Mono 和 IL2CPP 两种后端都支持 Deep Profiling，这对 iOS 等强制使用 IL2CPP 的平台来说是个好消息。</p>
+<figure><figcaption>图 9：深度性能分析揭示应用代码性能与耗时的更多信息，并显示完整的方法调用树，帮助你深入查找托管分配发生的位置。</figcaption></figure>
+
+<h3>深度性能分析技巧</h3>
+
+<h4>自顶向下的方法</h4>
+<p>在分析应用时，先从较高的层面入手，尝试在不使用深度性能分析的情况下找出可以改进性能的区域。当你需要更多信息时，可以在 Profiler 中启用 Deep Profiling，以便在更细的粒度上深入分析。采用这种方法有助于将 Profiler Hierarchy 中显示的信息量保持在最低限度，让你专注于当前目标。</p>
+
+<h4>只在绝对必要时使用深度性能分析</h4>
+<p>一般来说，当你需要获取代码性能中更底层的细节时，最好使用深度性能分析。虽然在不实际将功能切换为启用的情况下，为构建版本保留 Deep Profiling 标志不会影响性能，但一旦启用，它就会让你的应用运行变慢。</p>
+<p>如果你只关心找出代码中托管分配的来源，请记住 Unity 2019.3 及更高版本允许你在不启用 Deep Profiling 的情况下做到这一点。使用 Profiler 中的 Call Stacks 开关和 Calls 下拉菜单来帮助定位托管分配。</p>
+
+<h4>自动化流程中的深度性能分析</h4>
+<p>要从命令行进行分析时开启 Deep Profiling，请在你的构建可执行文件中添加 -deepprofiling 参数。对于 Android / Mono 脚本后端的构建版本，请使用 adb 命令行参数，如下所示：</p>
+<pre><code>adb shell am start -n com.company.game/com.unity3d.player.UnityPlayerActivity -e 'unity' '-deepprofiling'</code></pre>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05-3.html"><span class="dir">← 上一节</span>Unity 性能分析与调试工具（3/5）</a>
+    <a href="ch-05-5.html"><span class="dir">下一节 →</span>Unity 性能分析与调试工具（5/5）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

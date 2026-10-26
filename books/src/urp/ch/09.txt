@@ -1,0 +1,63 @@
+96 of 140 | unity. com
+© 2024 Unity Technologies
+Camera Stacking
+A common requirement in games is the ability to combine geometry viewed 
+from different cameras in a single render. The image above shows a shelf in the 
+foreground acting as an inventory within the game. Collected items are added 
+to the shelf and can be selected at key points by the player. Notice that it has a 
+different field of view, as well as different lighting and post-processing.  
+This has been set up using the Camera Stacking feature in URP.
+An example using Camera Stacking
+
+97 of 140 | unity. com
+© 2024 Unity Technologies
+Let’s look at how to set this feature up.
+1.	
+Create a Camera by right-clicking the Hierarchy view and choosing  
+Create > Camera. Remove the audio listener component.
+2.	
+Use the Inspector > Camera Settings panel to set this Camera as Render 
+Type Overlay.
+3.	
+Create a new Layer for the Camera and the GameObjects it renders.
+4.	
+Update the Rendering > Culling Mask for the Camera using the Inspector.
+
+98 of 140 | unity. com
+© 2024 Unity Technologies
+5.	
+Move the Camera to a suitable place in the scene, then add and position 
+GameObjects by placing them in Layer Overlay.
+6.	
+Make sure the Main Camera does not render Overlay by updating its 
+Rendering > Culling Mask.
+7.	
+In the Stack panel, use the “+” button to add the Overlay Camera.
+Controlling a stack with code
+As with post-processing, you can control the stack from code, and add  
+or remove cameras dynamically during runtime. See this code example:
+using UnityEngine;
+using UnityEngine.Rendering.Universal;
+ 
+public class StackController : MonoBehaviour
+{
+	
+public Camera overlayCamera;
+ 
+	
+// Start is called before the first frame update
+	
+void Start()
+	
+{
+    	
+Camera camera = GetComponent<Camera>();
+    	
+var cameraData = camera.GetUniversalAdditionalCameraData();
+    	
+cameraData.cameraStack.Remove(overlayCamera);
+	
+}
+}
+Post-processing and Camera Stacking, both easily configured using URP,  
+are powerful tools for creating rich, atmospheric effects in your games.

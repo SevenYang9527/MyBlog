@@ -1,0 +1,136 @@
+{
+  "slug": "modular-so",
+  "title_en": "Create Modular Game Architecture in Unity with ScriptableObjects",
+  "title_zh": "用 ScriptableObjects 构建模块化游戏架构",
+  "subtitle_zh": "Unity 官方电子书：把数据与逻辑拆开，让架构长出可替换的模块",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "Introduction",
+      "title_zh": "引言",
+      "pages": "4-4",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "引言",
+          "chars": 1426
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "What are ScriptableObjects?",
+      "title_zh": "什么是 ScriptableObject",
+      "pages": "5-8",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "什么是 ScriptableObject",
+          "chars": 3973
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "ScriptableObjects versus MonoBehaviours",
+      "title_zh": "ScriptableObject 与 MonoBehaviour 的区别",
+      "pages": "9-15",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "ScriptableObject 与 MonoBehaviour 的区别",
+          "chars": 7711
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Data Containers",
+      "title_zh": "数据容器",
+      "pages": "16-32",
+      "parts": [
+        {
+          "id": "04-1",
+          "title_zh": "数据容器（1/2）",
+          "chars": 10202
+        },
+        {
+          "id": "04-2",
+          "title_zh": "数据容器（2/2）",
+          "chars": 9639
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Pattern: Extendable Enums",
+      "title_zh": "模式：可扩展的枚举",
+      "pages": "33-38",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "模式：可扩展的枚举",
+          "chars": 5557
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Pattern: Delegate Objects",
+      "title_zh": "模式：委托对象",
+      "pages": "39-44",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "模式：委托对象",
+          "chars": 7967
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Pattern: Observer",
+      "title_zh": "模式：观察者",
+      "pages": "45-57",
+      "parts": [
+        {
+          "id": "07-1",
+          "title_zh": "模式：观察者（1/2）",
+          "chars": 9000
+        },
+        {
+          "id": "07-2",
+          "title_zh": "模式：观察者（2/2）",
+          "chars": 7509
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Pattern: Command",
+      "title_zh": "模式：命令",
+      "pages": "58-62",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "模式：命令",
+          "chars": 4249
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "Pattern: Runtime Sets",
+      "title_zh": "模式：运行时集合",
+      "pages": "63-68",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "模式：运行时集合",
+          "chars": 5937
+        }
+      ]
+    }
+  ],
+  "book_pages": 76
+}

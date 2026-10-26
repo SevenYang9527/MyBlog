@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shader（1/2） · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">06 · Shader</div>
+    <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-06-2.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>着色器（Shaders）</h2>
+
+<p>本节面向这样的用户：希望把已有的自定义着色器（shader）改造成能在 URP 中工作，和/或希望不使用 Shader Graph、直接用代码编写自定义着色器。本节提供了把基础着色器与高级着色器从内置渲染管线（Built-in Render Pipeline）移植到 URP 所需的信息。文中包含的表格给出了可用的 HLSL 着色器函数、宏等的实用示例；每一处都提供了指向相应 include 文件的链接，而那些 include 文件中还包含许多其他有用的函数。</p>
+
+<p>对于已经具备着色器编写经验的读者，这些 include 文件可以让你清楚地了解 HLSL 中都有什么可用，从而写出紧凑而高效的着色器。在了解本节的内容之后，希望把你的着色器移植到 URP 不再显得那么令人生畏。</p>
+
+<p>另一种做法是使用 Shader Graph 来创建自定义着色器的各个版本。Shader Graph 的入门介绍位于「其他工具（Additional tools）」一节。</p>
+
+<h3>比较 URP 与内置渲染管线的着色器</h3>
+
+<p>URP 着色器使用 ShaderLab 结构，如下面的代码片段所示。因此，Property、SubShader、Tags 和 Pass 对于写着色器的人来说都不陌生。</p>
+
+<h4>SubShader 块的基本结构</h4>
+
+<p>在把 URP 着色器与内置渲染管线着色器作比较时，首先会注意到的是 SubShader 标签中使用了键值对 <code>"RenderPipeline" = "UniversalPipeline"</code>。</p>
+
+<pre><code>SubShader {
+   Tags {"RenderPipeline" = "UniversalPipeline" }
+   Pass {
+      HLSLPROGRAM
+      ...
+      ENDHLSL
+   }
+}</code></pre>
+
+<p>名为 RenderPipeline 的 SubShader 标签告诉 Unity 该 SubShader 要用于哪些渲染管线。值 <code>UniversalPipeline</code> 表示 Unity 应将该 SubShader 用于 URP。</p>
+
+<p>再看渲染 Pass 的代码，你会看到着色器代码被包含在 <code>HLSLPROGRAM</code> / <code>ENDHLSL</code> 宏之间。这表明原先的 CG（C for Graphics）着色器编程语言已被 HLSL（High Level Shading Language，高级着色语言）取代，尽管着色器语法和功能几乎完全相同。Unity 很久以前就已切换到 HLSL，所以这不应让人感到意外，但现在不再推荐使用 <code>CGPROGRAM</code> / <code>ENDCG</code> 宏。使用这些宏意味着要使用 <code>UnityCG.cginc</code>。以这种方式混用 SRP 与内置渲染管线的着色器库，可能引发若干问题。</p>
+
+<p>对于 URP，这些 Pass 内部的着色器代码是用 HLSL 编写的。尽管与内置渲染管线相比，ShaderLab 的大部分内容并未改变，但为内置渲染管线编写的着色器会被 URP 自动禁用。原因在于内部光照流程的变化。内置渲染管线会为到达物体的每一盏光源执行单独的着色器 Pass（多 Pass，multipass），而 URP 的前向渲染器（Forward Renderer）则在一个 Pass 内的光照循环中计算全部光照。这一变化带来了存储光照数据的不同数据结构，以及采用新约定的新的着色库。</p>
+
+<p>Unity 会使用 GPU 上受支持的第一个 SubShader 块。如果第一个 SubShader 块没有 <code>"RenderPipeline" = "UniversalPipeline"</code> 标签，它就不会在 URP 中运行。此时 Unity 会尝试运行下一个 SubShader（如果有的话）。如果所有 SubShader 都不受支持，Unity 就会渲染那个众所周知的品红色错误着色器。</p>
+
+<p>一个 SubShader 可以包含多个 Pass 块，但其中每一个都应标记特定的 LightMode。由于 URP 使用单 Pass 的前向渲染器，在前向渲染中只会使用 GPU 所支持的第一个 <code>UniversalForward</code> Pass 来渲染物体。</p>
+
+<p>如前文所述，使用 Window &gt; Rendering &gt; Render Pipeline Converter 可以为所有材质自动把内置渲染管线着色器转换为 URP 着色器。但自定义着色器呢？</p>
+
+<h3>自定义着色器</h3>
+
+<p>自定义着色器在升级到 URP 时需要做一些工作。下面列出了在升级过程中需要对旧版着色器执行的各项操作。</p>
+
+<p>我们制作了这个分步视频教程，讲解如何把内置管线的自定义无光照（unlit）着色器转换为 URP 着色器，并附带一个可供参照的 Unity 项目。</p>
+
+<h3>Include 文件</h3>
+
+<p>把 <code>.cginc</code> include 文件替换为以下 HLSL 对应文件：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>内置渲染管线（Built-in Render Pipeline）</th>
+      <th>HLSL</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>UnityCG.cginc</td>
+      <td>Github link</td>
+    </tr>
+    <tr>
+      <td>AutoLight.cginc</td>
+      <td>Github link、Github link</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4>其他有用的 HLSL include 文件</h4>
+
+<p>与空间变换相关的函数位于这个 include 文件中，当你使用 <code>Core.hlsl</code> 时，它会默认被添加。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>HLSL 空间变换函数</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>float4x4 GetObjectToWorldMatrix()</code></td>
+      <td>返回从物体空间（Object Space）转换到世界空间（World Space）的 UNITY_MATRIX_M 矩阵。<br><br>它等价于内置渲染管线的 unity_ObjectToWorld。</td>
+    </tr>
+    <tr>
+      <td><code>float4x4 GetWorldToObjectMatrix()</code></td>
+      <td>返回从世界空间转换到物体空间的 UNITY_MATRIX_I_M 矩阵。<br><br>该矩阵是 UNITY_MATRIX_M 的逆矩阵。它等价于内置渲染管线的 unity_WorldToObject。</td>
+    </tr>
+    <tr>
+      <td><code>float4x4 GetWorldToHClipMatrix()</code></td>
+      <td>返回从世界空间转换到裁剪空间（Clip Space）的 UNITY_MATRIX_VP 矩阵。</td>
+    </tr>
+    <tr>
+      <td><code>float4x4 GetViewToHClipMatrix()</code></td>
+      <td>返回从观察空间（View Space）转换到裁剪空间的 UNITY_MATRIX_P 矩阵。</td>
+    </tr>
+    <tr>
+      <td><code>float3 TransformObjectToWorld(float3 positionOS)</code></td>
+      <td>给定物体空间中的一个位置，返回该位置在世界空间中的位置。</td>
+    </tr>
+    <tr>
+      <td><code>float3 TransformObjectToWorldDir(float3 dirOS, bool doNormalize = true)</code></td>
+      <td>给定物体空间中的一个方向，返回该方向在世界空间中的方向。</td>
+    </tr>
+    <tr>
+      <td><code>float3 TransformWorldToObject(float3 positionWS)</code></td>
+      <td>给定世界空间中的一个位置，返回该位置在物体空间中的位置。</td>
+    </tr>
+    <tr>
+      <td><code>float3 TransformWorldToView(float3 positionWS)</code></td>
+      <td>给定世界空间中的一个位置，返回该位置在观察空间中的位置。</td>
+    </tr>
+    <tr>
+      <td><code>real3x3 CreateTangentToWorld(real3 normal, real3 tangent, real flipSign)</code></td>
+      <td>给定法线与切线，创建一个从切线空间（Tangent Space）到世界空间的矩阵。</td>
+    </tr>
+    <tr>
+      <td><code>real3 TransformTangentToWorld(real3 normalTS, real3x3 tangentToWorld, bool doNormalize = false)</code></td>
+      <td>给定切线空间中的法线，返回该法线在世界空间中的法线。</td>
+    </tr>
+    <tr>
+      <td><code>real3 TransformWorldToTangent(real3 normalWS, real3x3 tangentToWorld, bool doNormalize = true)</code></td>
+      <td>给定世界空间中的法线，返回该法线在切线空间中的法线。</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>变量名末尾表示空间类型的记法：</p>
+
+<ul>
+  <li>WS：世界空间（World Space）</li>
+  <li>TS：切线空间（Tangent Space）</li>
+  <li>VS：观察空间（View Space）</li>
+  <li>OS：物体空间（Object Space）</li>
+</ul>
+
+<p>其他着色器函数（包括雾效和 UV）可以在这一 include 文件中找到，当你使用 <code>Core.hlsl</code> 时，它会默认被添加。下表列出了几个示例。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>URP 辅助函数</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>VertexPositionInputs GetVertexPositionInputs(float3 positionOS)</code></td>
+      <td>给定物体空间中的一个位置，返回一个包含世界空间、观察空间和裁剪空间中位置的结构体。<br><br>该函数只应在顶点着色器中使用。</td>
+    </tr>
+    <tr>
+      <td><code>VertexNormalInputs GetVertexNormalInputs(float3 normalOS)</code></td>
+      <td>给定物体空间中的一个法线，返回一个包含世界空间法线、切线和副切线（bitangent）向量的结构体。<br><br>这些向量可用于通过 CreateTangentToWorld 构造从切线空间到世界空间的矩阵。返回 input.tangentWS、input.bitangentWS、input.normalWS。</td>
+    </tr>
+    <tr>
+      <td><code>float3 GetCameraPositionWS()</code></td>
+      <td>返回摄像机在世界空间中的位置。<br><br>它类似于内置渲染管线的 _WorldSpaceCameraPos 变量。</td>
+    </tr>
+    <tr>
+      <td><code>float3 GetViewForwardDir()</code></td>
+      <td>返回当前视图在世界空间中的前向（中心）方向。</td>
+    </tr>
+    <tr>
+      <td><code>float3 GetWorldSpaceViewDir(float3 positionWS)</code></td>
+      <td>计算世界空间中的视线方向（指向观察者）。</td>
+    </tr>
+  </tbody>
+</table>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05.html"><span class="dir">← 上一节</span>贴花（Decals）</a>
+    <a href="ch-06-2.html"><span class="dir">下一节 →</span>Shader（2/2）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

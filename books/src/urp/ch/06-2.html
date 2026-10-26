@@ -1,0 +1,215 @@
+<p>着色器辅助函数（shader helper functions）是写着色器的基础。它们不仅能节省时间，而且本身就是常用计算的高度优化实现。这个 include 文件包含许多辅助函数，涉及以下方面：</p>
+
+<ul>
+  <li>平台相关的函数（Platforms-specific functions）</li>
+  <li>通用数学函数（Common math functions）</li>
+  <li>纹理工具（Texture utilities）</li>
+  <li>纹理格式采样（Texture format sampling）</li>
+  <li>深度编码/解码（Depth encoding/decoding）</li>
+  <li>空间变换（Space transformations）</li>
+  <li>地形/笔刷高度图编码/解码及其他杂项工具</li>
+</ul>
+
+<p>下表列出了其中一些。类型 <code>real</code> 是在文件中设定的；根据不同的标志，它可能是 <code>half</code>，也可能是 <code>float</code>。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>辅助函数（Helper function）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>real DegToRad(real deg)</code></td></tr>
+    <tr><td><code>real RadToDeg(real rad)</code></td></tr>
+    <tr><td><code>bool IsPower2(uint x)</code></td></tr>
+    <tr><td><code>real FastACosPos(real inX)</code></td></tr>
+    <tr><td><code>real FastASin(real x)</code></td></tr>
+    <tr><td><code>real FastATan(real x)</code></td></tr>
+    <tr><td><code>uint FastLog2(uint x)</code></td></tr>
+    <tr><td><code>real3 Orthonormalize(real3 tangent, real3 normal)</code></td></tr>
+    <tr><td><code>real Pow4(real x)</code></td></tr>
+    <tr><td><code>float4x4 Inverse(float4x4 m)</code></td></tr>
+    <tr><td><code>float ComputeTextureLOD(float2 uv, float bias = 0.0)</code></td></tr>
+    <tr><td><code>float Linear01Depth(float depth, float4 zBufferParam)</code></td></tr>
+  </tbody>
+</table>
+
+<h3>预处理器宏</h3>
+
+<p>预处理器宏（preprocessor macros）方便实用，而且经常被使用。在把内置渲染管线（Built-in Render Pipeline）的着色器移植到新的 URP 着色器时，你需要把内置渲染管线的宏替换为对应的 URP 宏。</p>
+
+<p>下表给出了几个示例。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>内置渲染管线（Built-in Render Pipeline）</th>
+      <th>URP</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>UNITY_PROJ_COORD(a)</code></td>
+      <td>替换为 <code>a.xy/a.w</code></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_INITIALIZE_OUTPUT(type, name)</code></td>
+      <td><code>ZERO_INITIALIZE(type, name)</code></td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>阴影贴图（Shadow mapping）*</strong></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_DECLARE_SHADOWMAP(tex)</code></td>
+      <td><code>TEXTURE2D_SHADOW_PARAM(textureName, samplerName)</code>**</td>
+    </tr>
+    <tr>
+      <td><code>UNITY_SAMPLE_SHADOW(tex, uv)</code></td>
+      <td><code>SAMPLE_TEXTURE2D_SHADOW(textureName, samplerName, coord3)</code></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_SAMPLE_SHADOW_PROJ(tex, uv)</code></td>
+      <td><code>SAMPLE_TEXTURE2D_SHADOW(textureName, samplerName, coord4.xyz/coord4.w)</code></td>
+    </tr>
+    <tr>
+      <td colspan="2"><strong>纹理/采样器声明（Texture/sampler declaration）***</strong></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_DECLARE_TEX2D(name)</code></td>
+      <td><code>TEXTURE2D(textureName);</code><br><code>SAMPLER(samplerName);</code></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_DECLARE_TEX2D_NOSAMPLER(name)</code></td>
+      <td><code>TEXTURE2D(textureName);</code></td>
+    </tr>
+    <tr>
+      <td><code>UNITY_SAMPLE_TEX2D_SAMPLER(name,samplername,uv)</code></td>
+      <td><code>SAMPLE_TEXTURE2D(textureName, samplerName, coord2)</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>表格注释：</p>
+
+<ul>
+  <li>* 阴影贴图相关的宏需要这个 shadow include 文件。</li>
+  <li>** <code>_PARAM</code> 是可用于声明带纹理与采样器参数的函数的一组宏。更多信息请参阅这份文档。</li>
+  <li>*** 关于内置渲染管线的纹理/采样器声明，请阅读这份文档。</li>
+</ul>
+
+<h3>LightMode 标签</h3>
+
+<p><code>LightMode</code> 标签定义了一个 Pass 在光照管线中的角色。在内置渲染管线中，大多数需要与光照交互的着色器都写成表面着色器（Surface Shader），所有必要的细节都已处理妥当。然而，内置渲染管线中的自定义着色器需要使用 <code>LightMode</code> 标签来指明该 Pass 在光照管线中如何被看待。</p>
+
+<p>下表给出了内置渲染管线所用的 <code>LightMode</code> 标签与 URP 所期望的标签之间的对应关系。若干旧的内置渲染管线标签在 URP 中不受支持：<code>PrepassBase</code>、<code>PrepassFinal</code>、<code>Vertex</code>、<code>VertexLMRGBM</code> 和 <code>VertexLM</code>。同时，URP 中还有一些标签在内置渲染管线中没有对应项。为 URP 编写着色器时，最好先看看官方提供的着色器以及它们使用的 Pass。下面的代码示例展示了 Lit Shader 中的部分代码。完整着色器见此处。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>内置渲染管线（Built-in Render Pipeline，在此阅读更多）</th>
+      <th>说明</th>
+      <th>URP（在此阅读更多）</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>Always</code></td>
+      <td>始终渲染；不应用任何光照</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td><code>ForwardBase</code></td>
+      <td>用于前向渲染（Forward rendering）；应用环境光、主平行光、顶点/球谐（SH）光照以及光照贴图</td>
+      <td><code>UniversalForward</code></td>
+    </tr>
+    <tr>
+      <td><code>ForwardAdd</code></td>
+      <td>用于前向渲染；应用逐像素的叠加光照，每盏光源一个 Pass</td>
+      <td><code>UniversalForward</code></td>
+    </tr>
+    <tr>
+      <td><code>Deferred</code></td>
+      <td>用于延迟着色（Deferred Shading）；渲染 G-buffer</td>
+      <td><code>UniversalGBuffer</code></td>
+    </tr>
+    <tr>
+      <td><code>ShadowCaster</code></td>
+      <td>把物体深度渲染进阴影贴图或深度纹理</td>
+      <td><code>ShadowCaster</code></td>
+    </tr>
+    <tr>
+      <td><code>MotionVectors</code></td>
+      <td>用于计算逐物体的运动矢量（motion vector）</td>
+      <td><code>MotionVectors</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>URP 在前向渲染路径（Forward Rendering Path）中使用此标签值；该 Pass 渲染物体几何并计算所有光照贡献。</td>
+      <td><code>UniversalForwardOnly</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>URP 在 2D Renderer 中使用此标签值；该 Pass 渲染物体并计算 2D 光照贡献。</td>
+      <td><code>Universal2D</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>该 Pass 只从摄像机视角把深度信息渲染进深度纹理。</td>
+      <td><code>DepthOnly</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>该 Pass 仅在 Unity 编辑器中烘焙光照贴图时执行；构建 Player 时 Unity 会把该 Pass 从着色器中剥离。</td>
+      <td><code>Meta</code></td>
+    </tr>
+    <tr>
+      <td>—</td>
+      <td>使用此标签值可在渲染物体时额外绘制一个 Pass；它在前向与延迟渲染路径中均有效。<br><br>当某个 Pass 没有 <code>LightMode</code> 标签时，URP 会把此标签值用作默认值。</td>
+      <td><code>SRPDefaultUnlit</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><code>UniversalForward</code> 和 <code>ShadowCaster</code> 这两个 Pass 涉及许多 pragma 指令和两个 include 文件。检查 include 文件中的代码，将有助于你创建适合自己需求的自定义版本。</p>
+
+<pre><code>//  前向 Pass。在单个 Pass 中为所有光照着色。GI + 自发光 + 雾效
+Pass
+{
+   // Lightmode 与 UniversalRenderPipeline.cs 中设置的 ShaderPassName 匹配。
+   // SRPDefaultUnlit 以及没有 LightMode 标签的 Pass 也会由通用渲染管线渲染
+   Name "ForwardLit"
+   Tags{"LightMode" = "UniversalForward"}
+   Blend[_SrcBlend][_DstBlend], [_SrcBlendAlpha][_DstBlendAlpha]
+   ZWrite[_ZWrite]
+   Cull[_Cull]
+   AlphaToMask[_AlphaToMask]
+   HLSLPROGRAM
+   #pragma exclude_renderers gles gles3 glcore
+   #pragma target 4.5
+   …
+   #pragma vertex LitPassVertex
+   #pragma fragment LitPassFragment
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-Input.hlsl"
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-ForwardPass.hlsl"
+   ENDHLSL
+}
+
+Pass
+{
+   Name "ShadowCaster"
+   Tags{"LightMode" = "ShadowCaster"}
+   ZWrite On
+   ZTest LEqual
+   ColorMask 0
+   Cull[_Cull]
+   HLSLPROGRAM
+   #pragma exclude_renderers gles gles3 glcore
+    …
+   #pragma vertex ShadowPassVertex
+   #pragma fragment ShadowPassFragment
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/Lit-Input.hlsl"
+   #include "Packages/com.unity.render-pipelines.universal/Shaders/ShadowCasterPass.hlsl"
+   ENDHLSL
+}</code></pre>
+
+<p>注意：对于计划为 URP 编写着色器的用户来说，Cyanilux 的这个教程是一个极好的资源。</p>

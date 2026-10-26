@@ -1,0 +1,51 @@
+70 of 80 | unity. com
+© 2023 Unity Technologies
+P H Y S I C S
+Unity’s built-in Physics (Nvidia PhysX) can be expensive on mobile. The following 
+tips may help you squeeze out more frames per second.
+Optimize your settings
+In the PlayerSettings, check Prebake Collision Meshes whenever possible.
+Make sure that you edit your Physics settings (Project Settings > Physics)  
+as well. Simplify your Layer Collision Matrix wherever possible. 
+Disable Auto Sync Transforms and enable Reuse Collision Callbacks.
+Enable Prebake Collision Meshes.
+
+71 of 80 | unity. com
+© 2023 Unity Technologies
+Modify the physics project settings to squeeze out more performance.
+Keep an eye on the Physics module of the Profiler for performance issues.
+
+72 of 80 | unity. com
+© 2023 Unity Technologies
+Simplify colliders 
+Mesh colliders can be expensive. Substitute more complex mesh colliders with 
+simpler primitive or mesh colliders to approximate the original shape.
+Move a Rigidbody using physics methods 
+Use class methods like MovePosition or AddForce to move your Rigidbody 
+objects. Translating their Transform components directly can lead to physics 
+world recalculations, which can be expensive in complex scenes. Move physics 
+bodies in FixedUpdate rather than Update.
+Fix the Fixed Timestep 
+The default Fixed Timestep in the Project Settings is 0.02 (50 Hz). Change this 
+to match your target frame rate (for example 0. 03 for 30 fps). 
+Otherwise, if your frame rate drops at runtime, that means Unity would call 
+FixedUpdate multiple times per frame, potentially creating a CPU performance 
+issue with physics-heavy content.  
+Use primitives or simplified meshes for colliders.
+
+73 of 80 | unity. com
+© 2023 Unity Technologies
+The Maximum Allowed Timestep limits how much time physics calculations and 
+FixedUpdate events can use in the event the frame rate drops. Lowering this 
+value means that physics and animation can slow down, while also reducing their 
+impact on the frame rate during a performance hitch.
+Visualize with the Physics Debugger
+Use the Physics Debug window (Window > Analysis > Physics Debugger) 
+to help troubleshoot any problem colliders or discrepancies. This shows a 
+color-coded indicator of what GameObjects should be able to collide with one 
+another.
+For more information, see Physics Debug Visualization in the Unity 
+documentation.
+Modify the Fixed Timestep to match your target frame rate, and lower the Maximum Allowed Timestep to reduce 
+performance glitches.
+The Physics Debugger helps you visualize how your physics objects can interact with each other.

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>性能分析 · Unity 移动游戏性能优化指南</title>
+<meta name="description" content="Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 移动游戏性能优化指南</div>
+    <div class="book-en">Unity: Optimize Your Mobile Game Performance</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析</a></li>
+      <li><a href="ch-03.html">内存</a></li>
+      <li><a href="ch-04.html">自适应性能</a></li>
+      <li><a href="ch-05.html">代码与架构</a></li>
+      <li><a href="ch-06.html">项目配置</a></li>
+      <li><a href="ch-07.html">资源</a></li>
+      <li><a href="ch-08-1.html">图形与 GPU 优化（1/2）</a></li>
+      <li><a href="ch-08-2.html">图形与 GPU 优化（2/2）</a></li>
+      <li><a href="ch-09.html">用户界面</a></li>
+      <li><a href="ch-10.html">音频</a></li>
+      <li><a href="ch-11.html">动画</a></li>
+      <li><a href="ch-12.html">物理</a></li>
+      <li><a href="ch-13.html">工作流与协作</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 80 页 · 共 13 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">02 · 性能分析</div>
+    <div class="pager"><a href="ch-01.html">← 上一节</a><a href="ch-03.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>性能分析（Profiling）</h2>
+
+<p>尽早在目标设备上、并且频繁地进行性能分析</p>
+
+<p>性能分析（profiling）是指在运行时测量游戏性能各个方面表现的过程。借助性能分析工具，你可以测量游戏在其目标平台上的运行情况，并利用这些信息追查性能问题的根源。在做出改动的同时观察性能分析工具，你就能判断这些改动是否真的解决了性能问题。</p>
+
+<p>Unity 性能分析器（Profiler）能够提供关于应用程序的性能信息，但如果你不使用它，它也帮不上忙。</p>
+
+<p>请在项目早期以及整个开发周期中持续进行性能分析，而不是等到临近发布时才做。一旦出现卡顿或尖峰，就立即展开调查，以便在项目的重大改动前后对性能进行基准测试。随着你为项目逐步建立起一套「性能特征」，你就能更容易地发现新问题。</p>
+
+<p>在编辑器中进行性能分析可以让你了解游戏中各个系统的相对性能，而在每台设备上进行性能分析则能让你获得更准确的洞察。只要有可能，就应在目标设备上对开发构建（Development Build）进行性能分析。请记住，要针对你计划支持的最高端和最低端设备分别进行性能分析与优化。</p>
+
+<p>除了 Unity Profiler，你还可以利用 Memory Profiler 和 Profile Analyzer，以及以下来自 iOS 和 Android 的原生工具，在各自的硬件上做进一步的性能测试：</p>
+
+<ul>
+<li>在 iOS 上，使用 Xcode 和 Instruments。</li>
+<li>在 Android / Arm 上使用：
+<ul>
+<li>Android Studio：最新版的 Android Studio 包含新的 Android Profiler，它取代了此前的 Android Monitor 工具。用它来收集 Android 设备上硬件资源的实时数据。</li>
+<li>Arm Mobile Studio：这套工具集可以帮助你非常细致地对游戏进行性能分析和调试，主要面向运行 Arm 硬件的设备。</li>
+<li>Snapdragon Profiler：仅适用于搭载骁龙（Snapdragon）芯片组的设备。分析 CPU、GPU、DSP、内存、功耗、温度和网络数据，帮助发现并修复性能瓶颈。</li>
+</ul>
+</li>
+</ul>
+
+<p>某些硬件还可以利用 Intel VTune，它可以帮助你在 Intel 平台（仅限 Intel 处理器）上发现并修复性能瓶颈。</p>
+
+<p>更多信息请参阅 Profiling Applications Made with Unity。</p>
+
+<h3>聚焦于正确的优化方向</h3>
+
+<p>不要猜测或臆断是什么拖慢了游戏的性能。使用 Unity Profiler 和平台专用工具来定位卡顿的确切来源。性能分析工具最终会帮助你理解 Unity 项目底层正在发生什么，但不要等到明显的性能问题开始显现之后，才去翻找你的侦探工具箱。</p>
+
+<p>当然，这里描述的每一项优化并不都适用于你的应用。在某个项目中行之有效的做法，未必能照搬到你的项目。要找出真正的瓶颈，把精力集中在对你的工作真正有益的地方。</p>
+
+<p>要了解更多关于如何规划性能分析工作流的内容，请参阅《Ultimate guide to profiling Unity games》。</p>
+
+<h3>了解 Unity Profiler 的工作原理</h3>
+
+<p>内置的 Unity Profiler 可以帮助你找出运行时任何卡顿或冻结的原因，并更好地理解在某一帧或某个时间点究竟发生了什么。</p>
+
+<p>Profiler 基于插桩（instrumentation）机制；它会分析那些被自动标记的（例如 MonoBehaviour 的 Start 或 Update 方法，或特定的 API 调用）、或者借助 ProfilerMarker API 显式包裹的游戏代码与引擎代码的耗时。</p>
+
+<p>开始时，先把 CPU 和 Memory 轨道设为默认启用。你可以根据游戏的需要（例如物理密集型或音乐类玩法）监控 Renderer、Audio 和 Physics 等补充性的 Profiler 模块。</p>
+
+<figure><figcaption>图 1：性能分析电子书中的一张图表，展示了可用来高效分析 Unity 项目的工作流。</figcaption></figure>
+
+<p>要在所选平台中从真实的移动设备采集性能分析数据，请在点击 Build and Run 之前勾选 Development Build 和 Autoconnect Profiler 复选框。另外，如果你希望应用与性能分析分开启动，可以取消勾选 Autoconnect Profiler，然后在应用运行之后再手动连接。</p>
+
+<figure><figcaption>图 2：Unity Profiler 窗口，用于测试应用程序的性能与资源分配情况。</figcaption></figure>
+
+<p>选择要分析的平台目标。Record 按钮会记录应用程序若干秒的回放数据（默认为 300 帧）。如果你需要更长的采集，请转到 Unity &gt; Preferences &gt; Analysis &gt; Profiler &gt; Frame Count，将其增大到最多 2000。这意味着 Unity 编辑器需要做更多的 CPU 工作并占用更多内存，但根据你的具体场景，这可能很有用。</p>
+
+<figure><figcaption>图 3：Build Settings 窗口，提示在性能分析之前先调整构建设置。</figcaption></figure>
+
+<p>使用 Deep Profiling 设置时，Unity 可以分析脚本代码中每次函数调用的开始和结束，准确告诉你应用程序的哪一部分正在执行、并可能造成延迟。不过，深度分析会给每一次方法调用增加开销，可能会使性能分析结果失真。</p>
+
+<p>在窗口中点击以分析某一帧。接下来，使用 Timeline 或 Hierarchy 视图进行以下操作：</p>
+
+<ul>
+<li>Timeline 显示某一帧耗时的可视化分解。它让你能够看到各项活动之间的相互关系，以及它们在不同线程上的分布。用这个选项来判断你受限于 CPU 还是 GPU。</li>
+<li>Hierarchy 显示 ProfileMarkers 的层级结构，并按组聚合。它让你可以按以毫秒计的耗时（Time ms 和 Self ms）对样本排序。你还可以统计某个函数的 Calls 调用次数，以及该帧上的托管堆内存（GC Alloc）。</li>
+</ul>
+
+<figure><figcaption>图 4：Timeline 视图，用于判断你受限于 CPU 还是 GPU。</figcaption></figure>
+
+<figure><figcaption>图 5：Hierarchy 视图，可按耗时对 ProfileMarkers 进行排序。</figcaption></figure>
+
+<p>你可以在这里找到 Unity Profiler 的完整概览。如果你是性能分析的新手，也可以观看 Introduction to Unity Profiling。</p>
+
+<p>在优化项目中的任何内容之前，先保存 Profiler 的 .data 文件。实施你的改动，然后比较修改前后的 .data 文件。依靠这个循环来提升性能：分析、优化、比较。然后反复执行。</p>
+
+<h3>使用 Profile Analyzer</h3>
+
+<p>Profile Analyzer 让你可以聚合多帧的 Profiler 数据，然后定位感兴趣的帧。想知道对项目做出改动后 Profiler 会发生什么变化吗？Compare 视图允许你加载并对比两组数据集，这样你就可以测试改动并改善其结果。Profile Analyzer 可通过 Unity 的 Package Manager 获取。</p>
+
+<h3>按每帧的具体时间预算来工作</h3>
+
+<p>每一帧都会有一个基于目标每秒帧数（fps）的时间预算。要让应用以 30 fps 运行，其帧预算不能超过每帧 33.33 ms（1000 ms / 30 fps）。同样，60 fps 的目标则留下每帧 16.66 ms。</p>
+
+<figure><figcaption>图 6：Profile Analyzer 可对帧和标记数据进行更深入的分析，是对现有 Profiler 的补充。</figcaption></figure>
+
+<h3>考虑设备温度</h3>
+
+<p>不过，对于移动设备，我们不建议持续使用这个最大时间，因为设备可能会过热，操作系统会对 CPU 和 GPU 进行热降频（thermal throttle）。我们建议只使用约 65% 的可用时间，以便在帧与帧之间留出冷却的余量。典型的帧预算在 30 fps 下约为每帧 22 ms，在 60 fps 下约为每帧 11 ms。设备可以在短时间内超出这一预算（例如过场动画或加载序列），但不能长时间持续。</p>
+
+<p>大多数移动设备不像台式机那样具备主动散热。物理热量水平会直接影响性能。如果设备运行过热，Profiler 可能会感知并报告出较差的性能，即使这并不值得长期担忧。为了对抗性能分析导致的过热，请以短时突发的方式进行性能分析。这能让设备冷却下来，并模拟真实世界的条件。我们的一般建议是让设备冷却 10-15 分钟后再进行分析。</p>
+
+<h3>判断你受限于 GPU 还是 CPU</h3>
+
+<p>中央处理器（CPU）负责决定必须绘制什么，而图形处理器（GPU）负责将其绘制出来。当渲染性能问题是由于 CPU 渲染一帧耗时过长造成时，游戏就受限于 CPU（CPU bound）。当渲染性能问题是由于 GPU 渲染一帧耗时过长造成时，它就受限于 GPU（GPU bound）。</p>
+
+<p>Profiler 可以告诉你，是你的 CPU 耗时超过了分配的帧预算，还是罪魁祸首是 GPU。它通过发出以 Gfx 为前缀的标记来做到这一点：</p>
+
+<ul>
+<li>如果你看到 Gfx.WaitForCommands 标记，说明渲染线程已经就绪，但你可能正在等待主线程上的瓶颈。</li>
+<li>如果你频繁遇到 Gfx.WaitForPresent，这意味着主线程已经就绪，但正在等待 GPU 呈现该帧。</li>
+</ul>
+
+<h3>在最低配置设备上测试</h3>
+
+<p>市面上的 iOS 和 Android 设备种类繁多。我们要再次强调：只要有可能，就在你希望应用支持的最低和最高设备规格上测试你的项目。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-01.html"><span class="dir">← 上一节</span>引言</a>
+    <a href="ch-03.html"><span class="dir">下一节 →</span>内存</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

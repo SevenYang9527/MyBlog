@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>渲染的演进：从内置管线到 SRP · URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</title>
+<meta name="description" content="Unity 官方电子书：从内置管线迁移到 URP，以及光照、Shader、渲染回调的实操">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">URP 进阶指南：面向资深 Unity 开发者的通用渲染管线</div>
+    <div class="book-en">Introduction to the Universal Render Pipeline for advanced Unity creators</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">渲染的演进：从内置管线到 SRP</a></li>
+      <li><a href="ch-03-1.html">迁移流程（1/2）</a></li>
+      <li><a href="ch-03-2.html">迁移流程（2/2）</a></li>
+      <li><a href="ch-04-1.html">URP 中的光照（1/4）</a></li>
+      <li><a href="ch-04-2.html">URP 中的光照（2/4）</a></li>
+      <li><a href="ch-04-3.html">URP 中的光照（3/4）</a></li>
+      <li><a href="ch-04-4.html">URP 中的光照（4/4）</a></li>
+      <li><a href="ch-05.html">贴花（Decals）</a></li>
+      <li><a href="ch-06-1.html">Shader（1/2）</a></li>
+      <li><a href="ch-06-2.html">Shader（2/2）</a></li>
+      <li><a href="ch-07-1.html">管线回调（1/2）</a></li>
+      <li><a href="ch-07-2.html">管线回调（2/2）</a></li>
+      <li><a href="ch-08.html">后处理</a></li>
+      <li><a href="ch-09.html">相机堆叠</a></li>
+      <li><a href="ch-10.html">SubmitRenderRequest API</a></li>
+      <li><a href="ch-11-1.html">与 URP 配套的工具（1/2）</a></li>
+      <li><a href="ch-11-2.html">与 URP 配套的工具（2/2）</a></li>
+      <li><a href="ch-12-1.html">性能（1/2）</a></li>
+      <li><a href="ch-12-2.html">性能（2/2）</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 140 页 · 共 12 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">02 · 渲染的演进：从内置管线到 SRP</div>
+    <div class="pager"><a href="ch-01.html">← 上一节</a><a href="ch-03-1.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>渲染的演进：从内置渲染管线到 SRP</h2>
+
+<p>Unity 最大的优势之一是其平台覆盖范围。所有游戏工作室的共同理想都是：只创建一次，然后高效地将游戏部署到他们期望的各类平台上，从高端 PC 到低端移动设备。</p>
+
+<p>内置渲染管线（Built-in Render Pipeline）的开发目标是成为适用于 Unity 所支持的所有平台的开箱即用解决方案。它支持多种图形特性的混合使用，并且在前向（Forward）和延迟（Deferred）管线下使用起来都很方便。</p>
+
+<p>然而，随着 Unity 持续增加对更多平台的支持，我们发现内置渲染管线存在以下不足：</p>
+
+<ul>
+  <li>大部分代码以 C++ 编写，开发者无法修改，因此它是一个黑盒系统。</li>
+  <li>渲染流程和渲染通道是预先固定好的结构。</li>
+  <li>渲染算法是硬编码的。</li>
+  <li>不受约束的自定义使得在所有平台上都获得良好性能变得困难。</li>
+  <li>它在渲染代码中暴露回调，这些回调会在管线中触发同步点。这些回调阻碍了多线程渲染优化，同时使得可以通过调用 C# 在帧的任意时刻动态注入状态变更。</li>
+  <li>缓存数据以管理用户注入的持久状态很困难。</li>
+</ul>
+
+<h3>解决方案：可编程渲染管线（Scriptable Render Pipeline）</h3>
+
+<p>可编程渲染管线（Scriptable Render Pipeline，SRP）的开发目标是通过提供以下能力来支持高效的多平台工作流：</p>
+
+<ul>
+  <li>面向从高端到低端的最广泛硬件平台，提供智能且可靠的伸缩能力。</li>
+  <li>使用 C# 而非 C++ 来自定义渲染流程的能力。使用 C# 意味着不必为每一次修改都重新编译新的可执行文件。</li>
+  <li>支持架构演进的灵活性。</li>
+  <li>在众多平台上创建出众且高性能图形的灵活性。</li>
+</ul>
+
+<p>下图说明了 SRP 的工作原理。使用 C# 来控制和自定义渲染通道与渲染控制，以及使用可借助 Shader Graph 等对美术人员友好的工具创建的 HLSL Shader。Shader 让你能够访问更底层的 API 和引擎层抽象。</p>
+
+<figure><figcaption>图 1：可编程渲染管线的新图形可编程模型</figcaption></figure>
+
+<p>高级用户可以完全从零创建新的 SRP，或修改 HDRP 或 URP。该图形栈是开源的，可在 GitHub 上获取使用。</p>
+
+<h3>为什么选择 URP</h3>
+
+<ul>
+  <li>面向广泛的用户群体：URP 可由美术人员和技术美术人员配置，为原型制作以及为完整游戏生产细化和改进渲染技术提供了更大的灵活性。</li>
+  <li>可扩展且可自定义：URP 允许用户修改现有能力，并为管线扩展新能力，这使其成为高级用户的可靠选择，包括 Asset Store 与第三方包创作者、经验丰富的工作室和进阶团队。</li>
+</ul>
+
+<p>虽然底层渲染 API 出于性能考虑以 C++ 编写，但 URP 开发者可以编写简单的 C# 脚本，在渲染管线执行期间被调用，从而在不牺牲性能的前提下实现高层级的自定义。</p>
+
+<ul>
+  <li>多种渲染选项：URP 提供 Universal Renderer，支持前向（Forward）、前向+（Forward+）和延迟（Deferred）渲染路径，另外还提供 2D Renderer。</li>
+</ul>
+
+<p>这些渲染器可以通过附加特性和 Scriptable Render Pass 进行扩展。Render Objects 特性可用于在渲染管线的不同事件中渲染来自给定 Layer Mask 的对象。它还允许你在渲染这些对象时覆盖材质和其他渲染状态，从而无需编写代码即可自定义渲染。URP 可以通过自定义渲染器进行扩展，以满足特定需求。</p>
+
+<ul>
+  <li>
+    <p>更好的性能：在大多数情况下，对于相当的质量（Quality）设置，URP 提供的性能与内置渲染管线相当，甚至更好。具体而言：</p>
+    <ul>
+      <li>URP 更高效地计算实时光照。在前向渲染中，它在单个通道中计算所有光照。前向+ 通过按空间而非按对象剔除光源，对标准前向渲染作了改进。这提高了渲染一帧时可以使用的光源总数。在延迟渲染中，它支持 Native RenderPass API，允许将 G-buffer 和光照通道合并为单个渲染通道。</li>
+      <li>绘制网格时在 CPU 和 GPU 上都有改进。这归功于 SRP Batcher，它确保了更少的绘制调用，并改进了深度处理方式。</li>
+      <li>URP 在移动设备上更高效地利用 tile memory，从而降低功耗、延长电池续航，也因此可以支持更长的游玩时长。</li>
+      <li>URP 自带集成的后处理（post-processing）堆栈，相比内置渲染管线能提供更好的性能。使用 Volume 框架，你无需编写任何代码即可创建依赖于 Camera 位置的后处理效果。</li>
+    </ul>
+  </li>
+  <li>兼容最新工具：URP 支持最新的对美术人员友好的工具，例如 Shader Graph、VFX Graph 和 Rendering Debugger。</li>
+</ul>
+
+<p>目前大多数 Unity 项目都构建在 URP 或 HDRP 之上，不过内置渲染管线仍将是 Unity 2022 LTS 和 Unity 6 中可用的选项。点击此链接可查看内置渲染管线与 URP 能力的全面对比。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-01.html"><span class="dir">← 上一节</span>引言</a>
+    <a href="ch-03-1.html"><span class="dir">下一节 →</span>迁移流程（1/2）</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

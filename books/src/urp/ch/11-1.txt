@@ -1,0 +1,171 @@
+102 of 140 | unity. com
+© 2024 Unity Technologies
+Additional tools 
+compatible with URP
+Another benefit of using URP is its compatibility with Unity’s latest authoring 
+tools that bring complex creation tasks into the reach of technical artists.  
+This chapter unpacks how to create shaders using Shader Graph, and how  
+to create particle effects using the Visual Effects (VFX) Graph.
+Shader Graph
+Shader Graph brings custom shaders to an artist’s workflow. The Shader Graph 
+tool is included when you start a project using the URP template or import the 
+URP package.
+Covering Shader Graph warrants a separate guide, but let's go over some basic 
+yet crucial steps by creating the Light Halo shader from the Lighting chapter.
+1.	
+Right-click in the Project window, find a suitable folder, and choose Create 
+> Shader Graph > URP > Unlit Shader Graph. For this example, choose 
+Unlit. Name the new asset FresnelAlpha.
+
+103 of 140 | unity. com
+© 2024 Unity Technologies
+2.	
+Double-click the new Shader Graph Asset to launch the Shader Graph 
+editor. 
+ 
+If you’re familiar with shaders, then you’ll recognize the Vertex and Fragment 
+nodes. By default, this shader will ensure any model with a material using 
+it that it is correctly placed in the Camera view using the Vertex node, and 
+that each pixel is set to a grey color using the Fragment node.
+3.	
+This shader is going to set the alpha transparency of the object. It therefore 
+needs to apply to the Transparent queue. Change the Graph Inspector 
+> Graph Settings > Surface Type to Transparent. You’ll see that the 
+Fragment node now has an Alpha input as well as Base Color.
+
+104 of 140 | unity. com
+© 2024 Unity Technologies
+4.	
+Add properties to the shader. For instance, add Color as a Color, and  
+Power and Strength as Float values.
+
+105 of 140 | unity. com
+© 2024 Unity Technologies
+5.	
+Set the default values using Graph Inspector > Node Settings > Default. 
+Set Color to white, Power to 4, and Strength to 1.
+6.	
+Shader Graph functions by joining nodes together. A node will have one  
+or more inputs and an output. To add a node, right-click and choose  
+Create Node in the Search panel at the top, then enter Fre. The results  
+will show a Fresnel Effect node.
+
+106 of 140 | unity. com
+© 2024 Unity Technologies
+7.	
+A node shows a preview of its effect. Notice that the Fresnel Effect is bright 
+toward the edge. The value is the difference between the View direction 
+and the Normal direction – and for a sphere, this is greatest at the edge. 
+ 
+The alpha value should be lowest at the edge. You can flip the result using 
+a One Minus node. To do this, click Create Node and enter One. Select the 
+One Minus node. Now drag from Out(1) on the Fresnel Effect node to In(1) 
+on the One Minus node. The 1 means that the value type is a single float.  
+If it was 3, then it would be a vector with three components.
+The nodes should be joined like this:
+8.	
+Let’s look at how to control the size of gradient and the overall 
+transparency. Use a Power node for sizing the gradient. Create a Power 
+node and connect One Minus Out(1) to Power A(1). Drag the Power property 
+to the graph and join it to Power B(1). The graph should now look like this:
+
+107 of 140 | unity. com
+© 2024 Unity Technologies
+9.	
+Control the overall transparency using a Multiply node. Create it and connect 
+Power Out(1) to Multiply A(1). Drag the Strength property to the graph and 
+join it to Multiply B(1). Then join the Multiply Out(1) to Fragment Alpha(1) and 
+drag the Color(4) property to the graph and join it to Fragment Base Color(3).  
+ 
+Notice here that the property Color comprises a four-component vector, 
+while Base Color is a three-component vector. Shader Graph will map  
+the first three components of Color to the Base Color vector.
+10.	 Save the asset and create a new material. Assign this shader to the new 
+material, which is located in Shader Graphs/FresnelAlpha.
+
+108 of 140 | unity. com
+© 2024 Unity Technologies
+11.	
+Now you can apply the material to an object, controlling its visibility at the 
+edges.
+ A shader is applied to a sphere-shaped Point light to provide a halo effect around it
+Fullscreen Shader Graph
+The Fullscreen Shader Graph is new to Unity URP 2022 LTS. It allows you to 
+create custom post-processing passes. Right-click in the Project pane and 
+select Create > Shader Graph > URP > Fullscreen Shader Graph.
+Creating a Fullscreen Shader Graph
+You can access a pixel’s color for the fragment shader using a URP Sample 
+Buffer node that itself uses the BlitSource option. The graph below shows a 
+simple tint example. The URP Sample Buffer also gives access to world normals 
+and motion vectors that are useful for edge detection and motion trails.
+A simple tinting example
+
+109 of 140 | unity. com
+© 2024 Unity Technologies
+To use this example, you need a way to Blit the result of the current camera 
+render texture using a material that uses this shader. 
+With the active Renderer Data asset selected, use the Inspector to add a 
+Renderer Feature. Select Full Screen Pass Renderer Feature. 
+Adding the Full Screen Pass Renderer Feature
+It just remains to update the settings for this Renderer Feature. Set the material 
+you created that uses the Fullscreen Shader Graph, then select the position in 
+the render pipeline.
+The Renderer Feature settings
+The image below shows the tint effect on the left. The Fullscreen Shader Graph 
+is a useful way to create custom post-processing effects.
+The tint effect
+
+110 of 140 | unity. com
+© 2024 Unity Technologies
+VFX Graph
+The Visual Effect (VFX) Graph enables you to create myriad particle effects  
+with an artist-friendly, node-based graph. Use a VFX Graph to add fire, smoke, 
+mist, sparks, magic orbs, and many other effects to your project.
+The target devices for any games containing effects created with VFX Graph 
+must be compute-capable because VFX Graph uses compute shaders running on 
+the GPU to ensure the best possible performance. Test your code and include a 
+non-compute fallback, and use VFX Graph sparingly for games targeting low-end 
+mobile devices.
+To get better acquainted with VFX Graph, let’s go through the steps for creating 
+a smoke effect:
+1.	
+VFX Graph can be downloaded as a package using Package Manager.
+2.	
+Once VFX Graph is installed, there will be a new option when you right-click 
+in the Project window > Assets folder. Choose Create > Visual Effects > 
+Visual Effect Graph, and name the new asset Smoke.
+Related links:
+	
+—
+This blog post goes through the Shader Graph process with an example 
+project and some advanced suggestions.
+	
+—
+Check out Shader Graph on the Unity website.
+
+111 of 140 | unity. com
+© 2024 Unity Technologies
+3.	 Create an empty 
+GameObject and select it 
+in the Hierarchy window. In 
+the Inspector, choose Add 
+Component > Effects > Visual 
+Effect.
+Alternatively, you can add the 
+Visual Effect Graph Asset to the 
+Hierarchy view in-Editor. This 
+will add the component with the 
+asset, allowing you to skip steps 
+3 and 4.
+4.	
+Select the Smoke VFX Graph as the Asset Template using the Component 
+Settings panel.
+5.	
+Now you can edit the VFX Graph. Double-click to launch the Visual Effect 
+Graph window. There you’ll find Spawn, Initialize, Update, and Output 
+Context nodes already prepopulated.
+You’ll use a Texture in the form of an Atlas that contains an animated smoke 
+sprite. A series of 64 images in an 8x8 grid will act as the source for an 
+individual particle. At any single frame, a single particle will display just one 
+image from the grid. It will cycle through the images at a predefined rate  
+as each frame is rendered. Here is the Smoke Sprite Atlas:

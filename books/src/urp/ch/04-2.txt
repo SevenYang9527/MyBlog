@@ -1,0 +1,238 @@
+38 of 140 | unity. com
+© 2024 Unity Technologies
+When using Forward+, a number of URP Asset Lighting settings are overridden:
+	
+—
+Main Light: The value of this property is Per Pixel, regardless of the value 
+you select.
+	
+—
+Additional Lights: The value of this property is Per Pixel, regardless of the 
+value you select.
+	
+—
+Additional Lights > Per Object Limit: Unity ignores this property.
+	
+—
+Reflection Probes > Probe Blending: Reflection Probe blending is always on.
+Light Inspector
+The Light Inspector is one of three places where you can set up lighting.
+Just as with the Built-in Render Pipeline, URP supports Directional, Spot, Point, 
+and Area lights, though Area lights only work in Baked Indirect Mode. See the 
+Light Mode section for more details.
+A side-by-side comparison of the Light Inspector panel in URP (left) and the Built-in Render Pipeline (right)
+The image above shows how light properties are presented in the two versions 
+of the Light Inspector. The URP version has five groupings of controls, based  
+on whether the light is Directional or Point, and an additional Shape grouping  
+for Spot and Area lights.
+This table lists the differences between the URP and Built-in Render Pipeline 
+Inspector
+URP Light Inspector 
+properties
+Description
+Built-in Render 
+Pipeline Light 
+Inspector properties
+Light Appearance
+Choose between Color  
+or Filter and Temperature. Color sets 
+the emitted light color. Filter and 
+Temperature use both a color (filter)  
+and a temperature to switch between 
+cool and warm lighting.
+NA
+
+39 of 140 | unity. com
+© 2024 Unity Technologies
+Lighting a new scene
+Creating a Lighting Settings Asset
+The first step to lighting a new scene for URP is to create a new Lighting 
+Settings Asset (see image above). Open Window > Rendering > Lighting, and 
+once you’re on the Scene tab, click New Lighting Settings, and give the new 
+asset a name. The settings that you apply in Lighting panels are now saved to it. 
+Switch between settings by switching the Lighting Settings Asset.
+Ambient or Environment lighting
+There is no change in the way that Ambient/Environment lighting is defined from 
+the Built-in Render Pipeline to URP. The main ambient light is calculated from 
+the panel accessible via Window > Rendering > Lighting > Environment.
+Bias
+Bias controls shadow acne. The default 
+is to use the URP Asset. Alternatively, 
+you can set custom values using this 
+Inspector.
+Bias/Normal Bias
+Light Cookie
+If a texture is set to use a light cookie 
+and the light type is Directional, then a 
+new panel will allow you to control the 
+x and y size of the cookie, as well as its 
+offset. A cookie for a Point light must 
+be a cubemap. URP supports colored 
+cookies, whereas the Built-in Render 
+Pipeline is greyscale only.
+Cookie
+Shape: Spot
+You can now control both the inner and 
+outer cone angles for Spot lights.
+Spot Angle, Range
+Shape: Area
+This is used to control the shape of an 
+Area light.
+Shape, Width, Height, 
+Radius
+NA
+This is easily reproduced using a 
+billboard or a Fresnel shader controlling 
+the alpha value of a sphere that sits at 
+the center of the light. See the section 
+on Halo light for more information.
+Draw Halo
+NA
+Check out the Lens Flare section to see 
+how to implement a Lens Flare in URP.
+Flare
+
+40 of 140 | unity. com
+© 2024 Unity Technologies
+The available settings for lighting in the Environment panel
+You can set Environment Lighting to use the scene’s Skybox, with an option to 
+adjust the Intensity, Gradient, or Color.
+Environment Lighting options
+
+41 of 140 | unity. com
+© 2024 Unity Technologies
+Shadows
+The biggest change from working with the Built-in Render Pipeline to URP  
+lies in how you set up shadows.
+Shadow settings are no longer available via Project Settings > Quality.  
+As discussed earlier, you need a Renderer Data object and a Render Pipeline 
+Asset when using URP. The section on setting up a project for URP covers how 
+to view your scene via Render Pipeline Asset, which you can use to define the 
+fidelity of your shadows.
+The URP Asset
+Main Light Shadow Resolution
+The Lighting and Shadow groups in the URP Asset are key to setting up shadows 
+in your scene. First, set the Main Light Shadow to Disabled or Per Pixel, then go 
+to the checkbox to enable Cast Shadows. The last setting is the resolution of the 
+shadow map.
+If you’ve worked with shadows in Unity before, you know that real-time shadows 
+require rendering a shadow map that contains the depth of objects from the 
+perspective of the light. The higher the resolution of this shadow map, the 
+higher the visual fidelity – though both more processing power and increased 
+memory are required. Factors that increase shadow processing include:
+	
+—
+The number of Shadow Casters rendered in the shadow map –  
+this number for the Main Light depends on the Shadow Distance  
+(far plane of shadow frustum)
+	
+—
+Shadow Receivers that are visible (you have to encompass them all)
+	
+—
+Shadow Cascades splits
+	
+—
+Shadow filtering (Soft Shadows)
+The highest resolution isn’t always ideal. For example, the Soft Shadows option 
+has the effect of blurring the map. In the following image of a cartoon-like 
+haunted room, you can see that the chair in the foreground casts a shadow on the 
+desk drawers, which appears too crisp when the resolution is greater than 1024.
+
+42 of 140 | unity. com
+© 2024 Unity Technologies
+Setting the Shadow Resolution for the Main Light: The resolution is set to 256 in the top-left image, 512 in the top-right image, 1024 in the 
+middle-left image, 2048 in the middle-right image, and 4096 in the bottom image.
+Main Light: Shadow Max Distance
+Varying Max Distance for the Main Light Shadow: Top-left image – 10, top-right image – 30, bottom-left image – 60, 
+bottom-right image – 400
+
+43 of 140 | unity. com
+© 2024 Unity Technologies
+Another important setting for the Main Light Shadow is Max Distance. This is set 
+in scene units. In the image above, the poles are 10 units apart. The Max Distance 
+varies from 10 to 400 units. Notice that only the first pole casts a shadow, and this 
+is cut short at 10 units from the Camera location. At 60 units (bottom-left image), 
+all shadows are in view – the shadow fidelity is adequate. When the Max Distance 
+is much greater than the visible assets, the shadow map is being spread over too 
+large an area. This means that the region in-shot has a much lower resolution than 
+required.
+The Max Distance property needs to relate directly to what the user can see, 
+as well as the units used in the scene. Aim for the minimum distance that gives 
+acceptable shadows (see note below). If the player only sees shadows from 
+dynamic objects 60 units from the Camera, then set Max Distance to 60. When 
+the Lighting Mode for Mixed Lights is set to Shadowmask, the shadows of objects 
+beyond Shadow Distance are baked. If this was a static scene then you would 
+see shadows on all objects, but only dynamic shadows would be drawn up to the 
+Shadow Distance.
+Note: URP only supports Stable Fit Shadow Projection, which relies 
+on the user to set up the Max Distance. The Built-in Render Pipeline 
+supports both Stable Fit and Close Fit for the Shadow Projection 
+property. In the latter mode, the bottom-left and -right images would 
+have the same quality, as Close Fit reduces the shadow distance plane 
+to fit the last caster. The disadvantage is that, since Close Fit changes 
+the shadow frustum “dynamically,” it can cause a shimmer/dancing 
+effect in the shadows.
+Shadow Cascades
+As assets disappear into the distance due to perspective, it is convenient to 
+decrease Shadow Resolution, thereby devoting more of the shadow map to 
+shadows closer to the Camera. Shadow Cascades can help with this.
+The images below show the shadow map of the scene with the chair and desk in 
+the haunted room. The cascade count is 1 in the image to the left. The map takes 
+up the whole area. In the image to the right, the cascade count is 4. Notice that the 
+map includes four different maps, with each area receiving a lower resolution map.
+A cascade count of 1 is likely to give the best result for small scenes like 
+this. But if your Max Distance is a large value, then a cascade count of 2 or 
+3 will give better shadows for foreground objects, as these receive a larger 
+proportion of the shadow map. Notice that the chair in the left image is much 
+bigger, resulting in a sharper shadow.
+
+44 of 140 | unity. com
+© 2024 Unity Technologies
+Shadow map when cascade count is set to 1 (left image) and 4 (right image)
+You can adjust the start and end ranges for each section of the cascade 
+using the draggable pointers, or by setting the units in the relevant fields (see 
+following image). Always adjust Max Distance to a value that is a close fit for 
+your scene and choose the slider positions carefully. If you use metric as the 
+working unit, always choose the last cascade to be, at most, the distance of the 
+last Shadow Caster.
+Additional Light Shadows
+Settings available for Additional Lights in URP Asset
+
+45 of 140 | unity. com
+© 2024 Unity Technologies
+Having sorted the shadows for the Main Light, it’s time to move on to Additional 
+Lights Mode. Enable additional lights to cast shadows by setting the Additional 
+Lights Mode for the URP Asset to Per Pixel. While the mode can be set to Disabled, 
+Per Vertex, or Per Pixel (see above image), only the latter works with shadows.
+Check the Cast Shadows box. Then, select the resolution of the Shadow Atlas. 
+This is the map that will be used to combine all the maps for every light casting 
+shadows. Bear in mind that a Point light casts six shadow maps, creating a 
+cubemap, since it casts light in all directions. This makes a Point light the most 
+demanding performance-wise. The individual resolution of an additional light 
+shadow map is set using a combination of the three Shadow Resolution tiers, 
+plus the resolution chosen via the Light Inspector when selecting the light in the 
+Hierarchy window. 
+ 
+Shadows group in the Light Inspector
+In the haunted room, there is a Spot light over the mirror and a Point light over 
+the desk. There are also seven maps. To fit these seven maps onto a 1024px 
+square map, the size of each map needs to be 256px or smaller. If you exceed 
+this size, the resolution of shadow maps will shrink to fit the atlas, resulting in a 
+warning message in the console.
+Number of maps
+Atlas tiling
+Atlas size (multiply shadow tier size by)
+1
+1x1
+1
+2–4
+2x2
+2
+5–16
+4x4
+4
+Setting the Shadow Atlas size based on the number of Additional Lights shadow maps and the tier size chosen per map
+Note: URP does not support shadows for additional Directional lights. 
+Remember, the Main light is always the brightest Directional light. For 
+Additional lights with shadows, use a Point or Spot light.

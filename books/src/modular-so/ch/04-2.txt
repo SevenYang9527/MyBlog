@@ -1,0 +1,204 @@
+26 of 75 | unity. com
+© 2023 Unity Technologies
+There are a few benefits to restructuring the code architecture:
+	
+—
+Designers can work more independently from software developers: 
+Storing data and logic on a single MonoBehaviour creates the potential .
+for developers and game designers to step over each other’s work. .
+If two people change different parts of the same Prefab or scene, 
+this results in a merge conflict. Resolving issues like this can be time 
+consuming and frustrating. .
+.
+Breaking off shared data into smaller files and assets reduces these 
+problems. Architecting with ScriptableObjects can let designers build 
+gameplay without always relying on a programmer – and everyone is 
+happier as a result. .
+.
+Just be prepared to define a clear workflow between your teams when 
+sharing data. Good communication and establishing some boundaries can 
+help prevent issues here. Some extra error checking or data validation 
+may be necessary as well (e. g. , use a Range attribute or OnValidate to 
+prevent bad values).
+	
+—
+Editing shared data is faster and less error-prone: Changes to the shared 
+data now happen all at once. If you need to modify a setting for your 
+NPCs, for example, you could adjust it in just one location, and have it 
+update for every affected component in every scene. .
+.
+This reduces any potential errors from mass editing a large number of 
+individual GameObjects by hand. Offloading data into ScriptableObjects 
+can also help with version control and prevent merge conflicts when 
+teammates work on the same scene or Prefab.
+	
+—
+Save gameplay tweaks in Play mode: Play mode in the Editor is an 
+opportunity for designers to experiment with gameplay and settings. 
+However, any modifications made to MonoBehaviours are lost when exiting 
+Play mode because Unity discards the temporary copy of the scene. .
+.
+Because the ScriptableObjects are assets, changes to their values update 
+regardless of whether Unity is in Play mode. This can be useful if you want 
+to make adjustments at runtime. .
+.
+This can be a liability, however, if you want to revert those changes. .
+Just remember to rely on Unity Version Control (formerly PlasticSCM, Git, 
+or another version control system, so you can always restore your work if 
+necessary. See our Version control and project organization best practices 
+guide for more information. 
+	
+—
+Improve scene loading times: When saving a scene or Prefab, .
+Unity serializes everything inside of them. That includes every 
+GameObject, every component attached to those GameObjects, .
+and every public field. Unity does this without checking for duplicate data. .
+.
+Moving data to ScriptableObjects can reduce your scene and Prefab sizes. 
+Because disk I/O is still relatively slow, this can noticeably impact loading 
+and saving.
+
+27 of 75 | unity. com
+© 2023 Unity Technologies
+   ScriptableObject variables
+You can make your shared data containers even more granular with a 
+ScriptableObject representing just one value. For instance, you could create a 
+ScriptableObject class called IntVariable that holds one public field called 
+value:
+using UnityEngine;
+[CreateAssetMenu(menuName = "Variables/Int", order = 1)]
+public class IntVariableSO : ScriptableObject
+{
+    public int value;
+}
+Then, you could use the IntVariable in a MonoBehaviour. Structuring a 
+PlayerHealth class would then look like this:
+public class PlayerHealth : MonoBehaviour
+{
+    public IntVariableSO health;
+}
+Though we normally think of ScriptableObjects as holding unchanging 
+values, you can give them methods that update this data at runtime (and 
+reset to an initial value when exiting Play mode). In this way, you can make 
+ScriptableObjects that essentially function as variables – containing integers, 
+floats, booleans, and so on.
+Your designers can then reserve data for game logic without needing a software 
+developer each time they want to do it. However, this requires planning to be 
+successful. Decide with your designers how to divide authoring gameplay data.
+Set some boundaries on how to collaborate. For example, the programming 
+team might do the initial setup of ScriptableObjects for use with an inventory 
+system. Then, the design team could use those to fill in each item’s in-game 
+stats or behaviors.
+With some extra Editor scripting, this can become a near-seamless experience. 
+Another possibility is making the fields in the Inspector toggle between using a 
+shared value from a ScriptableObject and a constant. This can allow the game 
+design team greater freedom to override the ScriptableObject data per instance.
+
+28 of 75 | unity. com
+© 2023 Unity Technologies
+Example of a ScriptableObject-based IntVariable from the open source Unity Atoms project
+See the “Game architecture with ScriptableObjects” presentation from Unite 
+Austin for how to implement this behavior in your own projects. You can also 
+download the open source Unity Atoms project to see a working implementation 
+of ScriptableObject variables.
+Dual serialization
+You can mix how to serialize data within Unity. This allows you to work with 
+ScriptableObjects in the Editor, but then store their data in another location, 
+such as a JSON or XML file. This allows you to take advantage of each format’s 
+strengths.
+File formats like JSON and XML can be difficult to work with in the Editor but .
+are easy to modify outside of Unity with any text editor.
+In contrast, ScriptableObjects work well in the Editor and can be swapped with 
+a quick drag-and-drop operation. However, they aren’t easy to modify outside of 
+Unity or share within your community of players.
+Mixing serialized formats could open up new possibilities for your game, such as 
+level editing or modding. At build time, a script can convert the other files into 
+ScriptableObjects, which is faster to load than plain text.
+While you’ll want to keep some sensitive data safely tucked away on your 
+servers (e. g. , virtual currency, account information), exposing part of your game 
+data to the community may enhance gameplay. If you open up a sandbox level
+
+29 of 75 | unity. com
+© 2023 Unity Technologies
+[CreateAssetMenu(fileName ="LevelLayout")]
+public class LevelLayout : ScriptableObject
+{
+    public Vector3[] wallPositions = new Vector3[2];
+    public Vector3[] playerPositions = new Vector3[2];
+    public Vector3[] goalPositions = new Vector3[2];
+    public Vector3 ballPosition;
+}
+This defines how you set up the level. Your level management scripts can read 
+the data from the LevelLayout object, then instantiate your Prefabs in their 
+correct positions.
+A custom script can use JsonUtility to export this same data to disk. This results 
+in a text file outside of the Editor that your users can modify with external tools.
+for user experimentation, you might be surprised how players could build their 
+own levels to be shared online.
+Imagine a ScriptableObject that defines your game level layout. It may simply 
+contain a number of Transforms that define placement of Prefabs, starting 
+configurations, and so on. Your game scripts will use this data to assemble .
+each level.
+Imagine the walls and starting positions of a game, stored within a 
+ScriptableObject:
+
+30 of 75 | unity. com
+© 2023 Unity Technologies
+To load a custom modded level, ScriptableObject.CreateInstance can 
+generate a ScriptableObject at runtime. Then, read the text from the JSON file 
+to populate the ScriptableObject. This LoadLevelFromJson example method 
+shows that in action:
+using System.IO;
+public class LevelManager : MonoBehaviour
+{
+    public ScriptableObject levelLayout;
+    public void LoadLevelFromJson(string jsonFile)
+    {
+if (levelLayout == null)
+{
+levelLayout = ScriptableObject.
+CreateInstance<LevelLayout>();
+}
+var importedFile = File.ReadAllText(jsonFile);
+JsonUtility.FromJsonOverwrite(importedFile, 
+levelLayout);
+    }
+}
+2 0 2 0 LT S E D I T I O N
+Your custom data replaces the contents of the ScriptableObject and allows you 
+to use this externally modded level like any other in your game. The application 
+is none the wiser.
+Be sure to see this work for yourself in the sample project. If we load a modified .
+JSON file, this customized level overrides the default level data on the 
+ScriptableObject.
+
+31 of 75 | unity. com
+© 2023 Unity Technologies
+   Protect your data
+This simple mod example demonstrates one possible application of 
+ScriptableObjects. However, when exposing game data for modification, 
+you should exercise caution to avoid players tampering with the rest of your 
+application.
+Here are common ways to protect anything that you don’t want modded:
+	
+—
+Encryption: Use encryption to protect data files from being easily read or 
+modified. This can make it more difficult for users to alter critical data.
+	
+—
+Digital signatures: You can use a fingerprint algorithm to verify that your 
+data files have not been tampered with. 
+	
+—
+Server-side validation: If your game relies on data that is stored on a 
+server, check the data on the server before it is used in the game, and 
+reject any data that appears to have been manipulated.
+No single approach is foolproof, and it’s generally a good idea to use a 
+combination of these techniques so your players don’t introduce any bugs or 
+vulnerabilities into your game.
+Mix serialized formats for more flexibility
+Note: When deserializing JSON into ScriptableObjects with JsonUtility, .
+you must use the FromJsonOverwrite method.
+Instead of creating a new object and loading the JSON data into it, JsonUtility 
+loads the JSON data into an existing object. This updates the values stored .
+in classes or objects without any allocations.

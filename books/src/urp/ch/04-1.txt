@@ -1,0 +1,268 @@
+32 of 140 | unity. com
+© 2024 Unity Technologies
+Lighting in URP
+This section shows how lighting in URP works and describes the differences 
+between the workflows of the two rendering pipelines.
+Start with these resources if you are new to lighting in Unity:
+	
+—
+Lighting documentation
+	
+—
+Introduction to lighting and rendering
+	
+—
+The art of lighting game environments
+	
+—
+Real-time lighting in Unity
+	
+—
+Harnessing light with the URP and the GPU Lightmapper
+If you convert a project from the Built-in Render Pipeline to URP, you might 
+notice differences in the lighting. This is because the Built-in Render Pipeline 
+uses a gamma lighting model by default and URP uses a linear model. As such, 
+any light with an intensity value differing from 1. 0 will need to be adjusted.
+There are also differences in where to find the Settings controls in-Editor,  
+as well as how to handle the challenge of widely differing hardware specs.  
+The rest of this section covers some tricks you can use to achieve balance 
+between graphic fidelity and performance.
+As before, you’ll set properties in the three places listed here. A and B are 
+essentially the same for both render pipelines, while C applies to URP only:
+
+33 of 140 | unity. com
+© 2024 Unity Technologies
+A. 	
+Window > Rendering > Lighting: This panel allows you to set lightmapping 
+and environment settings, and view real-time and baked lightmaps.  
+It is unchanged from the Built-in Render Pipeline to URP.
+B. 	
+Light Inspector: There are significant differences between the  
+Built-in Render Pipeline and URP Inspectors. See the Light Inspector  
+section for details.
+C.	
+URP Asset Inspector: This is the principal place where you will set shadows. 
+Lighting in URP relies heavily on the settings chosen in this panel.
+Quality settings are handled via Edit > Project Settings > Quality in the Built-in 
+Render Pipeline. In URP, this depends on the URP Asset settings which can be 
+swapped using the Quality panel (see the Quality settings section).
+As the focus here is on lighting, the methods apply to materials that use the 
+shaders in the following table.
+Shader
+Description
+Complex Lit
+This shader has all the features of the Lit Shader. Select it 
+when using the Clear Coat option to give a metallic sheen to 
+a car, for example. The specular reflection is calculated twice 
+– once for the base layer, and again to simulate a transparent 
+thin layer on top of the base layer.
+Lit
+The Lit Shader lets you render real-world surfaces, such as 
+stone, wood, glass, plastic, and metals with photorealistic 
+quality. The light levels and reflections look lifelike and react 
+across various lighting conditions, from bright sunlight to a 
+dark cave.
+This is the default choice for most materials that use lighting. 
+It supports baked, mixed, and real-time lighting, and works 
+with Forward or Deferred rendering.
+It is a physically based shading (PBS) model. Due to the 
+complexity of the shading calculations, it’s best to avoid 
+using this shader on low-end mobile hardware.
+Simple Lit
+This shader is not physically based. It uses a non-energy 
+conserving Blinn-Phong shading model and gives a less 
+photorealistic result. Nonetheless, it can provide an excellent 
+visual appearance. It is more suited to use on non-physically 
+based projects when targeting low-end mobile devices.
+Baked Lit
+This shader provides a performance boost for objects that 
+don’t need to support real-time lighting, including distant 
+static objects that will never be affected by dynamic objects, 
+real-time lights, or dynamic shadows.
+URP shaders for lit scenes
+
+34 of 140 | unity. com
+© 2024 Unity Technologies
+Built-in Render Pipeline vs URP lighting falloff and attenuation
+Another difference between the Built-in Render Pipeline and URP is how  
+they compute light falloff/attenuation that applies to Spot and Point lights.
+URP uses the physically based InverseSquared falloff, described here.  
+The Built-in Render Pipeline uses the Legacy falloff, which is not physically 
+based, as described on the same page. The light radius affects the falloff, which 
+can result in lights with a big radius, and thereby impact culling performance  
+as the light will touch more objects than necessary.
+Lit or Simple Lit?
+The choice between a Lit Shader and Simple Lit Shader is largely an artistic 
+decision. It is easier for artists to get a realistic render using the Lit Shader,  
+but if a more stylized render is desired, Simple Lit provides stellar results. 
+Comparing scenes rendered using different shaders: The top-left image uses the Lit Shader, the top-right, the Simple Lit 
+Shader, and the bottom image, the Baked Lit Shader.
+It’s possible to implement your own custom lighting model by writing  
+a custom shader or using Shader Graph (see the Additional tools chapter).
+Lighting overview
+Lights are divided into Main Light and Additional Lights in URP. The Main Light  
+is the most significant Directional light. This is either the brightest light or the 
+one set via Window > Rendering > Lighting > Environment > Sun Source.
+
+35 of 140 | unity. com
+© 2024 Unity Technologies
+Setting the Sun Source
+Later in the guide, you’ll learn how to use the URP Asset settings to set the 
+number of dynamic lights that affect an object via the Object Per Light limit, 
+which is capped at eight for the URP Forward Renderer. However, the number 
+of dynamic lights that can be used per Camera is also limited by different 
+hardware, as shown in the following table.
+Camera light limits when using the URP Forward Renderer
+Light type
+Category
+Maximum 
+possible 
+lights 
+rendered 
+(non-mobile)
+Maximum 
+possible 
+lights 
+rendered 
+(mobile)
+Maximum 
+possible 
+lights 
+rendered 
+(OpenGLES 
+2. 0)
+Supports 
+shadows
+Directional
+Main
+1
+1
+1
+True
+Spot
+Additional
+256*
+32*
+16*
+True
+Point
+Additional
+256*
+32*
+16*
+True
+Directional
+Additional
+256*
+32*
+16*
+False
+* All Additional Lights share the same budget.
+When you cull a scene, choose up to the maximum number of supported 
+dynamic lights for that frame. Meanwhile, when rendering an object, choose 
+only the most significant of these lights to light each object dynamically.
+Projects with a small number of dynamic lights might not encounter any issues, 
+however, as you add more lights, you might experience light popping as different 
+lights are dynamically culled. Of course, there is a performance cost to having more 
+dynamic lights in a scene. Each dynamic light will need to be culled against the 
+Camera and then sorted by priority. There is also the cost of rendering each light 
+per object. As always, try to maintain a balance between fidelity and performance.
+
+36 of 140 | unity. com
+© 2024 Unity Technologies
+Real-time and Mixed Mode lights 
+Real-time and Mixed Mode lights are first culled against the Camera 
+frustum. If occlusion culling is enabled, lights hidden by other objects in 
+the scene are also culled.
+The visible list of lights that survive the culling process is then sorted 
+by each light’s distance from the Camera. If there are visible lights, the 
+limits in the table above come into play. For example, if you have 1,000 
+lights in the scene but only 200 are visible to the Camera, all those 
+would fit the limit for non-mobile platforms.
+Now the list of visible lights is culled per object. Lights are sorted 
+by intensity at the pivot of the object – this way, brighter lights are 
+prioritized first. If an object is affected by more than the maximum 
+number of lights allowed per object, the excessive lights are discarded.
+Consider the following options if you are hitting light limits:
+	
+—
+If the light’s position and intensity are static, bake it and use Light Probes 
+to add the light to the rendering of dynamic geometry. See the section on 
+Light Probes for more information.
+	
+—
+Use Light Layers to limit which geometry is affected by which light.
+	
+—
+Limit the range of the light. This option does not apply to Directional lights, 
+as they’re global.
+	
+—
+Fake the lighting using emissive materials.
+The light limits discussed here are those that apply with the Forward Renderer – 
+the default renderer when using URP.
+The Forward Renderer uses a single-pass approach to calculate the lighting of 
+an object in a single draw call. This is a performant option, however, as GPU 
+limitations restrict the number of lights that an object can consider when setting 
+the color for a pixel. If you’re targeting high-end hardware, you can avoid these 
+limitations by using the Deferred Rendering Path in URP.
+
+37 of 140 | unity. com
+© 2024 Unity Technologies
+Rendering path comparison
+Unity 2022 LTS provides three options for rendering: Forward, Forward+, and 
+Deferred.
+Feature
+Forward
+Forward+
+Deferred
+Maximum number 
+of real-time lights 
+per object
+9
+Unlimited; 
+per-Camera 
+limit applies
+Unlimited
+Per pixel normal 
+encoding
+No encoding 
+(accurate 
+normal 
+values)
+No encoding 
+(accurate 
+normal 
+values)
+Two options:
+• Quantization of normals 
+in G-buffer (loss of 
+accuracy, better 
+performance)
+• Octahedron encoding 
+(accurate normals, 
+might have significant 
+performance impact on 
+mobile GPUs)
+For more information,  
+see Encoding of normals in 
+G-buffer.
+MSAA
+Yes
+Yes
+No
+Vertex lighting
+Yes
+No
+No
+Camera stacking
+Yes
+Yes
+Supported with a limitation: 
+Unity renders only the base 
+Camera using the Deferred 
+path; Unity renders all 
+overlay Cameras using the 
+Forward Rendering path
+Use the Universal Renderer Data asset to switch between the rendering paths.
+Choosing a rendering path

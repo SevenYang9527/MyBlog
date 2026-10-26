@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>物理 · Unity 移动游戏性能优化指南</title>
+<meta name="description" content="Unity 官方电子书：从分析到内存、GPU、UI、音频、物理的逐项优化清单">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">Unity 移动游戏性能优化指南</div>
+    <div class="book-en">Unity: Optimize Your Mobile Game Performance</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">引言</a></li>
+      <li><a href="ch-02.html">性能分析</a></li>
+      <li><a href="ch-03.html">内存</a></li>
+      <li><a href="ch-04.html">自适应性能</a></li>
+      <li><a href="ch-05.html">代码与架构</a></li>
+      <li><a href="ch-06.html">项目配置</a></li>
+      <li><a href="ch-07.html">资源</a></li>
+      <li><a href="ch-08-1.html">图形与 GPU 优化（1/2）</a></li>
+      <li><a href="ch-08-2.html">图形与 GPU 优化（2/2）</a></li>
+      <li><a href="ch-09.html">用户界面</a></li>
+      <li><a href="ch-10.html">音频</a></li>
+      <li><a href="ch-11.html">动画</a></li>
+      <li><a href="ch-12.html">物理</a></li>
+      <li><a href="ch-13.html">工作流与协作</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 80 页 · 共 13 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">12 · 物理</div>
+    <div class="pager"><a href="ch-11.html">← 上一节</a><a href="ch-13.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>物理（Physics）</h2>
+
+<p>Unity 内置的物理系统（Nvidia PhysX）在移动设备上可能开销很大。以下这些建议或许能帮助你挤出更多每秒帧数。</p>
+
+<h3>优化你的设置</h3>
+
+<p>在 PlayerSettings 中，只要有可能就勾选 Prebake Collision Meshes。</p>
+
+<p>同时请务必调整你的物理设置（Project Settings &gt; Physics）。尽可能简化你的 Layer Collision Matrix。</p>
+
+<ul>
+<li>禁用 Auto Sync Transforms，并启用 Reuse Collision Callbacks。</li>
+<li>启用 Prebake Collision Meshes。</li>
+</ul>
+
+<figure><figcaption>图 1：在 Project Settings 的 Physics 面板中调整各项物理设置，以挤出更多性能。</figcaption></figure>
+
+<p>密切关注 Profiler 的 Physics 模块，以便发现性能问题。</p>
+
+<h3>简化碰撞体</h3>
+
+<p>网格碰撞体（mesh collider）可能开销很大。用更简单的原始碰撞体（primitive collider）或网格碰撞体来替代更复杂的网格碰撞体，以近似原始形状。</p>
+
+<figure><figcaption>图 2：为碰撞体使用原始基本体或简化后的网格。</figcaption></figure>
+
+<h3>使用物理方法移动 Rigidbody</h3>
+
+<p>使用 MovePosition 或 AddForce 这类类方法来移动你的 Rigidbody 对象。直接平移它们的 Transform 组件会导致物理世界重新计算，这在复杂场景中可能开销很大。请在 FixedUpdate 而不是 Update 中移动物理刚体。</p>
+
+<h3>固定 Fixed Timestep</h3>
+
+<p>Project Settings 中默认的 Fixed Timestep 为 0.02（50 Hz）。请修改它，使其与你的目标帧率相匹配（例如 30 fps 对应 0.03）。否则，如果运行时帧率下降，就意味着 Unity 会在每帧中多次调用 FixedUpdate，对于物理内容繁重的项目，这可能造成 CPU 性能问题。</p>
+
+<p>Maximum Allowed Timestep 限制了在帧率下降的情况下，物理计算和 FixedUpdate 事件可以占用多少时间。降低该值意味着物理和动画可能变慢，但同时也会降低它们在性能卡顿期间对帧率的影响。</p>
+
+<figure><figcaption>图 3：修改 Fixed Timestep 使其匹配目标帧率，并降低 Maximum Allowed Timestep，以减少性能故障。</figcaption></figure>
+
+<h3>使用 Physics Debugger 进行可视化</h3>
+
+<p>使用 Physics Debug 窗口（Window &gt; Analysis &gt; Physics Debugger）来帮助排查有问题的碰撞体或异常情况。它会以颜色编码的指示方式，展示哪些 GameObject 之间应当能够相互碰撞。</p>
+
+<p>更多信息请参阅 Unity 文档中的 Physics Debug Visualization。</p>
+
+<figure><figcaption>图 4：Physics Debugger 帮助你可视化物理对象之间如何相互作用。</figcaption></figure>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-11.html"><span class="dir">← 上一节</span>动画</a>
+    <a href="ch-13.html"><span class="dir">下一节 →</span>工作流与协作</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

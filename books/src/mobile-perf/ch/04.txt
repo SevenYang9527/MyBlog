@@ -1,0 +1,39 @@
+22 of 80 | unity. com
+© 2023 Unity Technologies
+A DA P T I V E 
+P E R F O R M A N C E
+With Unity and Samsung’s Adaptive Performance, you can monitor the device’s 
+thermal and power state to ensure that you’re ready to react appropriately. 
+When users play for an extended period of time, you can reduce your level of 
+detail (or LOD) bias dynamically to help your game continue to run smoothly. 
+Adaptive Performance allows developers to increase performance in a 
+controlled way while maintaining graphics fidelity.
+While you can use Adaptive Performance APIs to fine-tune your application,  
+this package also offers automatic modes. In these modes, Adaptive Performance 
+determines the game settings along several key metrics:
+	
+—
+Desired frame rate based on previous frames
+	
+—
+Device temperature level
+	
+—
+Device proximity to thermal event
+	
+—
+Device bound by CPU or GPU
+These four metrics dictate the state of the device, and Adaptive Performance 
+tweaks the adjusted settings to reduce the bottleneck. This is done by providing 
+an integer value, known as an Indexer, to describe the state of the device.
+
+23 of 80 | unity. com
+© 2023 Unity Technologies
+Note that Adaptive Performance only works for Samsung devices.
+To learn more about Adaptive Performance, you can view the samples we’ve 
+provided in the Package Manager by selecting Package Manager > Adaptive 
+Performance > Samples. Each sample interacts with a specific scaler, so you 
+can see how the different scalers impact your game. We also recommend 
+reviewing the end-user documentation to learn more about Adaptive 
+Performance configurations and how you can interact directly with the API.
+Note that Adaptive Performance only works for Samsung devices.

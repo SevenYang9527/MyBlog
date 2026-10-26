@@ -1,0 +1,273 @@
+79 of 99 | unity. com
+© 2022 Unity Technologies
+O B S E RV E R PAT T E R N
+
+80 of 99 | unity. com
+© 2022 Unity Technologies
+At runtime, any number of things can occur in your game. What happens when 
+you destroy an enemy? How about when you collect a power-up or complete an 
+object? You often need a mechanism that allows some objects to notify others 
+without directly referencing them, thereby creating unnecessary dependencies.
+The observer pattern is a common solution to this sort of problem. It allows 
+your objects to communicate but stay loosely coupled using a “one-to-many” 
+dependency. When one object changes states, all dependent objects get 
+notified automatically. This is analogous to a radio tower that broadcasts to 
+many different listeners.
+The observer pattern functions like a radio tower. The subject broadcasts to the observers.
+The object that is broadcasting is called the subject. The other objects that are 
+listening are called the observers. 
+This pattern loosely decouples the subject, which doesn’t really know the 
+observers or care what they do once they receive the signal. While the 
+observers have a dependency on the subject, the observers themselves don’t 
+know about each other.
+Events
+The observer pattern is so widespread that it’s built into the C# language. You 
+can design your own subject-observer classes but it’s usually unnecessary. 
+Remember the point about reinventing the wheel? C# already implements the 
+pattern using events.
+
+81 of 99 | unity. com
+© 2022 Unity Technologies
+An event is simply a notification that indicates something has happened. It 
+involves a few parts:
+	
+—
+The publisher (the subject) creates an event based on a delegate, 
+establishing a specific function signature. The event is just some action 
+that the subject will perform at runtime (e. g. , take damage, click a button, 
+and so on).
+	
+—
+The subscribers (the observers) then each make a method called an event 
+handler, which must match the delegate’s signature.
+	
+—
+Each observer’s event handler subscribes to the publisher’s event. You can 
+have as many observers join the subscription as necessary. All of them will 
+wait for the event to trigger.
+	
+—
+When the publisher signals the occurrence of an event at runtime, you 
+say that it raises the event. This, in turn, invokes the subscribers’ event 
+handlers, which run their own internal logic in response.
+In this way, you make many components react to a single event from the 
+subject. If the subject indicates that a button is clicked, the observers could play 
+back an animation or sound, trigger a cutscene, or save a file. Their response 
+could be anything, which is why you’ll frequently find the observer pattern used 
+to send messages between objects.
+The subject raises the event to notify the observers.
+
+82 of 99 | unity. com
+© 2022 Unity Technologies
+Example: Simple subject and observer
+For example, you might define a basic subject/publisher like this: 
+using UnityEngine;
+using System;
+public class Subject: MonoBehaviour
+{
+    public event Action ThingHappened;
+    public void DoThing()
+    {
+        ThingHappened?.Invoke();
+    }
+}
+Here, you inherit from MonoBehaviour to attach to a GameObject more easily, 
+but that’s not required.
+While you are free to define your own custom delegate, System. Action works in 
+most cases. If you need to send parameters with the event, use the Action<T> 
+delegate and pass them as a List<T> within the angle brackets (up to 16 
+parameters).
+ThingHappened is the actual event, which the subject invokes in the DoThing 
+method.
+To listen to the event, you can build an example Observer class. Here you inherit 
+from MonoBehaviour for convenience, but that’s not required.
+
+83 of 99 | unity. com
+© 2022 Unity Technologies
+public class Observer : MonoBehaviour
+{
+    [SerializeField] private Subject subjectToObserve;
+    private void OnThingHappened()
+    {
+        // any logic that responds to event goes here
+        Debug.Log("Observer responds");
+    }
+    private void Awake()
+    {
+        if (subjectToObserve != null)
+        {
+            subjectToObserve.ThingHappened += OnThingHappened;
+        }
+    }
+    private void OnDestroy()
+    {
+        if (subjectToObserve != null)
+        {
+            subjectToObserve.ThingHappened -= OnThingHappened;
+        }
+    }
+}
+Attach this component to a GameObject and reference the subjectToObserver 
+in the Inspector order to listen for the ThingHappened event.
+The OnThingHappened method can contain any logic the observer executes in 
+response to the event. Often developers add the prefix “On” to denote the event 
+handler (just use the naming convention from your style guide). 
+In the Awake or Start, you can subscribe to the event with the += operator.  
+That combines the observer’s OnThingHappened method with the subject’s 
+ThingHappened.
+If anything runs the subject’s DoThing method, that raises the event. Then, the 
+observer’s OnThingHappened event handler invokes automatically and prints 
+the debug statement.
+Note: If you delete or remove the observer at runtime while it’s still subscribed 
+to the ThingHappened, calling that event could result in an error. Thus, it’s 
+important to unsubscribe from the event in the MonoBehaviour’s OnDestroy 
+method with -= operator.
+You can apply the observer pattern to nearly everything that happens during the 
+course of gameplay. For example, your game could raise an event every time 
+the player destroys an enemy or collects an item. If you need a statistics system 
+that tracks scores or achievements, the observer pattern could allow you to 
+create one without affecting the original gameplay code.
+
+84 of 99 | unity. com
+© 2022 Unity Technologies
+Many Unity applications apply events to:
+	
+—
+Objectives or goals 
+	
+—
+Win/lose conditions
+	
+—
+PlayerDeath, EnemyDeath, or Damage
+	
+—
+Item pickups
+	
+—
+User interface 
+The subject simply needs to raise an event at the opportune time, and then any 
+number of observers can subscribe.
+The observer sample scene
+In the sample project, the ButtonSubject allows the user to invoke a 
+Clicked event with the mouse button. Several other GameObjects with the 
+AudioObserver and ParticleSystemObserver components can then respond 
+in their own ways to the event.
+Determining which object is a “subject” and which one is an “observer” only 
+varies by usage. Anything that raises the event acts as the subject, and anything 
+that responds to the event is the observer. Different components on the same 
+GameObject can be subjects or observers. Even the same component can be a 
+subject in one context and an observer in another.
+For instance, the AnimObserver in the example adds a little bit of movement 
+to the button when clicked. It acts as an observer even though it’s part of the 
+ButtonSubject GameObject.
+
+85 of 99 | unity. com
+© 2022 Unity Technologies
+UnityEvents and UnityActions
+Unity also includes a separate system of UnityEvents, which uses the 
+UnityAction delegate from the UnityEngine. Events API.
+UnityEvents provide a graphical interface for the observer pattern. 
+If you’ve used Unity’s UI system (e. g. , creating a UI Button’s OnClick 
+event), you already have some experience with it.
+UnityEvents have graphical components for your setup
+In this example, the button’s OnClick event invokes and triggers a 
+response from the two AudioObservers’ OnThingHappened methods. 
+You can thus set up a subject’s event without code.
+UnityEvents are useful if you want to allow designers or non-
+programmers to create gameplay events. However, be aware that they 
+may be slower than their equivalent events or actions from the System 
+namespace.
+Weigh performance versus usage when considering UnityEvents and 
+UnityActions. See the Create a Simple Messaging System with Events 
+module on Unity Learn for an example.
+
+86 of 99 | unity. com
+© 2022 Unity Technologies
+Pros and cons
+Implementing an event adds some extra work but does offer advantages:
+	
+—
+The observer pattern helps decouple your objects: The event publisher 
+does not need to know anything about the event subscribers themselves. 
+Instead of creating a direct dependency between one class and another, 
+the subject and observer communicate while maintaining a degree of 
+separation.
+	
+—
+You don’t have to build it: C# includes an established event system, 
+and you can use System. Action delegate instead of defining your own 
+delegates. Alternatively, Unity also includes UnityEvents and UnityActions.
+	
+—
+Each observer implements its own event handling logic: In this way, each 
+observing object maintains the logic it needs to respond. This makes it 
+easier to debug and unit test.
+	
+—
+It’s well-suited for user interface: Your core gameplay code can live 
+separately from your UI logic. Your UI elements then listen for specific 
+game events or conditions and respond appropriately. The MVP and MVC 
+patterns use the observer pattern for this purpose.
+Be aware of these caveats for the observer pattern:
+	
+—
+It adds additional complexity: Like other patterns, creating event-driven 
+architecture does require more setup up front. Also, be careful deleting 
+subjects or observers. Make sure you unregister observers in OnDestroy.
+	
+—
+The observers need a reference to the class that defines the event: 
+Observers still have a dependency to the class that is publishing the 
+event. Using a static EventManager (below) that handles all events can 
+help disentangle objects from each other.
+	
+—
+Performance can be an issue: Event-driven architecture adds extra 
+overhead. Large scenes and many GameObjects can hinder performance.   
+Improvements
+While only a basic version of the observer pattern is introduced here, you can 
+expand this to handle all of your game application’s needs. 
+Consider these suggestions when setting up the observer pattern:
+	
+—
+Use the ObservableCollection class: C# provides a dynamic 
+ObservableCollection to track specific changes. It can notify your 
+observers when items get added, removed, or when the list is refreshed.
+	
+—
+Pass a unique instance ID as an argument: Each GameObject in the 
+hierarchy has a unique instance ID. If you trigger an event that could 
+apply to more than one observer, pass the unique ID into the event (use 
+type Action<int>). Then only run the logic in the event handler if the 
+GameObject matches the unique ID.
+
+87 of 99 | unity. com
+© 2022 Unity Technologies
+	
+—
+Create a static EventManager: Because events can drive much of your 
+gameplay, many Unity applications use a static or singleton EventManager. 
+This way, your observers can reference a central source of game events 
+as the subject to make setup easier.  
+ 
+The FPS Microgame has a good implementation of a static EventManager 
+which implements custom GameEvents and includes static helper methods 
+to add or remove listeners. 
+ 
+The Unity Open Project also showcases a game architecture that uses 
+ScriptableObjects to relay UnityEvents. It uses events to play audio or load 
+new scenes.
+	
+—
+Create an event queue: If you have a lot of objects in your scene, you 
+might not want to raise your events all at once. Imagine the cacophony of 
+a thousand objects playing back sounds when you invoke a single event. 
+ 
+Combining the observer pattern with the command pattern allows you 
+to encapsulate your events into an event queue. Then you can use a 
+command buffer to play back the events one at a time or selectively ignore 
+them as necessary (e. g. , if you have a maximum number of objects that 
+can make sounds at once).
+The observer pattern heavily figures into the Model View Presenter (MVP) 
+architectural pattern, which is covered in more detail in the next chapter.

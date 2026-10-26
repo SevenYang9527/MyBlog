@@ -1,0 +1,72 @@
+<h2>SubmitRenderRequest API</h2>
+
+<p>有时你可能希望把游戏渲染到用户屏幕之外的其他目标，而不是屏幕本身。SubmitRenderRequest API 正是为此目的而设计的。下面来看一个可能的使用场景。</p>
+
+<h3>编写屏幕截图（screengrab）功能</h3>
+
+<p>当用户点击屏幕上的 GUI 按钮时，下面的脚本会把游戏渲染到一张离屏的渲染纹理（RenderTexture）中。该脚本应挂载到主摄像机（Main Camera）上。渲染纹理在 Start 回调中创建，尺寸为 1920 x 1080 像素，位深度（bit depth）为 24。当用户按下“Render Request”按钮时，会调用 RenderRequest 方法。</p>
+
+<p>在 RenderRequest 方法中，首先获取对摄像机（Camera）组件的引用。然后创建一个 RenderPipeline.StandardRequest 实例，接着检查当前渲染管线（render pipeline）是否支持 RenderRequest 框架。如果支持，就把在 Start 回调中初始化的渲染纹理设置为该请求对象的目标（destination），并通过 RenderPipeline.SubmitRenderRequest 初始化渲染。该方法接收一个摄像机实例和一个请求对象。此时，Texture2D 中已经包含当前场景的渲染结果。要把它保存为文件，首先需要将渲染纹理转换为 Texture2D 实例。ToTexture2D 方法展示了一种可行的做法。得到 Texture2D 之后，就可以使用 Texture2D 实例的 EncodeToPNG 方法获取一个字节数组（byte array）。随后可以使用 System.IO.File 的 WriteAllBytes 方法把该字节数组保存到文件中。</p>
+
+<pre><code>using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.Rendering;
+[RequireComponent(typeof(Camera))]
+public class StandardRenderRequest : MonoBehaviour
+{
+    [SerializeField]
+    RenderTexture texture2D;
+    private void Start()
+    {
+        texture2D = new RenderTexture(1920, 1080, 24);
+    }
+    // 当用户点击 GUI 按钮时，
+    // 会以各种输出纹理发送 Render Request，以渲染指定帧
+    private void OnGUI()
+    {
+        GUILayout.BeginVertical();
+        if (GUILayout.Button("Render Request"))
+        {
+            RenderRequest();
+        }
+        GUILayout.EndVertical();
+    }
+    void RenderRequest()
+    {
+        Camera cam = GetComponent&lt;Camera&gt;();
+        RenderPipeline.StandardRequest request = new RenderPipeline.StandardRequest();
+        if (RenderPipeline.SupportsRenderRequest(cam, request))
+        {
+            // 2D 纹理
+            request.destination = texture2D;
+            RenderPipeline.SubmitRenderRequest(cam, request);
+            SaveTexture(ToTexture2D(texture2D));
+        }
+    }
+    void SaveTexture(Texture2D texture)
+    {
+        byte[] bytes = texture.EncodeToPNG();
+        var dirPath = Application.dataPath + "/RenderOutput";
+        if (!System.IO.Directory.Exists(dirPath))
+        {
+            System.IO.Directory.CreateDirectory(dirPath);
+        }
+        System.IO.File.WriteAllBytes(dirPath + "/R_" + Random.Range(0, 100000) + ".png", bytes);
+        Debug.Log(bytes.Length / 1024 + "Kb was saved as: " + dirPath);
+        #if UNITY_EDITOR
+                UnityEditor.AssetDatabase.Refresh();
+        #endif
+    }
+    Texture2D ToTexture2D(RenderTexture rTex)
+    {
+        Texture2D tex = new Texture2D(rTex.width, rTex.height, TextureFormat.RGB24, false);
+        RenderTexture.active = rTex;
+        tex.ReadPixels(new Rect(0, 0, rTex.width, rTex.height), 0, 0);
+        tex.Apply();
+        Destroy(tex);// 防止内存泄漏
+        return tex;
+    }
+}</code></pre>
+
+<p>如果直接使用该脚本，屏幕截图会被保存到游戏 Assets 文件夹下新建的 RenderOutput 文件夹中。文件名由 R_ 加上一个 0 到 100,000 之间的随机整数构成。</p>

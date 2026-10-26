@@ -1,0 +1,110 @@
+<p>上图展示了 Point 光源所使用的六张阴影图，其分辨率设为 medium，层级值（tier value）为 256px。而 Spot 光源的分辨率设为 high，层级值为 512px。</p>
+
+<h2>附加光源的阴影图集（Shadow Atlas for Additional Lights）</h2>
+
+<figure><figcaption>图 1：鬼屋场景的低多边形版本，由一盏主平行光、书桌上方的一盏 Point 光源以及镜子上方的一盏 Spot 光源照亮。所有光源均为实时光源，并且都会投射阴影。</figcaption></figure>
+
+<h2>光照模式（Light Modes）</h2>
+
+<p>环境中的几何体大多是静态的，因此如果某个光源是静态的，你就不必反复计算它的光照与阴影。你可以在设计阶段计算一次，然后在渲染几何体时直接使用这些数据。这种做法称为光照贴图（lightmapping）或烘焙（baking）。</p>
+
+<p>光照贴图的工作流程在 Built-in Render Pipeline 与 URP 之间没有变化。下面我们以 Unity 提供的 FPS Sample 项目为例，逐步走一遍流程。</p>
+
+<p>以下截图来自 Unity 项目 FPS Sample: The Inspection，你可以在此处下载。该场景演示了如何在 URP 中同时使用实时光照与烘焙光照。</p>
+
+<ol>
+  <li>
+    <p>FPS 示例项目中的场景包含大量静态几何体。要将这些几何体纳入光照贴图，请勾选 Inspector 右侧的 Static 复选框。</p>
+    <p><strong>注意：</strong>低频（Low frequency）指的是光照贴图的更新频率远低于屏幕刷新率。高光波瓣（Specular Lobes）只能由实时光源计算。你可以通过光照探针（Light Probes）将全局光照（Global Illumination，GI）应用于动态对象，但光照探针同样只能捕捉低频漫反射光。Built-in Render Pipeline 支持 Light Probe Proxy Volume（LPPV），它能像光照贴图为动态对象所做的那样，为光照探针提供同等质量的效果。不过在 URP 中并不支持 LPPV，因为它是一个相对较慢且无法良好扩展的系统。URP 计划改为支持自适应探针体积（Adaptive Probe Volumes），它可以取代光照贴图，并同时适用于静态与动态对象。</p>
+  </li>
+</ol>
+
+<figure><figcaption>图 2：Unity 的 FPS Sample: The Inspection 场景。</figcaption></figure>
+
+<ol start="2">
+  <li>通过 Window &gt; Rendering &gt; Lighting &gt; Scene 选择光照贴图设置。调整设置期间请保持 Lightmap Resolution 较低。确定好想要的设置后，再提高该值以生成最终的光照贴图。如果你的 GPU 支持，请选择 Progressive GPU (Preview) 以加快光照贴图的生成速度。</li>
+  <li>
+    <p>过滤（Filtering）会对贴图进行模糊处理，以尽量减少噪点。这可能导致一个对象与另一个对象相接处的阴影出现缝隙。使用 A-Trous 过滤可尽量减轻这一瑕疵。有关光照贴图可用设置的更多细节，请参阅 Progressive Lightmapping 文档。</p>
+    <figure><figcaption>图 3：过滤如何影响对象之间的阴影。</figcaption></figure>
+  </li>
+  <li>确保所有静态几何体都没有重叠的 UV 值，或者在导入时生成光照 UV。</li>
+  <li>将 Light Mode 设为 Baked 或 Mixed。在 Hierarchy 窗口中选择光源，并使用 Inspector 进行设置。Mixed 光源既会照亮动态对象，也会照亮静态对象。</li>
+  <li>
+    <p>使用 Mixed 光源时，请通过 Window &gt; Rendering &gt; Lighting &gt; Scene 将 Light Mode 设为 Baked Indirect、Subtractive 或 Shadowmask。</p>
+    <ol type="a">
+      <li><strong>Baked Indirect：</strong>只有间接光贡献会被烘焙进光照贴图和光照探针（即仅烘焙光线的弹射）。直接光照与阴影将保持实时。这是一个开销较大的选项，并不适合移动平台。不过它的确意味着你可以为静态与动态几何体都获得正确的阴影与直接光照。</li>
+      <li><strong>Subtractive：</strong>在这里，你会把设为 Mixed 的平行光所产生的直接光照烘焙到静态几何体中，并减去由动态几何体投射的阴影所带来的光照。这会导致静态几何体无法在动态对象上投射阴影，除非使用光照探针，而这可能带来令人不快的视觉断层。URP 会估算平行光的光照贡献，并从烘焙的全局光照中减去该值。该估算值会被 Lighting 窗口 Environment 区域中的 Real-time Shadow Color 设置所钳制，因此减去的颜色永远不会比该颜色更暗。然后取减去后的值与原始烘焙颜色中的最小值。这是低端硬件最合适的选项。</li>
+      <li><strong>Shadowmask：</strong>虽然与 Baked Indirect 模式类似，但 Shadowmask 结合了动态阴影与烘焙阴影，从而在远处也能渲染阴影。它通过使用额外的 Shadowmask 贴图，并在光照探针中存储额外信息来实现这一点。这能提供最高保真度的阴影，但在内存占用和性能方面也是开销最大的选项。在视觉上，它与 Baked Indirect 的近景表现完全相同。差异在看向远处时才会显现，因此它非常适合开放世界场景。由于处理成本较高，建议仅在中高端硬件上使用。</li>
+    </ol>
+  </li>
+  <li>通过 Asset &gt; Inspector &gt; Mesh Renderer &gt; Lightmapping &gt; Scale In Lightmap 调整 Lightmap Scale，使远处的对象占用更少的光照贴图空间。下图展示了背景岩石光照贴图的纹素大小，其设置值从 0.05 变化到 0.5。</li>
+  <li>点击 Generate Lighting 进行烘焙。烘焙时间取决于静态对象的数量、设为 Mixed 或 Baked 模式的光源数量，以及所选的光照贴图设置，尤其是 Max Lightmap Size 和 Lightmap Resolution。</li>
+</ol>
+
+<figure><figcaption>图 4：使用 Light Layers 高亮某个对象。</figcaption></figure>
+
+<p>更多资源：</p>
+<ul>
+  <li>Lightmapping 文档</li>
+  <li>Lighting Settings Asset 文档</li>
+  <li>Lighting Explorer 文档</li>
+  <li>5 个常见的光照贴图问题及帮助你解决它们的提示</li>
+</ul>
+
+<h2>渲染层（Rendering Layers）</h2>
+
+<p>渲染层（Rendering Layers）功能让你可以配置某些光源仅影响特定的 GameObject，从而在场景中强调它们并吸引注意力。在下图中，注射器这件关键收集品位于场景的阴影区域。借助渲染层，它会变得可见，有助于确保玩家不会错过拾取它。</p>
+
+<figure><figcaption>图 5：使用 Rendering Layers 高亮某个对象。</figcaption></figure>
+
+<p>以下是设置渲染层的步骤。</p>
+<ol>
+  <li>选择 URP Asset。在 Lighting 区域点击垂直省略号图标（  ），然后选择 Show Additional Properties。</li>
+  <li>Lighting 区域下会出现一个新设置 Use Rendering Layers。</li>
+  <li>通过 Project Settings &gt; Graphics &gt; URP Global Settings 重命名某个渲染层。</li>
+  <li>启用渲染层后，Light Inspector 中将包含一个 Rendering Layer 下拉菜单。一个光源可以作用于多个层。</li>
+  <li>启用渲染层后，你还需要设置一个自定义阴影层。新光源可以从场景的主光源投射阴影，也可以从它自己的视锥体投射阴影。</li>
+  <li>最后，在 Hierarchy 窗口中选择要应用此设置的对象，然后设置 Rendering Layer Mask。</li>
+</ol>
+
+<h2>光照探针（Light Probes）</h2>
+
+<p>如前面某一节所述，你可以通过 Mixed Lighting Mode 在 Light Mode 区域中组合烘焙对象与动态对象。使用该模式时，建议同时向场景中添加光照探针。当你通过 Window &gt; Rendering &gt; Lighting 面板点击 Generate Lighting 烘焙光照时，光照探针会保存在环境中特定位置的光照数据。这能确保在环境中移动的动态对象所受的照明，能够反映烘焙对象所使用的光照水平。在昏暗区域它就会变暗，在较亮区域它就会变亮。下面你可以看到 FPS Sample: The Inspection 中机器人角色在机库内与机库外的表现。</p>
+
+<figure><figcaption>图 6：洞穴内与洞穴外的机器人，其光照水平受光照探针影响。</figcaption></figure>
+
+<pre><code>Renderer renderer = GetComponent&lt;Renderer&gt;();
+int layerID = 1;
+int mask = 1 &lt;&lt; layerID;
+renderer.renderingLayerMask = (uint)mask;</code></pre>
+
+<p>这也可以在代码中动态设置。</p>
+
+<p>要创建光照探针，请在 Hierarchy 窗口中右键单击，然后选择 Light &gt; Light Probe Group。</p>
+
+<figure><figcaption>图 7：为光照探针组（Light Probe Group）创建新的 GameObject。</figcaption></figure>
+
+<p>初始时会有一个由光照探针构成的立方体，总共八个。要查看并编辑光照探针的位置，以及添加更多探针，请在 Hierarchy 窗口中选择该 Light Probe Group，然后在 Inspector 中点击 Light Probe Group &gt; Edit Light Probes。</p>
+
+<figure><figcaption>图 8：在 Inspector 中添加或移除光照探针，并修改它们的位置。</figcaption></figure>
+
+<p>此时 Scene 视图将进入编辑模式，其中只能选中光照探针。使用 Move 工具来移动它们。</p>
+
+<figure><figcaption>图 9：移动一个光照探针。</figcaption></figure>
+
+<p>光照探针的位置安排，首先应放在动态对象可能移动到的区域，其次应放在光照水平有显著变化的地方。在计算某个对象的光照水平时，引擎会找到距离最近的光照探针所构成的角锥体，并利用它们确定该照明水平的插值。</p>
+
+<figure><figcaption>图 10：所选木箱最近的光照探针。</figcaption></figure>
+
+<p>摆放光照探针可能很耗时，但像这样的基于代码的方法可以加快你的编辑工作，尤其是在大型场景中。</p>
+
+<p>关于 Mesh Renderer 如何与光照探针配合工作，以及如何调整相关配置的更多细节，可以在本文档中找到。</p>
+
+<h2>反射探针（Reflection Probes）</h2>
+
+<p>诸如 Maya 或 Blender 之类的光线追踪工具，可以花时间精确计算反射表面每个帧像素的值。这一过程对实时渲染器来说耗时过长，因此人们常常使用一些捷径。</p>
+
+<p>实时渲染器中的反射使用环境贴图（预先渲染好的立方体贴图）。Unity 通过 SkyManager 提供一张默认贴图。若仅以单张贴图作为场景中所有位置反射的来源，会导致反射效果不够可信。以本节中展示的机器人为例。如果这个角色的金属部件始终反射天空，那么当它位于看不见天空的机库内部时，就会显得非常奇怪。这正是反射探针的用武之地。</p>
+
+<p>反射探针（Reflection Probe）本质上就是一张预先渲染好的立方体贴图，被放置在场景中的关键位置。你可以在单个场景中使用多个反射探针。作为一个动态对象
+</p>

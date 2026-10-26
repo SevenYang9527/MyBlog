@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLID 原则（3/3） · 用游戏编程模式升级你的代码</title>
+<meta name="description" content="Unity 官方电子书：SOLID 与 7 个最常用的游戏编程模式，全部配 Unity 代码">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">用游戏编程模式升级你的代码</div>
+    <div class="book-en">Level up your code with Game Programming Patterns</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">初识设计模式</a></li>
+      <li><a href="ch-02-1.html">SOLID 原则（1/3）</a></li>
+      <li><a href="ch-02-2.html">SOLID 原则（2/3）</a></li>
+      <li><a href="ch-02-3.html">SOLID 原则（3/3）</a></li>
+      <li><a href="ch-03.html">游戏开发中的设计模式</a></li>
+      <li><a href="ch-04.html">工厂模式</a></li>
+      <li><a href="ch-05.html">对象池</a></li>
+      <li><a href="ch-06.html">单例模式</a></li>
+      <li><a href="ch-07.html">命令模式</a></li>
+      <li><a href="ch-08.html">状态模式</a></li>
+      <li><a href="ch-09.html">观察者模式</a></li>
+      <li><a href="ch-10.html">MVP 模式</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      Unity 官方电子书 · 中文译文<br>
+      原书 99 页 · 共 10 章
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">02 · SOLID 原则</div>
+    <div class="pager"><a href="ch-02-2.html">← 上一节</a><a href="ch-03.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<pre><code>public class Switch : MonoBehaviour
+{
+    public Door door;
+    public bool isActivated;
+    public void Toggle()
+    {
+        if (isActivated)
+        {
+            isActivated = false;
+            door.Close();
+        }
+        else
+        {
+            isActivated = true;
+            door.Open();
+        }
+    }
+}
+public class Door : MonoBehaviour
+{
+    public void Open()
+    {
+        Debug.Log("The door is open.");
+    }
+    public void Close()
+    {
+        Debug.Log("The door is closed.");
+    }
+}</code></pre>
+
+<p>Switch 可以调用 Toggle 方法来打开和关闭门。这能行得通，但问题在于有一条依赖被直接从 Door 接入了 Switch。如果 Switch 的逻辑需要作用于 Door 之外的东西呢——比如去激活一盏灯或一个巨型机器人？</p>
+
+<p>你可以在 Switch 类里追加一些额外的方法，但那样就违反了开闭原则（open-closed principle）。每次想扩展功能，你都得修改原有的代码。</p>
+
+<p>抽象又一次来救场了。你可以在两个类之间夹入一个名为 ISwitchable 的接口（interface）。</p>
+
+<figure><figcaption>图 1：在两个类之间插入接口 ISwitchable，把开关与门之间的直接依赖倒置为对抽象接口的依赖。</figcaption></figure>
+
+<p>ISwitchable 只需要一个公共属性来判断它当前是否处于激活状态，再加上一对用来 Activate 和 Deactivate 它的方法。</p>
+
+<pre><code>public interface ISwitchable
+{
+    public bool IsActive { get; }
+    public void Activate();
+    public void Deactivate();
+}</code></pre>
+
+<p>另一方面，你需要改造 Door，让它实现 ISwitchable：</p>
+
+<pre><code>public class Door : MonoBehaviour, ISwitchable
+{
+    private bool isActive;
+    public bool IsActive =&gt; isActive;
+    public void Activate()
+    {
+        isActive = true;
+        Debug.Log("The door is open.");
+    }
+    public void Deactivate()
+    {
+        isActive = false;
+        Debug.Log("The door is closed.");
+    }
+}</code></pre>
+
+<p>然后 Switch 就变成这样：它依赖一个 ISwitchable 客户端，而不再直接依赖一扇门。</p>
+
+<pre><code>public class Switch : MonoBehaviour
+{
+    public ISwitchable client;
+    public void Toggle()
+    {
+        if (client.IsActive)
+        {
+            client.Deactivate();
+        }
+        else
+        {
+            client.Activate();
+        }
+    }
+}</code></pre>
+
+<p>现在你已经把依赖倒置过来了。接口在两者之间建立了一层抽象，而不是把开关死死焊在门上。Switch 不再直接依赖门特有的方法（Open 和 Close），转而使用 ISwitchable 的 Activate 和 Deactivate。</p>
+
+<p>这个微小却重要的改动提升了可复用性。以前 Switch 只能和一扇 Door 配合，现在它能与任何实现了 ISwitchable 的东西配合。</p>
+
+<p>这样一来，你就可以做出更多能被 Switch 激活的类。无论是活板门还是激光束，高层的 Switch 都能照常工作。它只需要一个实现了 ISwitchable 的兼容客户端。</p>
+
+<figure><figcaption>图 2：Switch 现在可以激活任何 ISwitchable 对象。</figcaption></figure>
+
+<p>和 SOLID 的其余原则一样，依赖倒置原则要求你审视自己平时是如何搭建类与类之间关系的。借助松耦合（loose coupling），你可以从容地扩展项目。</p>
+
+<h3>接口与抽象类</h3>
+
+<p>为了贯彻「组合优于继承（composition over inheritance）」的理念，本指南中的许多示例都使用了接口。不过，你也可以用抽象类（abstract class）来遵循其中的许多设计原则与模式。</p>
+
+<p>两者都是在 C# 中实现抽象的有效方式。具体用哪一个，取决于你当前的情境需求。</p>
+
+<h4>抽象类</h4>
+
+<p>abstract 关键字让你可以定义一个基类，从而通过继承把通用的功能（方法、字段、常量等）传递给子类。</p>
+
+<figure><figcaption>图 3：用抽象类实现同一套依赖倒置——继承表达的是「is a」（是一个）关系，图中列出的都是可以开启和关闭的「可切换」事物。</figcaption></figure>
+
+<p>抽象类的优势在于，它可以拥有字段和常量，也可以拥有静态成员。它还能使用限制更严的访问修饰符，比如 protected 和 private。与接口不同，抽象类允许你实现逻辑，从而在具体的类之间共享核心功能。</p>
+
+<p>继承用起来很顺手，直到你想创建一个同时具备两个不同基类特征的派生类。在 C# 里，你不能从多个基类继承。</p>
+
+<p>你不能直接实例化抽象类，而必须派生出具体的类。</p>
+
+<p>在前面的例子里，抽象类也能达成同样的依赖倒置，只是走了另一条路。与其使用接口，你可以让具体的类（例如 Light 或 Door）派生自一个名为 Switchable 的抽象类。</p>
+
+<p>如果你的游戏里还有一个统辖所有机器人的抽象类，那么该从谁派生就更难抉择了：用 Robot 还是 Switchable 作为基类？</p>
+
+<h4>接口</h4>
+
+<p>正如接口隔离原则中所见，当某些东西无法整齐地套进继承范式时，接口能给你更大的灵活性。借助「has a」（有一个）关系，你可以更方便地挑选和组合。</p>
+
+<p>不过，接口只包含其成员的声明。真正实现该接口的类要负责把具体的逻辑补全。</p>
+
+<p>因此，这并不总是一道非此即彼的选择题。在你希望共享代码的地方，用抽象类定义基础功能；在你需要灵活性的地方，用接口定义外围的能力。</p>
+
+<h4>在基类之间做选择</h4>
+
+<p>在这个例子里，你可以让 NPC 派生自 Robot 基类以继承其核心特性，然后再用一个接口 ISwitchable 为 NPC 增添开关能力。</p>
+
+<figure><figcaption>图 4：NPC 机器人同时使用两者：NPC 是（is a）机器人，同时又有一个（has a）开关。</figcaption></figure>
+
+<p>记住：一个类最多只能继承一个抽象类，但可以实现多个接口。</p>
+
+<p>请留意抽象类与接口之间的以下差异。</p>
+
+<table>
+<thead>
+<tr>
+<th>抽象类</th>
+<th>接口</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完全或部分地实现方法</td>
+<td>只声明方法，无法实现它们</td>
+</tr>
+<tr>
+<td>声明/使用变量与字段</td>
+<td>只声明方法与属性（不能声明字段）</td>
+</tr>
+<tr>
+<td>拥有静态成员</td>
+<td>不能声明/使用静态成员</td>
+</tr>
+<tr>
+<td>使用构造函数</td>
+<td>不能使用构造函数</td>
+</tr>
+<tr>
+<td>可以使用所有访问修饰符（protected、private 等）</td>
+<td>不能使用访问修饰符（所有成员都隐式是 public）</td>
+</tr>
+</tbody>
+</table>
+
+<h3>对 SOLID 的理解</h3>
+
+<p>熟悉 SOLID 原则靠的是日常练习。把它们当作写代码时要始终牢记的五条基本规则。下面是一份方便的回顾：</p>
+
+<ul>
+<li>单一职责（Single responsibility）：确保类只做一件事，并且只有一个需要修改的理由。</li>
+<li>开闭（Open-closed）：你应该能够扩展一个类的功能，而不改动它已有的行为。</li>
+<li>里氏替换（Liskov substitution）：子类应当可以替换其基类。</li>
+<li>接口隔离（Interface segregation）：让接口保持简短、方法少。客户端只实现自己需要的东西。</li>
+<li>依赖倒置（Dependency inversion）：依赖抽象，不要让一个具体的类直接依赖另一个具体的类。</li>
+</ul>
+
+<p>SOLID 原则是一套指导方针，帮助你写出更整洁的代码，让维护和扩展更高效。近二十年来，SOLID 原则在企业级软件开发的设计中一直占据主导地位，因为它们非常适合那些必须规模化的大型应用。</p>
+
+<p>在某些情况下，遵循 SOLID 会带来前期的额外工作量。你可能需要把一部分功能重构为抽象或接口。不过，长期来看往往能收获回报。</p>
+
+<p>至于在你的项目里要多严格地应用这些原则，由你自己决定；它们并非绝对。其中存在许多细微之处，每种原则也有多种实现方式，本文并未一一覆盖。记住：原则背后的思考，比任何具体语法都更重要。</p>
+
+<p>拿不准该怎么用的时候，回头看看 KISS 原则。保持简单，不要只是为了用而硬把这些原则塞进脚本里。让它们在真正需要时自然而然地融入你的代码。</p>
+
+<p>想了解更多内容，请务必观看 Unity 在 Unite Austin 上的 SOLID 演讲。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-02-2.html"><span class="dir">← 上一节</span>SOLID 原则（2/3）</a>
+    <a href="ch-03.html"><span class="dir">下一节 →</span>游戏开发中的设计模式</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>
