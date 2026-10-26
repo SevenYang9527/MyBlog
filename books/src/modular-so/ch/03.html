@@ -23,7 +23,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 </tbody>
 </table>
 
-<figure><figcaption>图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p010_1.webp" alt="图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。" loading="lazy" decoding="async"><figcaption>图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。</figcaption></figure>
 
 <h3>对比</h3>
 
@@ -103,7 +103,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 
 <p>下面简要概述 ScriptableObject 的事件函数与生命周期。请把它与 MonoBehaviour 事件函数的执行顺序（从顶部开始）作对比。</p>
 
-<figure><figcaption>图 2：ScriptableObject 的事件函数及其执行顺序。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p012_1.webp" alt="图 2：ScriptableObject 的事件函数及其执行顺序。" loading="lazy" decoding="async"><figcaption>图 2：ScriptableObject 的事件函数及其执行顺序。</figcaption></figure>
 
 <h3>文件</h3>
 
@@ -115,7 +115,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 
 <p>如果你在 Project Settings &gt; Asset Serialization 窗口中选择 Mode: Force Text，就可以用文本编辑器打开一个 ScriptableObject 资源。它看起来可能像这样：</p>
 
-<figure><figcaption>图 3：一个以文本形式序列化的 ScriptableObject 实例。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p013_1.webp" alt="图 3：一个以文本形式序列化的 ScriptableObject 实例。" loading="lazy" decoding="async"><figcaption>图 3：一个以文本形式序列化的 ScriptableObject 实例。</figcaption></figure>
 
 <p>保存的数据包含：</p>
 
@@ -126,7 +126,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 <li>所挂载 GameObject 上的任何其他组件与 MonoBehaviour</li>
 </ul>
 
-<figure><figcaption>图 4：ScriptableObject 作为资源出现在项目中，而 MonoBehaviour 则挂载到 GameObject 上。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p013_2.webp" alt="图 4：ScriptableObject 作为资源出现在项目中，而 MonoBehaviour 则挂载到 GameObject 上。" loading="lazy" decoding="async"><figcaption>图 4：ScriptableObject 作为资源出现在项目中，而 MonoBehaviour 则挂载到 GameObject 上。</figcaption></figure>
 
 <h3>创建与生命周期</h3>
 
@@ -146,7 +146,7 @@ public int someVar;
 
 <p>在 YAML 中，数据以嵌套元素的层级结构来组织。每个对象都有一个 Class ID、一个 File ID 和一个对象类型。请注意，ScriptableObject 使用“MonoBehaviour”作为自己的对象类型，而不是定义自己的类型。</p>
 
-<figure><figcaption>图 5：YAML 中的一个对象头。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p014_1.webp" alt="图 5：YAML 中的一个对象头。" loading="lazy" decoding="async"><figcaption>图 5：YAML 中的一个对象头。</figcaption></figure>
 
 <p>每个对象之下是它的序列化属性，以键值对的形式表示。更多信息请阅读博文《Understanding Unity's serialization language, YAML.》。</p>
 
@@ -158,7 +158,7 @@ public int someVar;
 
 <p>与其他 Unity 对象一样，ScriptableObject 由一个原生 C++ 部分和一个 C# 托管部分构成。你可以直接销毁原生 C++ 部分，但托管部分会一直保留，直到资源垃圾回收器（GC）将它清除。如果你切换场景，或调用 Resources.UnloadUnusedAssets，就会发生 GC 清理。</p>
 
-<figure><figcaption>图 6：ScriptableObject 同时具有原生侧与托管侧。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p015_1.webp" alt="图 6：ScriptableObject 同时具有原生侧与托管侧。" loading="lazy" decoding="async"><figcaption>图 6：ScriptableObject 同时具有原生侧与托管侧。</figcaption></figure>
 
 <p>请显式地把所有指向该 ScriptableObject 资源的引用设为 null，以免延迟垃圾回收。</p>
 

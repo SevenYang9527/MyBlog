@@ -2,11 +2,11 @@
 
 <p>你可以借助 Visualization 选项卡查看遮挡剔除（occlusion culling）的实际运行效果。在场景中选择 Camera，然后使用 Scene 视图中的 Occlusion Culling 弹出窗口配置可视化。该弹出窗口可能会被那个小小的 Camera 视图窗口挡住。如果遇到这种情况，请右键单击双线图标并选择 Collapse。移动弹出窗口，然后通过右键单击选择 expand 来还原 Camera 视图。</p>
 
-<figure><figcaption>图 12：Visualization 选项卡与 Occlusion Culling 弹出窗口</figcaption></figure>
+<figure><img src="../assets/figures/urp/p125_3.webp" alt="图 12：Visualization 选项卡与 Occlusion Culling 弹出窗口" loading="lazy" decoding="async"><figcaption>图 12：Visualization 选项卡与 Occlusion Culling 弹出窗口</figcaption></figure>
 
 <p>在移动 Camera 时，你应该会看到物体不断地出现和消失。</p>
 
-<figure><figcaption>图 13：左侧图像为关闭遮挡剔除的效果，右侧图像为开启遮挡剔除的效果</figcaption></figure>
+<figure><img src="../assets/figures/urp/p126_1.webp" alt="图 13：左侧图像为关闭遮挡剔除的效果，右侧图像为开启遮挡剔除的效果" loading="lazy" decoding="async"><figcaption>图 13：左侧图像为关闭遮挡剔除的效果，右侧图像为开启遮挡剔除的效果</figcaption></figure>
 
 <h3>管线设置（Pipeline settings）</h3>
 
@@ -22,21 +22,21 @@
 
 <p>使用 Frame Debugger 可以更好地了解渲染过程中究竟发生了什么。要在 Frame Debugger 窗口中查看更多信息，请使用 URP Asset 调整 Debug Level。与 SRP Batcher 复选框一样，只有在启用 Show Additional Properties 后，该选项才会显示在 Inspector 中。</p>
 
-<figure><figcaption>图 14：为 URP Asset Inspector 启用额外属性</figcaption></figure>
+<figure><img src="../assets/figures/urp/p126_2.webp" alt="图 14：为 URP Asset Inspector 启用额外属性" loading="lazy" decoding="async"><figcaption>图 14：为 URP Asset Inspector 启用额外属性</figcaption></figure>
 
 <p>调整 Debug Level 可能会影响性能。在不使用 Frame Debugger 时，请务必将其关闭。</p>
 
-<figure><figcaption>图 15：设置 Debug Level</figcaption></figure>
+<figure><img src="../assets/figures/urp/p127_1.webp" alt="图 15：设置 Debug Level" loading="lazy" decoding="async"><figcaption>图 15：设置 Debug Level</figcaption></figure>
 
 <p>Frame Debugger 会列出渲染最终图像之前所做的所有绘制调用，帮助你精确定位某些帧渲染耗时过长的原因。它还能帮你查明场景的绘制调用数量为何如此之高。</p>
 
 <p>通过 Window &gt; Analysis &gt; Frame Debugger 打开 Frame Debugger。在游戏运行时，单击 Enable 按钮。这会暂停游戏，让你可以逐个检查绘制调用。</p>
 
-<figure><figcaption>图 16：Frame Debugger 详细信息</figcaption></figure>
+<figure><img src="../assets/figures/urp/p127_2.webp" alt="图 16：Frame Debugger 详细信息" loading="lazy" decoding="async"><figcaption>图 16：Frame Debugger 详细信息</figcaption></figure>
 
 <p>单击渲染管线（左窗格）中的某个阶段，会在 Game 视图中显示该阶段的预览。</p>
 
-<figure><figcaption>图 17：Frame Debugger 会显示 Game 视图中渲染过程的每一步——此处展示的是 SSAO 生成步骤</figcaption></figure>
+<figure><img src="../assets/figures/urp/p128_1.webp" alt="图 17：Frame Debugger 会显示 Game 视图中渲染过程的每一步——此处展示的是 SSAO 生成步骤" loading="lazy" decoding="async"><figcaption>图 17：Frame Debugger 会显示 Game 视图中渲染过程的每一步——此处展示的是 SSAO 生成步骤</figcaption></figure>
 
 <h3>Unity 性能分析器（Unity Profiler）</h3>
 

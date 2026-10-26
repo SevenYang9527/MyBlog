@@ -61,7 +61,7 @@
 <li>启用 Prebake Collision Meshes。</li>
 </ul>
 
-<figure><figcaption>图 1：在 Project Settings 的 Physics 面板中调整各项物理设置，以挤出更多性能。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p070_1.webp" alt="图 1：在 Project Settings 的 Physics 面板中调整各项物理设置，以挤出更多性能。" loading="lazy" decoding="async"><figcaption>图 1：在 Project Settings 的 Physics 面板中调整各项物理设置，以挤出更多性能。</figcaption></figure>
 
 <p>密切关注 Profiler 的 Physics 模块，以便发现性能问题。</p>
 
@@ -69,7 +69,7 @@
 
 <p>网格碰撞体（mesh collider）可能开销很大。用更简单的原始碰撞体（primitive collider）或网格碰撞体来替代更复杂的网格碰撞体，以近似原始形状。</p>
 
-<figure><figcaption>图 2：为碰撞体使用原始基本体或简化后的网格。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p071_1.webp" alt="图 2：为碰撞体使用原始基本体或简化后的网格。" loading="lazy" decoding="async"><figcaption>图 2：为碰撞体使用原始基本体或简化后的网格。</figcaption></figure>
 
 <h3>使用物理方法移动 Rigidbody</h3>
 
@@ -81,7 +81,7 @@
 
 <p>Maximum Allowed Timestep 限制了在帧率下降的情况下，物理计算和 FixedUpdate 事件可以占用多少时间。降低该值意味着物理和动画可能变慢，但同时也会降低它们在性能卡顿期间对帧率的影响。</p>
 
-<figure><figcaption>图 3：修改 Fixed Timestep 使其匹配目标帧率，并降低 Maximum Allowed Timestep，以减少性能故障。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p072_1.webp" alt="图 3：修改 Fixed Timestep 使其匹配目标帧率，并降低 Maximum Allowed Timestep，以减少性能故障。" loading="lazy" decoding="async"><figcaption>图 3：修改 Fixed Timestep 使其匹配目标帧率，并降低 Maximum Allowed Timestep，以减少性能故障。</figcaption></figure>
 
 <h3>使用 Physics Debugger 进行可视化</h3>
 
@@ -89,7 +89,7 @@
 
 <p>更多信息请参阅 Unity 文档中的 Physics Debug Visualization。</p>
 
-<figure><figcaption>图 4：Physics Debugger 帮助你可视化物理对象之间如何相互作用。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p073_2.webp" alt="图 4：Physics Debugger 帮助你可视化物理对象之间如何相互作用。" loading="lazy" decoding="async"><figcaption>图 4：Physics Debugger 帮助你可视化物理对象之间如何相互作用。</figcaption></figure>
 
   </article>
   <div class="prevnext">

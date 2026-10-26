@@ -46,7 +46,7 @@
       <article class="content">
 <h2>工厂模式（Factory Pattern）</h2>
 
-<figure><figcaption>图 1：工厂可以生成一个或多个产品。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p040_1.webp" alt="图 1：工厂可以生成一个或多个产品。" loading="lazy" decoding="async"><figcaption>图 1：工厂可以生成一个或多个产品。</figcaption></figure>
 
 <p>有时，拥有一个专门负责创建其他对象的特殊对象会很有帮助。许多游戏会在游戏过程中生成各种各样的东西，而在运行时，你往往直到真正需要的时候才知道自己需要什么。</p>
 
@@ -78,7 +78,7 @@ public abstract class Factory : MonoBehaviour
 
 <p>它们最终会形成这样的结构：</p>
 
-<figure><figcaption>图 2：用接口在产品之间定义共享的属性与逻辑，从而得到这样的类结构。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p041_1.webp" alt="图 2：用接口在产品之间定义共享的属性与逻辑，从而得到这样的类结构。" loading="lazy" decoding="async"><figcaption>图 2：用接口在产品之间定义共享的属性与逻辑，从而得到这样的类结构。</figcaption></figure>
 
 <p>IProduct 接口定义了产品之间的共同点。在这个例子里，你只有一个 ProductName 属性和产品在 Initialize 中运行的任何逻辑。</p>
 
@@ -132,7 +132,7 @@ public class ConcreteFactoryA : Factory
 
 <p>缺点在于，为了实现这个模式，你会创建若干个类和子类。与其他模式一样，这会带来一点额外的开销；如果你没有很多种类的产品，这些开销可能是不必要的。</p>
 
-<figure><figcaption>图 3：一个产品播放声音，另一个产品播放粒子效果，但两者使用同一个接口。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p043_1.webp" alt="图 3：一个产品播放声音，另一个产品播放粒子效果，但两者使用同一个接口。" loading="lazy" decoding="async"><figcaption>图 3：一个产品播放声音，另一个产品播放粒子效果，但两者使用同一个接口。</figcaption></figure>
 
 <h3>改进</h3>
 

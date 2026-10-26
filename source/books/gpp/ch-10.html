@@ -52,7 +52,7 @@
 
 <h3>模型-视图-控制器（MVC）设计模式</h3>
 
-<figure><figcaption>图 1：MVC 设计模式把应用划分为模型、视图和控制器三个部分。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p089_1.webp" alt="图 1：MVC 设计模式把应用划分为模型、视图和控制器三个部分。" loading="lazy" decoding="async"><figcaption>图 1：MVC 设计模式把应用划分为模型、视图和控制器三个部分。</figcaption></figure>
 
 <p>顾名思义，MVC 模式将应用程序拆分为三个层次：</p>
 
@@ -64,7 +64,7 @@
 
 <h4>模型、视图与控制器</h4>
 
-<figure><figcaption>图 2：模型、视图与控制器三者之间的职责与数据流向。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p090_1.webp" alt="图 2：模型、视图与控制器三者之间的职责与数据流向。" loading="lazy" decoding="async"><figcaption>图 2：模型、视图与控制器三者之间的职责与数据流向。</figcaption></figure>
 
 <p>这种关注点分离还具体定义了这三个部分之间如何相互作用。模型管理应用数据，而视图把该数据展示给用户。控制器处理输入，并对游戏数据做出各种决策或运算，随后把结果送回模型。</p>
 
@@ -86,7 +86,7 @@
 
 <p>在 MVP 中，展示器（Presenter，在 MVC 里被称为控制器）充当其他各层之间的中间人。它从模型获取数据，然后为在视图中展示而格式化这些数据。MVP 调换了由哪一层来处理输入：视图而不是控制器，负责处理用户输入。</p>
 
-<figure><figcaption>图 3：MVP 是 MVC 的一种变体，展示器位于模型与视图之间，负责在两者之间传递数据与事件。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p093_1.webp" alt="图 3：MVP 是 MVC 的一种变体，展示器位于模型与视图之间，负责在两者之间传递数据与事件。" loading="lazy" decoding="async"><figcaption>图 3：MVP 是 MVC 的一种变体，展示器位于模型与视图之间，负责在两者之间传递数据与事件。</figcaption></figure>
 
 <p>注意事件和观察者模式（observer pattern）在这个设计中是如何发挥作用的。用户可以操作 Unity UI 的 Button、Toggle 和 Slider 组件。视图层通过 UI 事件把输入回传给展示器，展示器则反过来操作模型。模型发出的状态变更事件会告知展示器数据已经更新。展示器再把修改后的数据传给视图，由视图刷新 UI。</p>
 

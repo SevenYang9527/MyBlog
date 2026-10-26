@@ -43,9 +43,9 @@
 
 <p>为了节省构建时间（代价是精度降低），你也可以直接对运行在 Unity 编辑器中的应用程序做性能分析。在性能分析器窗口的 Attach to Player 下拉菜单中选择 Playmode。</p>
 
-<figure><figcaption>图 1：性能分析器自动连接到目标设备时的界面。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p038_1.webp" alt="图 1：性能分析器自动连接到目标设备时的界面。" loading="lazy" decoding="async"><figcaption>图 1：性能分析器自动连接到目标设备时的界面。</figcaption></figure>
 
-<figure><figcaption>图 2：在性能分析器中将目标设为在 Playmode 下运行的游戏。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p038_2.webp" alt="图 2：在性能分析器中将目标设为在 Playmode 下运行的游戏。" loading="lazy" decoding="async"><figcaption>图 2：在性能分析器中将目标设为在 Playmode 下运行的游戏。</figcaption></figure>
 
 <h4>性能分析器使用技巧</h4>
 
@@ -93,7 +93,7 @@
 
 <p>这套工作流程之所以最优，是因为你在构建改动和部署到设备上花费的时间更少。相反，你可以在编辑器中快速迭代，并用性能分析工具验证改动结果。</p>
 
-<figure><figcaption>图 3：以独立进程方式启动性能分析器。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p041_1.webp" alt="图 3：以独立进程方式启动性能分析器。" loading="lazy" decoding="async"><figcaption>图 3：以独立进程方式启动性能分析器。</figcaption></figure>
 
 <h3>帧调试器（Frame Debugger）</h3>
 
@@ -105,7 +105,7 @@
 
 <p>从 Window &gt; Analysis &gt; Frame Debugger 菜单打开帧调试器。在应用程序运行于编辑器或设备上的情况下，点击 Enable。这会暂停应用程序，并在 Frame Debug 窗口左侧按顺序列出当前帧的所有绘制调用。诸如帧缓冲清除事件之类的额外细节也会一并列出。</p>
 
-<figure><figcaption>图 4：使用帧调试器分析已定位的过度绘制是如何发生的。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p042_1.webp" alt="图 4：使用帧调试器分析已定位的过度绘制是如何发生的。" loading="lazy" decoding="async"><figcaption>图 4：使用帧调试器分析已定位的过度绘制是如何发生的。</figcaption></figure>
 
 <p>调试器窗口顶部的滑块让你可以快速拖动浏览各条绘制调用，以便迅速定位到感兴趣的条目。</p>
 
@@ -115,9 +115,9 @@
 
 <p>帧调试器有助于定位绘制调用究竟来自何处。用它来可视化和理解渲染过程，从而指导你做出如何对绘制调用进行分组的决策，以减少对渲染状态的更改。</p>
 
-<figure><figcaption>图 5：帧调试器窗口在左侧列出绘制调用与事件，并提供一个滑块以便直观地逐条查看。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p042_2.webp" alt="图 5：帧调试器窗口在左侧列出绘制调用与事件，并提供一个滑块以便直观地逐条查看。" loading="lazy" decoding="async"><figcaption>图 5：帧调试器窗口在左侧列出绘制调用与事件，并提供一个滑块以便直观地逐条查看。</figcaption></figure>
 
-<figure><figcaption>图 6：在帧调试器中，Game 窗口显示的是构建到所选绘制调用为止（接近后处理效果应用完毕时）的场景帧。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p043_1.webp" alt="图 6：在帧调试器中，Game 窗口显示的是构建到所选绘制调用为止（接近后处理效果应用完毕时）的场景帧。" loading="lazy" decoding="async"><figcaption>图 6：在帧调试器中，Game 窗口显示的是构建到所选绘制调用为止（接近后处理效果应用完毕时）的场景帧。</figcaption></figure>
 
 <p>参照帧调试器的列表层级结构，可以定位那些值得关注的绘制调用来自何处。从列表中选择某一项后，Game 窗口中会显示场景渲染到该绘制调用为止（含该调用）的画面。</p>
 
@@ -127,6 +127,6 @@
 
 <p>除了着色器属性值之外，ShaderProperties 区域还会显示这些属性被用于哪些着色器阶段（shader stages），例如 vertex、fragment、geometry、hull、domain。</p>
 
-<figure><figcaption>图 7：选中一条绘制调用后，详情区域会显示其着色器、未被合批的原因以及着色器属性值。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p043_2.webp" alt="图 7：选中一条绘制调用后，详情区域会显示其着色器、未被合批的原因以及着色器属性值。" loading="lazy" decoding="async"><figcaption>图 7：选中一条绘制调用后，详情区域会显示其着色器、未被合批的原因以及着色器属性值。</figcaption></figure>
 
-<figure><figcaption>图 8：着色器阶段显示在 ShaderProperties 详情区域中。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p044_1.webp" alt="图 8：着色器阶段显示在 ShaderProperties 详情区域中。" loading="lazy" decoding="async"><figcaption>图 8：着色器阶段显示在 ShaderProperties 详情区域中。</figcaption></figure>

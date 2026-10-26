@@ -22,6 +22,22 @@ function copyTheme() {
   }
 }
 
+// 把 books/img/<slug>/*.webp 复制成 source/books/assets/figures/<slug>/
+function copyFigures(slug) {
+  const src = path.join(siteRoot, 'books', 'img', slug);
+  const dst = path.join(outRoot, 'assets', 'figures', slug);
+  if (!fs.existsSync(src)) return 0;
+  fs.rmSync(dst, { recursive: true, force: true });
+  fs.mkdirSync(dst, { recursive: true });
+  let n = 0;
+  for (const f of fs.readdirSync(src)) {
+    if (!f.endsWith('.webp')) continue;
+    fs.copyFileSync(path.join(src, f), path.join(dst, f));
+    n += 1;
+  }
+  return n;
+}
+
 function shell(opts) {
   const { book, title, sidebar, body, pager, isIndex } = opts;
   return `<!DOCTYPE html>
@@ -158,7 +174,8 @@ ${content}
     );
   }
 
-  console.log(`[${slug}] 构建 ${ready.length}/${units.length} 个片段 -> ${path.relative(siteRoot, outDir)}`);
+  const figures = copyFigures(slug);
+  console.log(`[${slug}] 构建 ${ready.length}/${units.length} 个片段 -> ${path.relative(siteRoot, outDir)}${figures ? `（插图 ${figures} 张）` : ''}`);
   return { slug, units: units.length, built: ready.length };
 }
 

@@ -70,7 +70,7 @@
 
 <p>每个目标平台都有内存上限，一旦你了解了它，就可以为应用程序设定内存预算。使用 Memory Profiler 查看一次捕获的快照。Hardware Resources 面板（见下图）会显示物理随机存取内存（Physical Random Access Memory，RAM）和视频随机存取内存（Video Random Access Memory，VRAM）的容量。这个数值并没有考虑并非所有空间都可供使用的情况。不过，它提供了一个有用的粗略数值，可作为工作的起点。</p>
 
-<figure><figcaption>图 1：Hardware Resources 显示快照采集时所使用设备的 RAM 与 VRAM 数值。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p031_1.webp" alt="图 1：Hardware Resources 显示快照采集时所使用设备的 RAM 与 VRAM 数值。" loading="lazy" decoding="async"><figcaption>图 1：Hardware Resources 显示快照采集时所使用设备的 RAM 与 VRAM 数值。</figcaption></figure>
 
 <p>最好将这里显示的数值与目标平台的硬件规格相互参照，因为此处显示的数字未必总能反映全貌。开发机硬件有时拥有更多内存，或者你所使用的硬件采用了统一内存架构。</p>
 
@@ -100,9 +100,9 @@
 
 <p>要查明可执行文件、DLL 和 Mono 虚拟机占用了多少内存，逐帧的内存数值是不够的。请使用详细快照捕获来深入分析这类内存构成。</p>
 
-<figure><figcaption>图 2：使用 Memory Profiler 模块快速收集与资产（Asset）和场景对象内存分配相关的信息。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p032_1.webp" alt="图 2：使用 Memory Profiler 模块快速收集与资产（Asset）和场景对象内存分配相关的信息。" loading="lazy" decoding="async"><figcaption>图 2：使用 Memory Profiler 模块快速收集与资产（Asset）和场景对象内存分配相关的信息。</figcaption></figure>
 
-<figure><figcaption>图 3：使用捕获的样本查看可执行文件与 DLL 内存占用等详细信息。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p032_2.webp" alt="图 3：使用捕获的样本查看可执行文件与 DLL 内存占用等详细信息。" loading="lazy" decoding="async"><figcaption>图 3：使用捕获的样本查看可执行文件与 DLL 内存占用等详细信息。</figcaption></figure>
 
 <p>要在高层面上判断内存占用何时开始逼近平台预算，可以使用下面这个“餐巾纸背面”式的粗略计算：</p>
 
@@ -119,7 +119,7 @@
 
 <p><strong>注意：</strong>Memory Profiler 模块详细视图中的引用树（reference tree）只显示原生引用（Native references）。类型继承自 UnityEngine.Object 的对象引用，可能会以其托管外壳（managed shell）的名称出现。不过，它们之所以出现，可能仅仅是因为其下存在原生对象。你不一定会看到任何托管类型。以某个引用字段中包含 Texture2D 的对象为例：使用这个视图，你也看不到究竟是哪个字段持有该引用。若需要这类细节，请使用 Memory Profiler 包。</p>
 
-<figure><figcaption>图 4：Memory Profiler 主窗口视图。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p033_1.webp" alt="图 4：Memory Profiler 主窗口视图。" loading="lazy" decoding="async"><figcaption>图 4：Memory Profiler 主窗口视图。</figcaption></figure>
 
 <p>在 Unity 性能分析与调试工具部分可以了解更多关于 Memory Profiler 的内容。</p>
 
@@ -135,7 +135,7 @@
 <li>着色器内存分析：现在较新版本的 Memory Profiler 模块会报告这一信息。</li>
 </ul>
 
-<figure><figcaption>图 5：Memory Profiler 模块允许你逐层深入资产与场景对象，轻松找到内存占用最高的对象。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p034_1.webp" alt="图 5：Memory Profiler 模块允许你逐层深入资产与场景对象，轻松找到内存占用最高的对象。" loading="lazy" decoding="async"><figcaption>图 5：Memory Profiler 模块允许你逐层深入资产与场景对象，轻松找到内存占用最高的对象。</figcaption></figure>
 
 <p>正如本节前面所述，在设定内存预算时，请记住要在整体目标平台中规格最低的设备上进行性能分析。密切监控内存占用，始终将目标限制放在心上。</p>
 

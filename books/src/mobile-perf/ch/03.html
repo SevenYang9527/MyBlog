@@ -16,7 +16,7 @@
 
 <p>了解如何在 Unity 中利用 Memory Profiler 改善内存占用。</p>
 
-<figure><figcaption>图 1：在 Memory Profiler 中捕获、检查并比较快照。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p019_1.webp" alt="图 1：在 Memory Profiler 中捕获、检查并比较快照。" loading="lazy" decoding="async"><figcaption>图 1：在 Memory Profiler 中捕获、检查并比较快照。</figcaption></figure>
 
 <h2>降低垃圾回收（GC）的影响</h2>
 
@@ -44,4 +44,4 @@
 
 <p>增量式垃圾回收（incremental garbage collection）不使用一次长时间的程序执行中断，而是使用多次短得多的中断，把工作量分摊到许多帧上。如果垃圾回收正在影响性能，试着启用这个选项，看看它能否显著缓解 GC 尖峰问题。使用 Profile Analyzer 来验证它对应用带来的收益。</p>
 
-<figure><figcaption>图 2：使用增量式垃圾回收器以减少 GC 尖峰。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p021_1.webp" alt="图 2：使用增量式垃圾回收器以减少 GC 尖峰。" loading="lazy" decoding="async"><figcaption>图 2：使用增量式垃圾回收器以减少 GC 尖峰。</figcaption></figure>

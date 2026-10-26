@@ -52,11 +52,11 @@
 
 <p>进行性能分析时，你会在 PlayerLoop 下看到项目中的所有用户代码（编辑器组件的代码则位于 EditorLoop 下）。</p>
 
-<figure><figcaption>图 1：Profiler 在整个引擎执行的上下文中展示你的自定义脚本、各项设置与图形渲染开销。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p025_1.webp" alt="图 1：Profiler 在整个引擎执行的上下文中展示你的自定义脚本、各项设置与图形渲染开销。" loading="lazy" decoding="async"><figcaption>图 1：Profiler 在整个引擎执行的上下文中展示你的自定义脚本、各项设置与图形渲染开销。</figcaption></figure>
 
-<figure><figcaption>图 2：Unity 脚本生命周期与 PlayerLoop 的对应关系总览。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p028_1.webp" alt="图 2：Unity 脚本生命周期与 PlayerLoop 的对应关系总览。" loading="lazy" decoding="async"><figcaption>图 2：Unity 脚本生命周期与 PlayerLoop 的对应关系总览。</figcaption></figure>
 
-<figure><figcaption>图 3：本节将要介绍的一系列脚本优化技巧与诀窍。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p029_1.webp" alt="图 3：本节将要介绍的一系列脚本优化技巧与诀窍。" loading="lazy" decoding="async"><figcaption>图 3：本节将要介绍的一系列脚本优化技巧与诀窍。</figcaption></figure>
 
 <h3>理解 Unity PlayerLoop</h3>
 
@@ -143,7 +143,7 @@ void Update()
 
 <p>在运行时调用 AddComponent 是有一定开销的。每当在运行时添加组件时，Unity 都必须检查是否存在重复组件或其他必需的组件。实例化一个已经配置好所需组件的 Prefab 通常性能更好。</p>
 
-<figure><figcaption>图 4：自定义预处理指令可以让你按条件把脚本拆分到不同的构建中。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p031_1.webp" alt="图 4：自定义预处理指令可以让你按条件把脚本拆分到不同的构建中。" loading="lazy" decoding="async"><figcaption>图 4：自定义预处理指令可以让你按条件把脚本拆分到不同的构建中。</figcaption></figure>
 
 <h3>缓存 GameObject 和组件</h3>
 

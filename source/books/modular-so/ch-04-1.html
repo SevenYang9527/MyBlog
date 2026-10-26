@@ -58,7 +58,7 @@
 
 <p>要亲自验证这一点，请新建一个 GameObject，并在其上挂载一个内容为空的 MonoBehaviour。然后，用文本编辑器打开这个序列化对象：</p>
 
-<figure><figcaption>图 1：一个仅挂载最简 MonoBehaviour 的新建 GameObject</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p019_1.webp" alt="图 1：一个仅挂载最简 MonoBehaviour 的新建 GameObject" loading="lazy" decoding="async"><figcaption>图 1：一个仅挂载最简 MonoBehaviour 的新建 GameObject</figcaption></figure>
 
 <pre><code>GameObject:
   m_ObjectHideFlags: 0
@@ -99,7 +99,7 @@ MonoBehaviour:
 
 <p>将其与一个空的 ScriptableObject 对比：</p>
 
-<figure><figcaption>图 2：ScriptableObject 降低了存储数据的开销</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p020_1.webp" alt="图 2：ScriptableObject 降低了存储数据的开销" loading="lazy" decoding="async"><figcaption>图 2：ScriptableObject 降低了存储数据的开销</figcaption></figure>
 
 <p>ScriptableObject 精简了这部分内存占用，去掉了 GameObject 和 Transform。它还把数据存储在项目层级（project level）。这一点很有帮助，尤其是当你需要从多个场景访问同一份数据时。</p>
 
@@ -135,7 +135,7 @@ MonoBehaviour:
 
 <p>如果每个组件都持有这些成员变量的一份副本，那就意味着你可能在随身携带大量重复数据。</p>
 
-<figure><figcaption>图 3：大量对象各自持有重复的本地数据会导致性能低下</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p021_1.webp" alt="图 3：大量对象各自持有重复的本地数据会导致性能低下" loading="lazy" decoding="async"><figcaption>图 3：大量对象各自持有重复的本地数据会导致性能低下</figcaption></figure>
 
 <p>有些数据并不需要在运行时改变，所以这种做法的效率略低。相反，你可以把这些数据汇总到一个 ScriptableObject 中。然后，这一千个对象中的每一个都可以指向这份共享的数据资源。每个对象存储的是对数据的引用，而不是数据本身的副本。</p>
 
@@ -145,11 +145,11 @@ MonoBehaviour:
 
 <p>对 ScriptableObject 的引用（而不是数据的完整副本）相对来说很小。随着规模扩大，不去复制数据所带来的内存节省会变得相当可观。</p>
 
-<figure><figcaption>图 4：许多对象通过一个 ScriptableObject 共享数据</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p022_1.webp" alt="图 4：许多对象通过一个 ScriptableObject 共享数据" loading="lazy" decoding="async"><figcaption>图 4：许多对象通过一个 ScriptableObject 共享数据</figcaption></figure>
 
 <p>在软件设计中，这是一种被称为享元模式（flyweight pattern）的优化。以这种方式重构代码可以避免复制大量值，并降低内存占用。</p>
 
-<figure><figcaption>图 5：Memory Profiler 对比重复数据（A）与共享数据（B）的内存占用</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p024_1.webp" alt="图 5：Memory Profiler 对比重复数据（A）与共享数据（B）的内存占用" loading="lazy" decoding="async"><figcaption>图 5：Memory Profiler 对比重复数据（A）与共享数据（B）的内存占用</figcaption></figure>
 
 <p>你可以用这种方式存储大量共享数据。以下场景可以考虑使用 ScriptableObject：</p>
 <ul>
@@ -176,7 +176,7 @@ MonoBehaviour:
 
 <p>这样能行，但你手上有一些不期望在运行时改变的数据。如果你有很多对象都挂载了 NPCHealthUnrefactored，就会产生大量不必要的重复数据。</p>
 
-<figure><figcaption>图 6：重构前的 NPCHealth MonoBehaviour</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p024_2.webp" alt="图 6：重构前的 NPCHealth MonoBehaviour" loading="lazy" decoding="async"><figcaption>图 6：重构前的 NPCHealth MonoBehaviour</figcaption></figure>
 
 <p>所有不需要改变的数据都可以移入一个 ScriptableObject：</p>
 
@@ -212,7 +212,7 @@ public class NPCConfigSO : ScriptableObject
     public int currentHealth;
 }</code></pre>
 
-<figure><figcaption>图 7：重构将数据拆分到 MonoBehaviour 与 ScriptableObject 中</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p029_1.webp" alt="图 7：重构将数据拆分到 MonoBehaviour 与 ScriptableObject 中" loading="lazy" decoding="async"><figcaption>图 7：重构将数据拆分到 MonoBehaviour 与 ScriptableObject 中</figcaption></figure>
 
 <h3>自定义 Inspector</h3>
 
@@ -220,7 +220,7 @@ public class NPCConfigSO : ScriptableObject
 
 <p>为了让 MonoBehaviour 更易于浏览，可以考虑创建一个自定义编辑器（custom editor）。下面是一个针对 NPCHealth 的示例。</p>
 
-<figure><figcaption>图 8：自定义 Inspector 在 MonoBehaviour 中显示 ScriptableObject 的变量</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p032_1.webp" alt="图 8：自定义 Inspector 在 MonoBehaviour 中显示 ScriptableObject 的变量" loading="lazy" decoding="async"><figcaption>图 8：自定义 Inspector 在 MonoBehaviour 中显示 ScriptableObject 的变量</figcaption></figure>
 
 <p>MonoBehaviour 现在包含了指向这个新 ScriptableObject 的引用。在 Inspector 中，重构后的一切看起来相似，只是数据被拆分了。</p>
 

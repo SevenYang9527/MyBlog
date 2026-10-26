@@ -93,7 +93,7 @@
   <li>现在你可以把该材质应用到对象上，控制它在边缘处的可见性。</li>
 </ol>
 
-<figure><figcaption>图 1：将着色器应用于球形的点光源（Point light），为其提供光晕效果</figcaption></figure>
+<figure><img src="../assets/figures/urp/p103_1.webp" alt="图 1：将着色器应用于球形的点光源（Point light），为其提供光晕效果" loading="lazy" decoding="async"><figcaption>图 1：将着色器应用于球形的点光源（Point light），为其提供光晕效果</figcaption></figure>
 
 <h3>全屏着色器图（Fullscreen Shader Graph）</h3>
 
@@ -103,19 +103,19 @@
 
 <p>你可以使用 URP Sample Buffer 节点为片元着色器获取某个像素的颜色，该节点本身使用 BlitSource 选项。下图展示了一个简单的着色（tint）示例。URP Sample Buffer 还提供对世界法线和运动矢量的访问，这些对于边缘检测和运动拖尾都很有用。</p>
 
-<figure><figcaption>图 2：一个简单的着色示例</figcaption></figure>
+<figure><img src="../assets/figures/urp/p103_2.webp" alt="图 2：一个简单的着色示例" loading="lazy" decoding="async"><figcaption>图 2：一个简单的着色示例</figcaption></figure>
 
 <p>要使用这个示例，你需要一种方法，用使用了该着色器的材质来 Blit 当前摄像机渲染纹理的结果。在选中活动的 Renderer Data 资源的情况下，使用 Inspector 添加一个渲染器功能（Renderer Feature）。选择 Full Screen Pass Renderer Feature。</p>
 
-<figure><figcaption>图 3：添加 Full Screen Pass Renderer Feature</figcaption></figure>
+<figure><img src="../assets/figures/urp/p104_1.webp" alt="图 3：添加 Full Screen Pass Renderer Feature" loading="lazy" decoding="async"><figcaption>图 3：添加 Full Screen Pass Renderer Feature</figcaption></figure>
 
 <p>剩下的就是更新该渲染器功能的设置。设置你创建的、使用全屏着色器图的材质，然后选择它在渲染管线中的位置。</p>
 
-<figure><figcaption>图 4：渲染器功能的设置</figcaption></figure>
+<figure><img src="../assets/figures/urp/p106_2.webp" alt="图 4：渲染器功能的设置" loading="lazy" decoding="async"><figcaption>图 4：渲染器功能的设置</figcaption></figure>
 
 <p>下图左侧显示了着色效果。全屏着色器图是创建自定义后处理效果的一种实用方法。</p>
 
-<figure><figcaption>图 5：着色效果</figcaption></figure>
+<figure><img src="../assets/figures/urp/p107_1.webp" alt="图 5：着色效果" loading="lazy" decoding="async"><figcaption>图 5：着色效果</figcaption></figure>
 
 <h3>视觉效果图（VFX Graph）</h3>
 
@@ -147,7 +147,7 @@
 
 <p>你将使用一个图集（Atlas）形式的纹理，其中包含一段动画烟雾精灵。一个 8x8 网格中的 64 张图像序列将作为单个粒子的来源。在任意一帧中，单个粒子只会显示网格中的一张图像。随着每一帧被渲染，它会按预定义的速率循环切换这些图像。下面是 Smoke Sprite Atlas：</p>
 
-<figure><figcaption>图 6：Smoke Sprite Atlas 烟雾精灵图集</figcaption></figure>
+<figure><img src="../assets/figures/urp/p108_1.webp" alt="图 6：Smoke Sprite Atlas 烟雾精灵图集" loading="lazy" decoding="async"><figcaption>图 6：Smoke Sprite Atlas 烟雾精灵图集</figcaption></figure>
 
   </article>
   <div class="prevnext">

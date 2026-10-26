@@ -47,7 +47,7 @@
 
 <p>你可以把 EnemyAI ScriptableObject 定义为抽象类，从而让这个模式更加有用。这样它就能充当模板，供多种与 EnemyUnit MonoBehaviour 兼容的 ScriptableObject 继承，于是这个抽象 ScriptableObject 可以代表不止一种算法。</p>
 
-<figure><figcaption>图 1：可插拔的行为既可以在运行时切换，也可以在编辑器中切换。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p042_1.webp" alt="图 1：可插拔的行为既可以在运行时切换，也可以在编辑器中切换。" loading="lazy" decoding="async"><figcaption>图 1：可插拔的行为既可以在运行时切换，也可以在编辑器中切换。</figcaption></figure>
 
 <p>因此，你可以为 Patrol、Idle、Flee 这类行为编写具体的 ScriptableObject 类，让它们派生自基类 EnemyAI。尽管它们都实现同一个 MoveUnit 方法，但各自可以产生截然不同的结果。</p>
 

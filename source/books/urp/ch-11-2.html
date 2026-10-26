@@ -68,7 +68,7 @@
 
 <p>下面是最终烟雾效果实际运行时的图像：</p>
 
-<figure><figcaption>图 1：最终烟雾效果的实际运行画面</figcaption></figure>
+<figure><img src="../assets/figures/urp/p109_2.webp" alt="图 1：最终烟雾效果的实际运行画面" loading="lazy" decoding="async"><figcaption>图 1：最终烟雾效果的实际运行画面</figcaption></figure>
 </li>
 </ol>
 
@@ -76,15 +76,15 @@
 
 <p>如果你正在开发一款 2D 游戏，你会很高兴地得知 URP 有一个专用的 2D 渲染器（2D Renderer）。最简单的上手方式是从 Unity Hub 中使用 2D URP 模板（template）。该模板可确保你的项目通过 Project Settings &gt; Graphics &gt; Scriptable Render Pipeline Settings 指定了一个 URP 2D Renderer。所有经过验证并已预编译的 2D 包都会随 2D URP 模板一起安装，并且默认设置已针对 2D 项目进行了优化。这还能确保项目比手动安装所有包时加载得更快。</p>
 
-<figure><figcaption>图 2：Unity Hub 中的 2D URP 模板</figcaption></figure>
+<figure><img src="../assets/figures/urp/p110_1.webp" alt="图 2：Unity Hub 中的 2D URP 模板" loading="lazy" decoding="async"><figcaption>图 2：Unity Hub 中的 2D URP 模板</figcaption></figure>
 
 <p>如果你是在升级一个现有项目，那么需要在项目的 Assets 文件夹中找一个合适的文件夹。右键单击并选择 Create &gt; Rendering &gt; URP Asset (with 2D Renderer)。给它起个名字，然后通过 Project Settings &gt; Graphics &gt; Scriptable Render Pipeline Settings 选中它。在 Scene 视图中编辑时，务必选中 2D 按钮。</p>
 
-<figure><figcaption>图 3：创建 2D Renderer 和 Settings Asset</figcaption></figure>
+<figure><img src="../assets/figures/urp/p111_3.webp" alt="图 3：创建 2D Renderer 和 Settings Asset" loading="lazy" decoding="async"><figcaption>图 3：创建 2D Renderer 和 Settings Asset</figcaption></figure>
 
 <p>如果你是在更新一个现有项目，那么你可能会发现切换到 URP 2D Renderer 后出现了经典的洋红色渲染错误。</p>
 
-<figure><figcaption>图 4：用 URP 2D Renderer 更新现有项目可能会在场景中导致渲染错误</figcaption></figure>
+<figure><img src="../assets/figures/urp/p112_2.webp" alt="图 4：用 URP 2D Renderer 更新现有项目可能会在场景中导致渲染错误" loading="lazy" decoding="async"><figcaption>图 4：用 URP 2D Renderer 更新现有项目可能会在场景中导致渲染错误</figcaption></figure>
 
 <h4>URP 中可用的 2D 着色器（shader）</h4>
 
@@ -113,17 +113,17 @@
 
 <p>幸运的是，Window &gt; Rendering &gt; Render Pipeline Converter 已经为你考虑到了这一点。选择 Built-in to 2D (URP)，然后单击 Material and Material Reference Upgrade 面板。接着单击 Initialize Converters，随后单击 Convert Assets，以便能够取消选择某些项目；或者单击 Initialize And Convert，一键完成整个流程。如果你仍然看到洋红色的 Sprite，可能需要手动替换某些材质中的 shader。请从下表中挑选一个 shader。</p>
 
-<figure><figcaption>图 5：将内置渲染管线（Built-in Render Pipeline）2D 项目转换为 URP 2D</figcaption></figure>
+<figure><img src="../assets/figures/urp/p113_2.webp" alt="图 5：将内置渲染管线（Built-in Render Pipeline）2D 项目转换为 URP 2D" loading="lazy" decoding="async"><figcaption>图 5：将内置渲染管线（Built-in Render Pipeline）2D 项目转换为 URP 2D</figcaption></figure>
 
 <p>URP 2D Renderer 提供了 2D 光照。这些光照带来了更高的性能和灵活性。使用这些新工具，你可以创造更具沉浸感的体验，并通过使用烘焙光照（baked light）来创造新的玩法可能性，从而省去准备不同 Sprite 变体的时间。如果你迁移了一个现有项目，那么场景中不会有任何 URP 2D 光照。如果你的 Sprite 使用了 Sprite-Lit-Default shader，你可能会惊讶地看到一个受光照的渲染结果。但在没有光照的情况下，场景会被分配一个默认的全局光照（Global Light），从而呈现出无光照（unlit）的外观。</p>
 
-<figure><figcaption>图 6：场景中没有光照时，渲染结果默认为无光照</figcaption></figure>
+<figure><img src="../assets/figures/urp/p114_1.webp" alt="图 6：场景中没有光照时，渲染结果默认为无光照" loading="lazy" decoding="async"><figcaption>图 6：场景中没有光照时，渲染结果默认为无光照</figcaption></figure>
 
 <p>通过 Hierarchy 窗口添加一个光照。右键单击并选择 Light &gt; Global Light 2D。</p>
 
 <p>现在你可以调整 Settings、Color、Intensity，以及它们所影响的 Target Sorting Layers（排序图层）。</p>
 
-<figure><figcaption>图 7：在 Global Light 2D 的 Settings 中，角色使用的是 Unlit shader</figcaption></figure>
+<figure><img src="../assets/figures/urp/p115_2.webp" alt="图 7：在 Global Light 2D 的 Settings 中，角色使用的是 Unlit shader" loading="lazy" decoding="async"><figcaption>图 7：在 Global Light 2D 的 Settings 中，角色使用的是 Unlit shader</figcaption></figure>
 
 <p>2D URP 框架包含四种光照类型：</p>
 
@@ -134,15 +134,15 @@
 <li>Global：照亮目标排序图层上的所有对象。</li>
 </ul>
 
-<figure><figcaption>图 8：编辑一个 Spot light 2D</figcaption></figure>
+<figure><img src="../assets/figures/urp/p116_2.webp" alt="图 8：编辑一个 Spot light 2D" loading="lazy" decoding="async"><figcaption>图 8：编辑一个 Spot light 2D</figcaption></figure>
 
 <p>如果某个 Sprite 要投射阴影，那么需要为它添加一个 Shadow Caster 2D 组件。</p>
 
-<figure><figcaption>图 9：添加一个 Shadow Caster 2D 组件</figcaption></figure>
+<figure><img src="../assets/figures/urp/p118_1.webp" alt="图 9：添加一个 Shadow Caster 2D 组件" loading="lazy" decoding="async"><figcaption>图 9：添加一个 Shadow Caster 2D 组件</figcaption></figure>
 
 <p>URP 2D Renderer 提供了创建一流 2D 游戏所需的全部工具，即使在低端硬件上也能表现出色。</p>
 
-<figure><figcaption>图 10：来自 Unity 2D 演示项目 Dragon Crashers 的一张图像；Unity 的 2D 开发电子书《2D game art, animation, and lighting for artists》由 Dragon Crashers 的创意总监撰写</figcaption></figure>
+<figure><img src="../assets/figures/urp/p119_1.webp" alt="图 10：来自 Unity 2D 演示项目 Dragon Crashers 的一张图像；Unity 的 2D 开发电子书《2D game art, animation, and lighting for artists》由 Dragon Crashers 的创意总监撰写" loading="lazy" decoding="async"><figcaption>图 10：来自 Unity 2D 演示项目 Dragon Crashers 的一张图像；Unity 的 2D 开发电子书《2D game art, animation, and lighting for artists》由 Dragon Crashers 的创意总监撰写</figcaption></figure>
 
 <p>相关链接：</p>
 

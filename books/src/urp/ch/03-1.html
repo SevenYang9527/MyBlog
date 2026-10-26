@@ -6,11 +6,11 @@
 
 <p>通过 Unity Hub 使用 URP 打开一个新项目。点击 New，确认窗口顶部所选的 Unity 版本为 2022.2 或更高版本。为项目指定名称和位置，选择 3D (URP) 模板或 3D Sample Scene (URP)，然后点击 Create。</p>
 
-<figure><figcaption>图 1：使用 URP 模板创建新项目，首次使用时可能需要先下载该模板</figcaption></figure>
+<figure><img src="../assets/figures/urp/p012_1.webp" alt="图 1：使用 URP 模板创建新项目，首次使用时可能需要先下载该模板" loading="lazy" decoding="async"><figcaption>图 1：使用 URP 模板创建新项目，首次使用时可能需要先下载该模板</figcaption></figure>
 
 <p><strong>注意：</strong>该模板会确保项目使用线性颜色空间（linear color space），这是正确计算光照所必需的。</p>
 
-<figure><figcaption>图 2：URP 3D Sample 中包含的四个环境之一，可在 Unity Hub 中获取</figcaption></figure>
+<figure><img src="../assets/figures/urp/p013_1.webp" alt="图 2：URP 3D Sample 中包含的四个环境之一，可在 Unity Hub 中获取" loading="lazy" decoding="async"><figcaption>图 2：URP 3D Sample 中包含的四个环境之一，可在 Unity Hub 中获取</figcaption></figure>
 
 <p>你可以通过 File &gt; New Scene 创建新场景，其中包含 Camera 和 Directional light 等基本 GameObject，甚至可以用预先填充的对象创建自己的场景模板。更多内容请参阅 URP Scene Templates 文档。</p>
 
@@ -18,9 +18,9 @@
 
 <p>默认选中的 URP Asset 是 UniversalRP-HighFidelity，但你可以切换到 UniversalRP-Balanced 或 UniversalRP-Performant。</p>
 
-<figure><figcaption>图 3：显示场景模板的 New Scene 对话框</figcaption></figure>
+<figure><img src="../assets/figures/urp/p013_2.webp" alt="图 3：显示场景模板的 New Scene 对话框" loading="lazy" decoding="async"><figcaption>图 3：显示场景模板的 New Scene 对话框</figcaption></figure>
 
-<figure><figcaption>图 4：Project Settings 中的 Graphics 面板</figcaption></figure>
+<figure><img src="../assets/figures/urp/p014_1.webp" alt="图 4：Project Settings 中的 Graphics 面板" loading="lazy" decoding="async"><figcaption>图 4：Project Settings 中的 Graphics 面板</figcaption></figure>
 
 <p>本指南稍后的章节会详细介绍如何调整 URP Asset 的各项设置。</p>
 
@@ -30,37 +30,37 @@
 
 <p>如果要升级现有的内置渲染管线项目，你需要自行将 URP 包添加到项目中，因为 Unity 2022.2 或 2022 LTS 并未内置该包。</p>
 
-<figure><figcaption>图 5：显示 Unity Registry 包的 Package Manager</figcaption></figure>
+<figure><img src="../assets/figures/urp/p014_2.webp" alt="图 5：显示 Unity Registry 包的 Package Manager" loading="lazy" decoding="async"><figcaption>图 5：显示 Unity Registry 包的 Package Manager</figcaption></figure>
 
 <p>转到 Window &gt; Package Manager，点击 Packages 下拉菜单，将 URP 添加到项目中。确保选择 Unity Registry，然后选择 Universal RP。如果开发计算机上尚未安装 URP 包，请点击窗口右下角的 Download。下载完成后点击 Install。</p>
 
-<figure><figcaption>图 6：通过 Package Manager 安装 URP</figcaption></figure>
+<figure><img src="../assets/figures/urp/p015_1.webp" alt="图 6：通过 Package Manager 安装 URP" loading="lazy" decoding="async"><figcaption>图 6：通过 Package Manager 安装 URP</figcaption></figure>
 
 <p>要创建 URP Asset，在 Project 窗口中右键单击，选择 Create &gt; Rendering &gt; URP Asset (with Universal Renderer)。为该资源命名。</p>
 
-<figure><figcaption>图 7：创建 URP Asset</figcaption></figure>
+<figure><img src="../assets/figures/urp/p015_2.webp" alt="图 7：创建 URP Asset" loading="lazy" decoding="async"><figcaption>图 7：创建 URP Asset</figcaption></figure>
 
 <p><strong>请记住：</strong>如果你使用 Universal Render Pipeline 或 3D (URP) 模板创建新项目，这些 URP Asset 以及 URP 包已经存在于项目中。</p>
 
 <p>URP 并不创建单个 URP Asset，而是使用两个文件，二者都以 Asset 为扩展名。</p>
 
-<figure><figcaption>图 8：URP 中的两个 Asset，一个用于 URP 设置，另一个用于 Renderer Data</figcaption></figure>
+<figure><img src="../assets/figures/urp/p016_1.webp" alt="图 8：URP 中的两个 Asset，一个用于 URP 设置，另一个用于 Renderer Data" loading="lazy" decoding="async"><figcaption>图 8：URP 中的两个 Asset，一个用于 URP 设置，另一个用于 Renderer Data</figcaption></figure>
 
 <p>其中一个称为 UniversalRP_Renderer，是一个 Renderer Data Asset，你可以用它筛选渲染器所作用的层，并拦截渲染管线以自定义场景的渲染方式。通过这种方式，你可以更方便地创建高质量效果。更多信息请参阅「管线回调」（Pipeline callbacks）一节。</p>
 
 <p>此外，UniversalRP_Renderer 还控制 URP 的高层渲染逻辑与各个 Pass。它支持前向（Forward）和延迟（Deferred）路径，以及一个 2D 渲染器，后者可启用 2D 光源、2D 阴影和光源混合样式（Light Blend Styles）等功能。你甚至可以扩展 URP 来创建自己的渲染器。</p>
 
-<figure><figcaption>图 9：UniversalRP_Renderer Data Asset 的 Inspector</figcaption></figure>
+<figure><img src="../assets/figures/urp/p017_1.webp" alt="图 9：UniversalRP_Renderer Data Asset 的 Inspector" loading="lazy" decoding="async"><figcaption>图 9：UniversalRP_Renderer Data Asset 的 Inspector</figcaption></figure>
 
 <p>另一个 URP Asset 用于控制质量（Quality）、光照（Lighting）、阴影（Shadows）和后处理（Post-processing）等设置。你可以使用不同的 URP Asset 来控制质量设置，本节稍后会概述这一流程。该设置资源（Settings Asset）通过 Renderer List 与渲染器数据资源（Renderer Data Asset）相链接。创建新的 URP Asset 时，设置资源会拥有一个仅含单个条目的 Renderer List——即同时创建的那个渲染器数据资源，并被设为默认值。你可以向此列表添加其他渲染器数据资源。</p>
 
 <p>默认渲染器用于所有摄像机（Camera），包括场景视图（Scene view）。摄像机可以通过从 Renderer List 中选择另一个渲染器来覆盖默认渲染器。如有需要，也可以通过脚本实现这一点。</p>
 
-<figure><figcaption>图 10：Inspector 中的 URP Asset</figcaption></figure>
+<figure><img src="../assets/figures/urp/p018_1.webp" alt="图 10：Inspector 中的 URP Asset" loading="lazy" decoding="async"><figcaption>图 10：Inspector 中的 URP Asset</figcaption></figure>
 
 <p>尽管已按上述步骤创建了 URP Asset，场景视图或游戏视图中打开的场景仍会使用内置渲染管线。你还必须完成最后一步才能切换到 URP：转到 Edit &gt; Project Settings，打开 Graphics 面板。点击 None (Render Pipeline Asset) 旁边的小圆点，在打开的面板中选择 UniversalRP。</p>
 
-<figure><figcaption>图 11：选择 Scriptable Render Pipeline Asset</figcaption></figure>
+<figure><img src="../assets/figures/urp/p018_2.webp" alt="图 11：选择 Scriptable Render Pipeline Asset" loading="lazy" decoding="async"><figcaption>图 11：选择 Scriptable Render Pipeline Asset</figcaption></figure>
 
 <p>此时会弹出关于此次切换的警告信息，直接点击 Continue 即可。</p>
 
@@ -70,7 +70,7 @@
 
 <p>完成上述步骤后，你会发现原本精美的场景突然变成了洋红色。这是因为内置渲染管线项目中材质所使用的着色器不受 URP 支持。幸运的是，有一种方法可以让场景恢复到原本的质量。</p>
 
-<figure><figcaption>图 12：场景中的材质显示为洋红色，因为其基于内置渲染管线的着色器必须经过转换才能在 URP 中使用</figcaption></figure>
+<figure><img src="../assets/figures/urp/p020_1.webp" alt="图 12：场景中的材质显示为洋红色，因为其基于内置渲染管线的着色器必须经过转换才能在 URP 中使用" loading="lazy" decoding="async"><figcaption>图 12：场景中的材质显示为洋红色，因为其基于内置渲染管线的着色器必须经过转换才能在 URP 中使用</figcaption></figure>
 
 <p>转到 Window &gt; Rendering &gt; Render Pipeline Converter。2D 项目选择 Convert Built-In to 2D (URP)，3D 项目选择 Built-In to URP。假定你的项目是 3D 项目，则需要选择相应的转换器：</p>
 
@@ -102,7 +102,7 @@
 
 <p>选择一个或多个上述转换器后，点击 Initialize Converters 或 Initialize And Convert。无论选择哪一种，项目都会被扫描，需要转换的资源会被添加到各个转换器面板中。如果选择 Initialize Converters，你可以通过取消勾选每个条目提供的复选框来限制转换范围。在此阶段，点击 Convert Assets 开始转换过程。如果选择 Initialize And Convert，则在转换器初始化完成后会自动开始转换。转换完成后，系统可能会要求你重新打开编辑器中当前活跃的场景。</p>
 
-<figure><figcaption>图 13：Render Pipeline Converter</figcaption></figure>
+<figure><img src="../assets/figures/urp/p025_1.webp" alt="图 13：Render Pipeline Converter" loading="lazy" decoding="async"><figcaption>图 13：Render Pipeline Converter</figcaption></figure>
 
 <h3>比较内置渲染管线与 URP 的质量选项</h3>
 

@@ -46,7 +46,7 @@
     <div class="pager"><a href="ch-08-1.html">← 上一节</a><a href="ch-09.html">下一节 →</a></div>
   </div>
       <article class="content">
-<figure><figcaption>图 1：禁用阴影投射以减少绘制调用。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p051_1.webp" alt="图 1：禁用阴影投射以减少绘制调用。" loading="lazy" decoding="async"><figcaption>图 1：禁用阴影投射以减少绘制调用。</figcaption></figure>
 
 <h3>避免使用过多动态光源</h3>
 <p>在使用前向渲染（forward rendering）时，务必避免为移动应用添加过多动态光源。可以考虑改用自定义着色器效果（custom shader effects）和光照探针（Light Probes）为动态网格提供光照，并为静态网格使用烘焙光照（baked lighting）。</p>
@@ -56,7 +56,7 @@
 <p>阴影投射可以按 MeshRenderer 和光源分别禁用。请尽可能禁用阴影，以减少绘制调用（draw calls）。</p>
 <p>你也可以在角色下方放置一个简单的网格或四边形，并贴上模糊纹理来伪造阴影。或者使用自定义着色器创建斑点阴影（blob shadows）。</p>
 
-<figure><figcaption>图 2：启用 Contribute GI。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p051_2.webp" alt="图 2：启用 Contribute GI。" loading="lazy" decoding="async"><figcaption>图 2：启用 Contribute GI。</figcaption></figure>
 
 <h3>将光照烘焙到光照贴图中</h3>
 <p>使用全局光照（Global Illumination, GI）为静态几何体添加富有戏剧性的光照。为对象标记 Contribute GI，即可将高质量光照以光照贴图（Lightmaps）的形式存储起来。</p>
@@ -70,8 +70,8 @@
 <h3>对移动对象使用光照探针</h3>
 <p>光照探针（Light Probes）会存储场景中空白区域的烘焙光照信息，同时提供高质量的光照（包括直接光与间接光）。它们使用球谐函数（Spherical Harmonics），与动态光源相比计算速度更快。这对于通常无法接受烘焙光照贴图的移动对象尤其有用。</p>
 
-<figure><figcaption>图 3：层可以将光源的影响范围限制到特定的剔除遮罩上。</figcaption></figure>
-<figure><figcaption>图 4：一个光照探针组（Light Probe Group），其光照探针分布在整个关卡中。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p052_1.webp" alt="图 3：层可以将光源的影响范围限制到特定的剔除遮罩上。" loading="lazy" decoding="async"><figcaption>图 3：层可以将光源的影响范围限制到特定的剔除遮罩上。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p052_2.webp" alt="图 4：一个光照探针组（Light Probe Group），其光照探针分布在整个关卡中。" loading="lazy" decoding="async"><figcaption>图 4：一个光照探针组（Light Probe Group），其光照探针分布在整个关卡中。</figcaption></figure>
 
 <p>光照探针同样可以应用于静态网格。在 MeshRenderer 组件中找到 Receive Global Illumination 下拉菜单，将其从 Lightmaps 切换为 Light Probes。</p>
 <p>请继续对关卡中主要的几何体使用光照贴图，而对较小的细节使用探针。光照探针照明不需要正确的 UV，从而省去了展开网格 UV 的额外步骤。探针还能减少磁盘占用，因为它们不会生成光照贴图纹理。</p>
@@ -82,8 +82,8 @@
 <p>当对象逐渐远离时，细节层级（Level of Detail, LOD）可以将它们切换为使用更简单的网格、更简单的材质和着色器，以帮助提升 GPU 性能。</p>
 <p>更多细节请参阅 Unity Learn 上的 Working with LODs 课程。</p>
 
-<figure><figcaption>图 5：源网格（source meshes），以不同分辨率建模。</figcaption></figure>
-<figure><figcaption>图 6：使用 LOD Group 的网格示例。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p054_1.webp" alt="图 5：源网格（source meshes），以不同分辨率建模。" loading="lazy" decoding="async"><figcaption>图 5：源网格（source meshes），以不同分辨率建模。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p054_2.webp" alt="图 6：使用 LOD Group 的网格示例。" loading="lazy" decoding="async"><figcaption>图 6：使用 LOD Group 的网格示例。</figcaption></figure>
 
 <h3>使用遮挡剔除移除隐藏对象</h3>
 <p>被其他对象挡住的物体仍可能被渲染并消耗资源。使用遮挡剔除（Occlusion Culling）将它们丢弃掉。</p>
@@ -100,7 +100,7 @@
 <h3>保持着色器简单</h3>
 <p>通用渲染管线（Universal Render Pipeline）包含若干已经针对移动平台优化好的轻量级 Lit 和 Unlit 着色器。请尽量让着色器变体（shader variations）保持最少，因为它们会对运行时内存占用产生巨大影响。如果默认的 URP 着色器不能满足需求，可以使用 Shader Graph 自定义材质的外观。在此处了解如何用 Shader Graph 以可视化方式构建着色器。</p>
 
-<figure><figcaption>图 7：使用 Shader Graph 创建自定义着色器。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p056_1.webp" alt="图 7：使用 Shader Graph 创建自定义着色器。" loading="lazy" decoding="async"><figcaption>图 7：使用 Shader Graph 创建自定义着色器。</figcaption></figure>
 
 <h3>尽量减少过度绘制与 Alpha 混合</h3>
 <p>避免绘制不必要的透明或半透明图像，也不要让几乎看不见的图像或效果相互重叠。移动平台受由此产生的过度绘制（overdraw）和 Alpha 混合（alpha blending）影响很大。你可以使用 RenderDoc 图形调试器检查过度绘制。还可以利用 Rendering Debugger，它可以将各种光照、渲染和材质属性可视化。这些可视化有助于你发现渲染问题，并优化场景与渲染配置。</p>
@@ -111,7 +111,7 @@
 <h3>小心使用 Renderer.material</h3>
 <p>在脚本中访问 Renderer.material 会复制材质，并返回对新副本的引用。这会破坏任何已经包含该材质的现有合批（batch）。如果你希望访问已合批对象的材质，请改用 Renderer.sharedMaterial。</p>
 
-<figure><figcaption>图 8：在移动应用中保持后处理效果简单。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p057_1.webp" alt="图 8：在移动应用中保持后处理效果简单。" loading="lazy" decoding="async"><figcaption>图 8：在移动应用中保持后处理效果简单。</figcaption></figure>
 
 <h3>优化 SkinnedMeshRenderer</h3>
 <p>渲染蒙皮网格（skinned meshes）的开销很大。请确保每个使用 SkinnedMeshRenderer 的对象都确实需要它。如果某个 GameObject 只是偶尔需要动画，可以使用 BakeMesh 函数将蒙皮网格冻结在一个静态姿势，并在运行时换成更简单的 MeshRenderer。</p>
@@ -122,7 +122,7 @@
 <h3>System Metrics Mali</h3>
 <p>你还可以利用 System Metrics Mali 包，在使用 ARM GPU 的设备上访问底层的系统或硬件性能指标。这包括在 Unity Profiler 中监控底层 GPU 指标、使用 Recorder API 在运行时访问底层 GPU 指标，以及通过持续集成的测试运行来自动化性能测试。</p>
 
-<figure><figcaption>图 9：Mali System Metrics 的 Profiler 模块。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p058_1.webp" alt="图 9：Mali System Metrics 的 Profiler 模块。" loading="lazy" decoding="async"><figcaption>图 9：Mali System Metrics 的 Profiler 模块。</figcaption></figure>
 
   </article>
   <div class="prevnext">

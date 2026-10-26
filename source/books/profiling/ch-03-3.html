@@ -83,7 +83,7 @@
 
 <p>这份性能分析捕获显示，在当前帧可以开始渲染之前，主线程要等待渲染线程，具体表现为 Gfx.WaitForPresentOnGfxThread 标记。渲染线程仍在提交上一帧的绘制调用命令，还没有准备好接受主线程传来的新绘制调用；该渲染线程的时间花在了 Camera.Render 上。你可以区分与当前帧相关的标记和其他帧的标记，因为后者的颜色更深。你还可以看到，一旦主线程能够继续执行、开始发出供渲染线程处理的绘制调用，渲染线程处理当前帧就要花掉 100 毫秒以上，这又会在下一帧造成新的瓶颈。</p>
 
-<figure><figcaption>图 1：一个受渲染线程限制的场景的 Profiler 捕获，主线程在 Gfx.WaitForPresentOnGfxThread 上等待渲染线程，而渲染线程处理当前帧耗时超过 100 毫秒。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p025_1.webp" alt="图 1：一个受渲染线程限制的场景的 Profiler 捕获，主线程在 Gfx.WaitForPresentOnGfxThread 上等待渲染线程，而渲染线程处理当前帧耗时超过 100 毫秒。" loading="lazy" decoding="async"><figcaption>图 1：一个受渲染线程限制的场景的 Profiler 捕获，主线程在 Gfx.WaitForPresentOnGfxThread 上等待渲染线程，而渲染线程处理当前帧耗时超过 100 毫秒。</figcaption></figure>
 
 <p>进一步调查发现，这款游戏的渲染设置相当复杂，涉及九台不同的摄像机，以及由替换着色器（replacement shader）带来的许多额外渲染通道。该游戏还使用前向渲染路径（forward rendering path）渲染了 130 多盏点光源，而每盏光源都可能额外增加多个透明绘制调用。总的来说，这些问题叠加在一起，使每帧的绘制调用数量超过了 3000 个。</p>
 
@@ -107,7 +107,7 @@
 
 <p>然而在这个案例中，48.14 毫秒的帧时间，以及主线程上长达 35.57 毫秒的灰色 WaitForJobGroupID 标记，都是情况不妙的信号。WaitForJobGroupID 表示主线程已经把作业调度到工作线程上异步运行，但它在工作线程尚未运行完这些作业之前就需要它们的结果。WaitForJobGroupID 下方那些蓝色的 Profiler 标记显示，主线程在等待的同时也在执行作业，试图让这些作业尽快完成。</p>
 
-<figure><figcaption>图 2：一个以模拟为主、受工作线程限制的基于 DOTS 的项目，主线程卡在 WaitForJobGroupID 上等待作业结果。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p026_1.webp" alt="图 2：一个以模拟为主、受工作线程限制的基于 DOTS 的项目，主线程卡在 WaitForJobGroupID 上等待作业结果。" loading="lazy" decoding="async"><figcaption>图 2：一个以模拟为主、受工作线程限制的基于 DOTS 的项目，主线程卡在 WaitForJobGroupID 上等待作业结果。</figcaption></figure>
 
 <p>尽管这些作业经过了 Burst 编译，它们仍然在做大量的工作。也许这个项目用来快速找出哪些粒子彼此靠近的空间查询结构（spatial query structure）应该被优化，或者换成一个更高效的结构。或者，可以把空间查询作业调度到帧的末尾而不是开头，因为直到下一帧开始时才需要这些结果。也许这个项目试图模拟的粒子太多了。要找到解决方案，需要进一步分析这些作业的代码，因此添加更细粒度的 Profiler 标记有助于找出它们最慢的部分。</p>
 
@@ -130,7 +130,7 @@
 
 <p>下面这份捕获来自一台三星 Galaxy S7，使用的是 Vulkan 图形 API。尽管在这个例子中，花在 Gfx.PresentFrame 上的时间有一部分可能与等待 VSync 有关，但这个 Profiler 标记的时长如此之长，说明其中大部分时间是在等待 GPU 完成上一帧的渲染。</p>
 
-<figure><figcaption>图 3：一个受 GPU 限制的移动游戏的捕获，渲染线程长时间停留在 Gfx.PresentFrame 中等待 GPU。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p028_1.webp" alt="图 3：一个受 GPU 限制的移动游戏的捕获，渲染线程长时间停留在 Gfx.PresentFrame 中等待 GPU。" loading="lazy" decoding="async"><figcaption>图 3：一个受 GPU 限制的移动游戏的捕获，渲染线程长时间停留在 Gfx.PresentFrame 中等待 GPU。</figcaption></figure>
 
 <p>在这款游戏中，某些玩法事件触发了某个着色器的使用，使 GPU 渲染的绘制调用数量变成了原来的三倍。在分析 GPU 性能时，需要排查的常见问题包括：</p>
 

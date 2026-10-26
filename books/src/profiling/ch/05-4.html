@@ -12,29 +12,29 @@
 
 <h3>Memory Profiler 模块</h3>
 <p>Unity Profiler 中的 Memory Profiler 模块用一条红线表示每帧的托管分配（managed allocation）。这条线在大多数时候应当为 0，因此该线上出现的任何尖峰都表示这些帧值得你排查托管分配。</p>
-<figure><figcaption>图 1：Memory Profiler 模块以红线表示每帧的托管分配，出现尖峰的帧需要进一步排查。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p064_1.webp" alt="图 1：Memory Profiler 模块以红线表示每帧的托管分配，出现尖峰的帧需要进一步排查。" loading="lazy" decoding="async"><figcaption>图 1：Memory Profiler 模块以红线表示每帧的托管分配，出现尖峰的帧需要进一步排查。</figcaption></figure>
 
 <h3>CPU Usage Profiler 模块中的 Timeline 视图</h3>
 <p>CPU Usage Profiler 模块中的 Timeline 视图用粉色显示分配（包括托管分配），使它们易于被发现并聚焦。</p>
-<figure><figcaption>图 2：在 Timeline 视图中，托管分配显示为粉色标记。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p064_2.webp" alt="图 2：在 Timeline 视图中，托管分配显示为粉色标记。" loading="lazy" decoding="async"><figcaption>图 2：在 Timeline 视图中，托管分配显示为粉色标记。</figcaption></figure>
 <p>GC Allocated In Frame 中出现的任何尖峰都会为你排查托管分配提供线索。</p>
-<figure><figcaption>图 3：GC Allocated In Frame 的尖峰指示了需要排查托管分配的位置。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p065_1.webp" alt="图 3：GC Allocated In Frame 的尖峰指示了需要排查托管分配的位置。" loading="lazy" decoding="async"><figcaption>图 3：GC Allocated In Frame 的尖峰指示了需要排查托管分配的位置。</figcaption></figure>
 
 <h3>分配调用栈（Allocation Call Stacks）</h3>
 <p>分配调用栈提供了一种快速发现代码中托管内存分配的方法。与深度性能分析（deep profiling）通常带来的开销相比，它们能以更低的开销提供你所需的调用栈细节，并且可以在使用标准 Profiler 的过程中随时启用。</p>
 <p>分配调用栈在 Profiler 中默认处于禁用状态。要启用它们，请点击 Profiler 窗口主工具栏中的 Call Stacks 按钮，并将 Details 视图切换为 Related Data。</p>
 <p>注意：如果你使用的是较旧版本的 Unity（尚不支持分配调用栈），那么深度性能分析是获取完整调用栈、帮助发现托管分配的一个好方法。</p>
 <p>在 Hierarchy 或 Raw Hierarchy 中选中的 GC. Alloc 样本现在会包含其调用栈。你也可以在 Timeline 的选中项工具提示中看到 GC. Alloc 样本的调用栈。</p>
-<figure><figcaption>图 4：在 Profiler 中启用分配调用栈后，你可以沿调用栈回溯托管分配的来源。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p066_1.webp" alt="图 4：在 Profiler 中启用分配调用栈后，你可以沿调用栈回溯托管分配的来源。" loading="lazy" decoding="async"><figcaption>图 4：在 Profiler 中启用分配调用栈后，你可以沿调用栈回溯托管分配的来源。</figcaption></figure>
 <p>Hierarchy 视图中的 Related Data 面板也会显示分配调用栈的详细信息。</p>
-<figure><figcaption>图 5：Hierarchy 视图中的 Related Data 面板会显示分配调用栈详情。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p068_1.webp" alt="图 5：Hierarchy 视图中的 Related Data 面板会显示分配调用栈详情。" loading="lazy" decoding="async"><figcaption>图 5：Hierarchy 视图中的 Related Data 面板会显示分配调用栈详情。</figcaption></figure>
 
 <h3>CPU Usage Profiler 模块中的 Hierarchy 视图</h3>
 <p>在 CPU Usage Profiler 模块的 Hierarchy 视图中，你可以点击列标题将其用作排序条件。按 GC Alloc 排序是聚焦这些内容的好方法。</p>
 
 <h3>Project Auditor</h3>
 <p>Project Auditor 是一个实验性的静态分析工具。它能做很多有用的事情，其中一些超出了本指南的范围，但它可以列出一个项目中导致托管分配的每一行代码，而完全不需要运行项目。这是发现并调查这类问题的一种非常高效的方法。</p>
-<figure><figcaption>图 6：使用 CPU Usage Profiler 模块的 Hierarchy 视图是筛选并聚焦托管分配的绝佳方式。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p068_2.webp" alt="图 6：使用 CPU Usage Profiler 模块的 Hierarchy 视图是筛选并聚焦托管分配的绝佳方式。" loading="lazy" decoding="async"><figcaption>图 6：使用 CPU Usage Profiler 模块的 Hierarchy 视图是筛选并聚焦托管分配的绝佳方式。</figcaption></figure>
 
 <h2>内存与 GC 优化</h2>
 
@@ -78,8 +78,8 @@
 <p>要在播放器构建版本（player build）中使用深度性能分析，你需要通过 File &gt; Build Settings &gt; Deep Profiling Support 启用它。</p>
 <p>启用支持后，你可以在 Profiler 窗口中随时为你的构建版本轻松开启或关闭 Deep Profiling。</p>
 <p>当连接到播放器时，Deep Profile 按钮呈灰色，表示你的构建版本没有启用 Deep Profiling Support。</p>
-<figure><figcaption>图 7：启用 Deep Profiling Support。</figcaption></figure>
-<figure><figcaption>图 8：当你需要追踪并理解具体问题时，深度性能分析会展开海量细节。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p069_1.webp" alt="图 7：启用 Deep Profiling Support。" loading="lazy" decoding="async"><figcaption>图 7：启用 Deep Profiling Support。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p070_1.webp" alt="图 8：当你需要追踪并理解具体问题时，深度性能分析会展开海量细节。" loading="lazy" decoding="async"><figcaption>图 8：当你需要追踪并理解具体问题时，深度性能分析会展开海量细节。</figcaption></figure>
 <p>注意：从 Unity 2019.3 起，Mono 和 IL2CPP 两种后端都支持 Deep Profiling，这对 iOS 等强制使用 IL2CPP 的平台来说是个好消息。</p>
 <figure><figcaption>图 9：深度性能分析揭示应用代码性能与耗时的更多信息，并显示完整的方法调用树，帮助你深入查找托管分配发生的位置。</figcaption></figure>
 

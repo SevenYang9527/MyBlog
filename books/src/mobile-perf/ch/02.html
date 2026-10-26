@@ -43,15 +43,15 @@
 
 <p>开始时，先把 CPU 和 Memory 轨道设为默认启用。你可以根据游戏的需要（例如物理密集型或音乐类玩法）监控 Renderer、Audio 和 Physics 等补充性的 Profiler 模块。</p>
 
-<figure><figcaption>图 1：性能分析电子书中的一张图表，展示了可用来高效分析 Unity 项目的工作流。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p010_1.webp" alt="图 1：性能分析电子书中的一张图表，展示了可用来高效分析 Unity 项目的工作流。" loading="lazy" decoding="async"><figcaption>图 1：性能分析电子书中的一张图表，展示了可用来高效分析 Unity 项目的工作流。</figcaption></figure>
 
 <p>要在所选平台中从真实的移动设备采集性能分析数据，请在点击 Build and Run 之前勾选 Development Build 和 Autoconnect Profiler 复选框。另外，如果你希望应用与性能分析分开启动，可以取消勾选 Autoconnect Profiler，然后在应用运行之后再手动连接。</p>
 
-<figure><figcaption>图 2：Unity Profiler 窗口，用于测试应用程序的性能与资源分配情况。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p011_1.webp" alt="图 2：Unity Profiler 窗口，用于测试应用程序的性能与资源分配情况。" loading="lazy" decoding="async"><figcaption>图 2：Unity Profiler 窗口，用于测试应用程序的性能与资源分配情况。</figcaption></figure>
 
 <p>选择要分析的平台目标。Record 按钮会记录应用程序若干秒的回放数据（默认为 300 帧）。如果你需要更长的采集，请转到 Unity &gt; Preferences &gt; Analysis &gt; Profiler &gt; Frame Count，将其增大到最多 2000。这意味着 Unity 编辑器需要做更多的 CPU 工作并占用更多内存，但根据你的具体场景，这可能很有用。</p>
 
-<figure><figcaption>图 3：Build Settings 窗口，提示在性能分析之前先调整构建设置。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p012_1.webp" alt="图 3：Build Settings 窗口，提示在性能分析之前先调整构建设置。" loading="lazy" decoding="async"><figcaption>图 3：Build Settings 窗口，提示在性能分析之前先调整构建设置。</figcaption></figure>
 
 <p>使用 Deep Profiling 设置时，Unity 可以分析脚本代码中每次函数调用的开始和结束，准确告诉你应用程序的哪一部分正在执行、并可能造成延迟。不过，深度分析会给每一次方法调用增加开销，可能会使性能分析结果失真。</p>
 
@@ -62,9 +62,9 @@
 <li>Hierarchy 显示 ProfileMarkers 的层级结构，并按组聚合。它让你可以按以毫秒计的耗时（Time ms 和 Self ms）对样本排序。你还可以统计某个函数的 Calls 调用次数，以及该帧上的托管堆内存（GC Alloc）。</li>
 </ul>
 
-<figure><figcaption>图 4：Timeline 视图，用于判断你受限于 CPU 还是 GPU。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p013_1.webp" alt="图 4：Timeline 视图，用于判断你受限于 CPU 还是 GPU。" loading="lazy" decoding="async"><figcaption>图 4：Timeline 视图，用于判断你受限于 CPU 还是 GPU。</figcaption></figure>
 
-<figure><figcaption>图 5：Hierarchy 视图，可按耗时对 ProfileMarkers 进行排序。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p014_1.webp" alt="图 5：Hierarchy 视图，可按耗时对 ProfileMarkers 进行排序。" loading="lazy" decoding="async"><figcaption>图 5：Hierarchy 视图，可按耗时对 ProfileMarkers 进行排序。</figcaption></figure>
 
 <p>你可以在这里找到 Unity Profiler 的完整概览。如果你是性能分析的新手，也可以观看 Introduction to Unity Profiling。</p>
 
@@ -78,7 +78,7 @@
 
 <p>每一帧都会有一个基于目标每秒帧数（fps）的时间预算。要让应用以 30 fps 运行，其帧预算不能超过每帧 33.33 ms（1000 ms / 30 fps）。同样，60 fps 的目标则留下每帧 16.66 ms。</p>
 
-<figure><figcaption>图 6：Profile Analyzer 可对帧和标记数据进行更深入的分析，是对现有 Profiler 的补充。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p015_1.webp" alt="图 6：Profile Analyzer 可对帧和标记数据进行更深入的分析，是对现有 Profiler 的补充。" loading="lazy" decoding="async"><figcaption>图 6：Profile Analyzer 可对帧和标记数据进行更深入的分析，是对现有 Profiler 的补充。</figcaption></figure>
 
 <h3>考虑设备温度</h3>
 

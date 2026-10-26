@@ -64,7 +64,7 @@
 
 <p>你向 Move 方法传入一个 Vector3，引导玩家沿着四个基本方向移动。你还可以使用射线检测（raycast），在相应的 LayerMask 中探测墙壁。当然，你想把什么内容套用到命令模式上，与模式本身是两回事。</p>
 
-<figure><figcaption>图 1：示例项目中玩家在迷宫里的移动效果</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p062_1.webp" alt="图 1：示例项目中玩家在迷宫里的移动效果" loading="lazy" decoding="async"><figcaption>图 1：示例项目中玩家在迷宫里的移动效果</figcaption></figure>
 
 <p>要遵循命令模式，就把 PlayerMover 的 Move 方法捕获为一个对象。不要直接调用 Move，而是新建一个类 MoveCommand，让它实现 ICommand 接口：</p>
 
@@ -95,7 +95,7 @@
 
 <p>创建好命令对象并保存其所需参数之后，使用 CommandInvoker 的静态方法 ExecuteCommand 和 UndoCommand 传入你的 MoveCommand。这会运行 MoveCommand 的 Execute 或 Undo，并在撤销栈中追踪该命令对象。</p>
 
-<figure><figcaption>图 2：CommandInvoker、ICommand 与 MoveCommand 三者的关系</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p064_1.webp" alt="图 2：CommandInvoker、ICommand 与 MoveCommand 三者的关系" loading="lazy" decoding="async"><figcaption>图 2：CommandInvoker、ICommand 与 MoveCommand 三者的关系</figcaption></figure>
 
 <p>InputManager 不会直接调用 PlayerMover 的 Move 方法。相反，它额外增加一个方法 RunMoveCommand，用来创建新的 MoveCommand 并把它发送给 CommandInvoker。</p>
 
@@ -133,10 +133,10 @@
 <ul>
 <li><strong>创建更多命令：</strong>示例项目只包含一种命令对象，即 MoveCommand。你可以创建任意数量实现 ICommand 的命令对象，并用 CommandInvoker 追踪它们。</li>
 <li><strong>添加重做功能无非是再加一个栈：</strong>撤销某个命令对象时，把它压入另一个栈，由该栈追踪重做（redo）操作。这样你就能快速在撤销历史中来回切换，或者重做那些动作。当用户发起一个全新的移动时，清空重做栈（你可以在附带的示例项目中找到实现）。
-<figure><figcaption>图 3：撤销栈与重做栈</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p067_1.webp" alt="图 3：撤销栈与重做栈" loading="lazy" decoding="async"><figcaption>图 3：撤销栈与重做栈</figcaption></figure>
 </li>
 <li><strong>为命令对象缓冲区换用其他集合：</strong>如果你想要先进先出（FIFO）的行为，队列可能更顺手。如果使用列表，就记录当前活动的索引；位于活动索引之前的命令可撤销，位于该索引之后的命令可重做。
-<figure><figcaption>图 4：列表或其他集合充当命令缓冲区</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p068_1.webp" alt="图 4：列表或其他集合充当命令缓冲区" loading="lazy" decoding="async"><figcaption>图 4：列表或其他集合充当命令缓冲区</figcaption></figure>
 </li>
 <li><strong>限制栈的大小：</strong>撤销和重做操作很快就会膨胀到失控。把栈限制为最近若干条命令。</li>
 <li><strong>把任何必要的参数传入构造函数：</strong>这有助于像 MoveCommand 示例那样封装逻辑。CommandInvoker 和其他外部对象一样，看不到命令对象的内部运作，只会调用 Execute 或 Undo。在调用构造函数时，把命令对象工作所需的任何数据交给它。</li>

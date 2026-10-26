@@ -30,11 +30,11 @@ public class AutoLoadPipelineAsset : MonoBehaviour
         }
     }
 }</code></pre>
-<figure><figcaption>图 1：在场景加载时切换 Universal Render Pipeline Asset 的脚本</figcaption></figure>
+<figure><img src="../assets/figures/urp/p078_1.webp" alt="图 1：在场景加载时切换 Universal Render Pipeline Asset 的脚本" loading="lazy" decoding="async"><figcaption>图 1：在场景加载时切换 Universal Render Pipeline Asset 的脚本</figcaption></figure>
 <p>下一节将介绍两种不同类型的 Renderer Feature，一种面向美术人员，另一种面向有经验的程序员。</p>
 <h3>Render Objects</h3>
 <p>游戏中的一个常见问题是：玩家角色躲到环境物体后面时，玩家会看不见角色。你可以尝试移动摄像机，让角色始终在视野内，或者把环境调整得尽可能开阔。但这些方案并不总是可行。一个不错的技巧是：当有环境模型出现在角色与摄像机之间时，显示角色的剪影（silhouette），如下图所示。</p>
-<figure><figcaption>图 2：当环境模型遮挡角色时显示剪影</figcaption></figure>
+<figure><img src="../assets/figures/urp/p079_2.webp" alt="图 2：当环境模型遮挡角色时显示剪影" loading="lazy" decoding="async"><figcaption>图 2：当环境模型遮挡角色时显示剪影</figcaption></figure>
 <p>下面是创建这个剪影的方法：</p>
 <ol>
 <li>首先，你需要一个在角色被遮挡时使用的材质。新建一个材质，把 Shader 设为 Universal Render Pipeline &gt; Lit 或 Unlit（上一张图展示的是 Lit 选项）。设置 Surface Inputs &gt; Base Map 的颜色。在本例中，该材质名为 Character。</li>
@@ -51,7 +51,7 @@ public class AutoLoadPipelineAsset : MonoBehaviour
 <li>先在项目 Assets 文件夹中找到一个合适的文件夹。右键选择 Create &gt; Rendering &gt; URP Renderer Feature，命名为 TintFeature。</li>
 <li>双击默认的 TintFeature 文件。它是一个 C# 脚本，包含 Renderer Feature 的样板代码。</li>
 </ol>
-<figure><figcaption>图 3：Renderer Feature 的默认代码</figcaption></figure>
+<figure><img src="../assets/figures/urp/p080_1.webp" alt="图 3：Renderer Feature 的默认代码" loading="lazy" decoding="async"><figcaption>图 3：Renderer Feature 的默认代码</figcaption></figure>
 <p>剪影技巧很好地展示了如何利用 URP 工作流来添加那些在内置渲染管线工作流中因依赖编码而难以实现的效果。</p>
 <ol start="3">
 <li>把 CustomRenderPass 重命名为 TintPass，并向 CustomRenderPass 类添加下列属性。材质将包含你要应用到当前渲染图像状态上的 Shader。</li>
@@ -73,7 +73,7 @@ public class AutoLoadPipelineAsset : MonoBehaviour
 Material material;
 RTHandle cameraColorTarget;
 Color color;</code></pre>
-<figure><figcaption>图 4：为 URP Asset 选中 Opaque Texture</figcaption></figure>
+<figure><img src="../assets/figures/urp/p081_1.webp" alt="图 4：为 URP Asset 选中 Opaque Texture" loading="lazy" decoding="async"><figcaption>图 4：为 URP Asset 选中 Opaque Texture</figcaption></figure>
 <ol start="7">
 <li>用下列属性替换 CustomRenderPass m_ScriptablePass。你可以在 Renderer Data 资产的 Inspector 中设置 Shader 和 Color。</li>
 </ol>

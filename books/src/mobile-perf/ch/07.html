@@ -5,7 +5,7 @@
 
 <h3>正确导入纹理</h3>
 <p>你的大部分内存很可能都被纹理所占用，因此这里的导入设置至关重要。总体而言，请遵循以下准则：</p>
-<figure><figcaption>图 1：Boat Attack 演示项目，使用通用渲染管线（Universal Render Pipeline）制作。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p038_1.webp" alt="图 1：Boat Attack 演示项目，使用通用渲染管线（Universal Render Pipeline）制作。" loading="lazy" decoding="async"><figcaption>图 1：Boat Attack 演示项目，使用通用渲染管线（Universal Render Pipeline）制作。</figcaption></figure>
 <ul>
 <li><strong>降低 Max Size：</strong>使用能产生视觉上可接受效果的最小设置。这是非破坏性的，可以快速降低纹理内存。</li>
 <li><strong>使用 2 的幂（POT）：</strong>对于移动端纹理压缩格式（PVRTC 或 ETC），Unity 要求纹理尺寸为 2 的幂。</li>
@@ -13,11 +13,11 @@
 <li><strong>关闭 Read/Write Enabled 选项：</strong>启用该选项会在 CPU 和 GPU 可寻址内存中各创建一份副本，使纹理的内存占用翻倍。多数情况下应保持禁用。如果你在运行时生成纹理，请通过 Texture2D.Apply 强制实现这一点，并将 makeNoLongerReadable 设为 true。</li>
 <li><strong>禁用不必要的 Mip Maps：</strong>对于在屏幕上尺寸保持一致的纹理（例如 2D 精灵和 UI 图形），不需要 Mip Maps（对于与相机距离不断变化的 3D 模型，请保留 Mip Maps 启用）。</li>
 </ul>
-<figure><figcaption>图 2：合适的纹理导入设置有助于优化构建体积。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p039_1.webp" alt="图 2：合适的纹理导入设置有助于优化构建体积。" loading="lazy" decoding="async"><figcaption>图 2：合适的纹理导入设置有助于优化构建体积。</figcaption></figure>
 
 <h3>压缩纹理</h3>
 <p>请考虑以下两个使用相同模型和纹理的示例。左侧的设置消耗的内存几乎是右侧的八倍，却在视觉质量上几乎没有收益。</p>
-<figure><figcaption>图 3：未压缩的纹理会占用更多内存。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p040_1.webp" alt="图 3：未压缩的纹理会占用更多内存。" loading="lazy" decoding="async"><figcaption>图 3：未压缩的纹理会占用更多内存。</figcaption></figure>
 <p>在 iOS 和 Android 上都使用自适应可缩放纹理压缩（ASTC）。绝大多数在研游戏的目标最低规格设备都支持 ASTC 压缩。</p>
 <p>唯一的例外是：</p>
 <ul>
@@ -35,7 +35,7 @@
 <li><strong>禁用 rigs 和 BlendShapes：</strong>如果你的网格不需要骨骼动画或 blendshape 动画，请尽可能禁用这些选项。</li>
 <li><strong>尽可能禁用 normals 和 tangents：</strong>如果你确定网格的材质不需要法线或切线，取消勾选这些选项可以进一步节省内存。</li>
 </ul>
-<figure><figcaption>图 4：检查你的网格导入设置。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p042_1.webp" alt="图 4：检查你的网格导入设置。" loading="lazy" decoding="async"><figcaption>图 4：检查你的网格导入设置。</figcaption></figure>
 
 <h3>检查多边形数量</h3>
 <p>分辨率更高的模型意味着更高的内存占用，也可能带来更长的 GPU 耗时。你的背景几何体真的需要五十万个多边形吗？考虑在你选用的 DCC 工具中削减模型。删除相机视角中看不到的多边形。用纹理和法线贴图来表现细节，而不是用高密度网格。</p>

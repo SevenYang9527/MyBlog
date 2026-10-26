@@ -52,7 +52,7 @@
 
 <p>游戏是交互式的，这迫使我们去追踪许多在运行时发生变化的系统。如果你画一张图来表示角色的各种状态，可能会得到类似下面这样的结果：</p>
 
-<figure><figcaption>图 1：一张简单的状态图，用若干状态和它们之间的转换箭头描述角色从待机、行走、奔跑、跳跃到落地的状态流转</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p070_1.webp" alt="图 1：一张简单的状态图，用若干状态和它们之间的转换箭头描述角色从待机、行走、奔跑、跳跃到落地的状态流转" loading="lazy" decoding="async"><figcaption>图 1：一张简单的状态图，用若干状态和它们之间的转换箭头描述角色从待机、行走、奔跑、跳跃到落地的状态流转</figcaption></figure>
 
 <p>它看起来像流程图，但有几处不同：</p>
 
@@ -124,7 +124,7 @@ public class UnrefactoredPlayerController : MonoBehaviour
 
 <p>想象把每个状态组织成下面这样：</p>
 
-<figure><figcaption>图 2：封装后的状态包含 Entry、Exit 与 Update 三部分，其中 Entry 处理从上一状态转入，Update 每帧求值，Exit 处理向下一状态转出</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p072_1.webp" alt="图 2：封装后的状态包含 Entry、Exit 与 Update 三部分，其中 Entry 处理从上一状态转入，Update 每帧求值，Exit 处理向下一状态转出" loading="lazy" decoding="async"><figcaption>图 2：封装后的状态包含 Entry、Exit 与 Update 三部分，其中 Entry 处理从上一状态转入，Update 每帧求值，Exit 处理向下一状态转出</figcaption></figure>
 
 <p>在这里，你进入某个状态，并每帧循环执行，直到某个条件导致控制流退出。要实现这个模式，先创建一个接口 IState：</p>
 
@@ -254,11 +254,11 @@ public class StateMachine
 
 <p>如果你用过 Unity 的 Animator 窗口，就会注意到它的工作流与状态模式配合得很好。每个动画片段占据一个状态，同一时刻只有一个状态处于激活状态。</p>
 
-<figure><figcaption>图 3：Animator 状态图示例，可将其结构与 StateMachine 对照比较</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p076_1.webp" alt="图 3：Animator 状态图示例，可将其结构与 StateMachine 对照比较" loading="lazy" decoding="async"><figcaption>图 3：Animator 状态图示例，可将其结构与 StateMachine 对照比较</figcaption></figure>
 
 <p>下面这张图再次展示了状态模式的应用，只不过换成了完全不同的场景。每个状态代表一个动作，例如攻击、逃跑或巡逻。同一时刻只有一个状态处于激活状态，每个状态自行决定如何转换到下一个状态。</p>
 
-<figure><figcaption>图 4：基于状态模式的简单 AI，包含受伤、血量低、恢复、发现玩家、玩家离开视野等状态之间的转换关系</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p077_1.webp" alt="图 4：基于状态模式的简单 AI，包含受伤、血量低、恢复、发现玩家、玩家离开视野等状态之间的转换关系" loading="lazy" decoding="async"><figcaption>图 4：基于状态模式的简单 AI，包含受伤、血量低、恢复、发现玩家、玩家离开视野等状态之间的转换关系</figcaption></figure>
 
 <p>如果你实现一个 SuperState（超状态），就可以把共同行为放在一起。然后借助继承，你可以覆盖子状态中任何特定的行为。例如，你可以先声明一个 GroundedState，再从中继承出 RunningState 或 WalkingState。</p>
 

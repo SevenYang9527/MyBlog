@@ -11,7 +11,7 @@
 
 <p>如果你需要恰好有一个对象来协调整个场景中的各种操作，这会很有用。例如，你可能希望场景中恰好有一个游戏管理器（game manager）来指挥主游戏循环。你也可能希望同一时间只有一个文件管理器（file manager）在向文件系统写入数据。像这样处于中心位置、管理器层级的对象，往往就是单例模式的合适候选。</p>
 
-<figure><figcaption>图 1：SimpleSingleton 会销毁第一个实例之外的所有实例。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p054_1.webp" alt="图 1：SimpleSingleton 会销毁第一个实例之外的所有实例。" loading="lazy" decoding="async"><figcaption>图 1：SimpleSingleton 会销毁第一个实例之外的所有实例。</figcaption></figure>
 
 <p>在《Game Programming Patterns》一书中，作者指出单例弊大于利，并将其列为反模式（anti-pattern）。这种糟糕的声誉源于该模式用起来太容易，因而容易被滥用。开发者往往在不恰当的场合套用单例，从而引入不必要的全局状态或依赖。</p>
 
@@ -58,7 +58,7 @@ public class SimpleSingleton : MonoBehaviour
 
 <p>此外，你还可以使用延迟实例化（lazy instantiation），在第一次需要它时才自动构建这个单例。你只需要一些逻辑来创建一个 GameObject，然后添加相应的 Singleton 组件。</p>
 
-<figure><figcaption>图 2：单例模式只允许存在一个实例。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p056_2.webp" alt="图 2：单例模式只允许存在一个实例。" loading="lazy" decoding="async"><figcaption>图 2：单例模式只允许存在一个实例。</figcaption></figure>
 
 <p>改进后的单例大致如下：</p>
 

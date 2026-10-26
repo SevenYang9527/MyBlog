@@ -52,7 +52,7 @@
 
 <p>对象池可以减少因垃圾回收（garbage collection）尖峰而导致的卡顿。GC 尖峰通常伴随大量对象的创建或销毁出现，因为这涉及内存分配。你可以在合适的时机预先实例化对象池，例如在加载界面期间，此时用户不会察觉到卡顿。</p>
 
-<figure><figcaption>图 1：对象池可以帮助你在不引起游戏卡顿的情况下发射子弹。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p046_1.webp" alt="图 1：对象池可以帮助你在不引起游戏卡顿的情况下发射子弹。" loading="lazy" decoding="async"><figcaption>图 1：对象池可以帮助你在不引起游戏卡顿的情况下发射子弹。</figcaption></figure>
 
 <h3>示例：简单的对象池系统</h3>
 
@@ -150,7 +150,7 @@
 
 <p>如果你用过 Unity 的 ParticleSystem，那么你已经亲身体验过对象池。ParticleSystem 组件包含一个最大粒子数设置。它只是循环复用可用的粒子，防止效果超过某个最大数量。对象池的工作方式类似，但适用于你选择的任意 GameObject。</p>
 
-<figure><figcaption>图 2：对象池示意图，区分处于激活状态的池化对象与处于非激活状态的池化对象。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p049_1.webp" alt="图 2：对象池示意图，区分处于激活状态的池化对象与处于非激活状态的池化对象。" loading="lazy" decoding="async"><figcaption>图 2：对象池示意图，区分处于激活状态的池化对象与处于非激活状态的池化对象。</figcaption></figure>
 
 <h3>改进</h3>
 

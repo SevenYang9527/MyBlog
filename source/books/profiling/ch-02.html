@@ -93,11 +93,11 @@
 
 <p>上文提到的脚本代码库消息调用（默认被显式插桩）通常包括从 Unity 原生代码调用到你的托管代码的第一次调用栈深度。例如，Start()、Update()、FixedUpdate() 等常见的 MonoBehaviour 方法都包含在内。</p>
 
-<figure><figcaption>图 1：对一个示例脚本进行性能分析时，可以看到 Update() 方法调用了 Unity 的 Instantiate() 方法</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p009_1.webp" alt="图 1：对一个示例脚本进行性能分析时，可以看到 Update() 方法调用了 Unity 的 Instantiate() 方法" loading="lazy" decoding="async"><figcaption>图 1：对一个示例脚本进行性能分析时，可以看到 Update() 方法调用了 Unity 的 Instantiate() 方法</figcaption></figure>
 
 <p>你还可以在 Profiler 中看到托管脚本代码回调 Unity API 的子样本。不过有一点需要注意：所涉及的 Unity API 代码本身必须带有插桩的 Profiler 标记。大多数带有性能开销的 Unity API 都已插桩。例如，使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记。在查看捕获的性能分析数据集时，了解不同标记的含义很有帮助。使用这份常见 Profiler 标记列表可以了解更多。</p>
 
-<figure><figcaption>图 2：使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p010_1.webp" alt="图 2：使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记" loading="lazy" decoding="async"><figcaption>图 2：使用 Camera.main 会导致性能分析捕获中出现 FindMainCamera 标记</figcaption></figure>
 
 <h4>使用 Profiler 标记提高分析细节</h4>
 
@@ -107,7 +107,7 @@
 
 <p>Profiler 捕获每帧的性能指标，帮助你识别瓶颈。通过使用 Profiler 中包含的 Profiler 模块（例如 CPU Usage、GPU、Rendering、Memory、Physics 等）深入查看细节。</p>
 
-<figure><figcaption>图 3：主 Profiler 窗口视图，左侧显示各模块，底部显示详细信息面板</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p010_2.webp" alt="图 3：主 Profiler 窗口视图，左侧显示各模块，底部显示详细信息面板" loading="lazy" decoding="async"><figcaption>图 3：主 Profiler 窗口视图，左侧显示各模块，底部显示详细信息面板</figcaption></figure>
 
 <p>Profiler 窗口会在视图底部的面板中列出当前所选 Profiler 模块捕获的详细信息。例如，CPU Usage Profiler 模块会以时间线或层级视图显示 CPU 的工作内容，以及具体的耗时。</p>
 
@@ -115,7 +115,7 @@
 
 <p>请注意，在编辑器中分析性能与对独立构建版本进行分析之间会存在很大的性能差异。将 Profiler 连接到直接在目标硬件上运行的独立构建版本始终是更好的选择，因为这样可以获得最准确的结果，且没有编辑器开销。</p>
 
-<figure><figcaption>图 4：CPU Usage 模块的时间线视图，显示 Main 和 Render Thread 标记的详细信息</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p011_1.webp" alt="图 4：CPU Usage 模块的时间线视图，显示 Main 和 Render Thread 标记的详细信息" loading="lazy" decoding="async"><figcaption>图 4：CPU Usage 模块的时间线视图，显示 Main 和 Render Thread 标记的详细信息</figcaption></figure>
 
   </article>
   <div class="prevnext">

@@ -70,11 +70,11 @@
 
 <p>然后，让一个 ScriptableObject 实现 ICommand 接口。每个命令对象都用自己的实现细节来填充各自的 Execute 和 Undo 方法。</p>
 
-<figure><figcaption>图 1：展示如何用一个 ScriptableObject 实现命令模式，即让 ScriptableObject 类实现 ICommand 接口。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p060_1.webp" alt="图 1：展示如何用一个 ScriptableObject 实现命令模式，即让 ScriptableObject 类实现 ICommand 接口。" loading="lazy" decoding="async"><figcaption>图 1：展示如何用一个 ScriptableObject 实现命令模式，即让 ScriptableObject 类实现 ICommand 接口。</figcaption></figure>
 
 <p>接着，MonoBehaviour 或 ScriptableObject 可以定义一个命令缓冲区（Command Buffer），用来存放命令对象。它可以是一个集合，比如列表（List）、栈（Stack）、数组（Array）或队列（Queue）。</p>
 
-<figure><figcaption>图 2：展示 CommandManager 如何维护一个 ICommand 对象的集合。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p061_1.webp" alt="图 2：展示 CommandManager 如何维护一个 ICommand 对象的集合。" loading="lazy" decoding="async"><figcaption>图 2：展示 CommandManager 如何维护一个 ICommand 对象的集合。</figcaption></figure>
 
 <p>这种简单的结构让你可以按顺序执行命令。想象一个教程或过场动画，它让某个 GameObject 按照一组预先规定的动作或动画移动，命令模式就非常适合这种场景。</p>
 
@@ -89,7 +89,7 @@
 
 <p>点击 Next 按钮可以向前浏览说明文字。同样地，点击 Back 按钮可以反向循环浏览这些说明。</p>
 
-<figure><figcaption>图 3：展示命令模式的一个简单实现，即由 CommandManager 统一管理一组可撤销的移动命令。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p062_1.webp" alt="图 3：展示命令模式的一个简单实现，即由 CommandManager 统一管理一组可撤销的移动命令。" loading="lazy" decoding="async"><figcaption>图 3：展示命令模式的一个简单实现，即由 CommandManager 统一管理一组可撤销的移动命令。</figcaption></figure>
 
 <p>你可以在电子书《Level up your code with game programming patterns》中进一步了解命令模式。另外，也可以看看这篇社区文章《Command pattern with ScriptableObjects》，它演示了如何用 ScriptableObject 实现这一模式。</p>
 

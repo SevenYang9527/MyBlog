@@ -4,7 +4,7 @@
 
 <p>然而，在某些平台上获取 GPU 计时数据可能很困难。所幸 Unity Profiler 提供的信息已足以定位性能瓶颈所在。下面的流程图展示了最初的性能分析（profiling）流程，其后的各节则详细说明每一个步骤。这些小节还会展示来自真实 Unity 项目的 Profiler 捕获数据，用以说明应该留意哪些情况。</p>
 
-<figure><figcaption>图 1：Xcode 的 fps 视图，显示一款游戏在 CPU 与 GPU 上的耗时都轻松落在 33.3 ms 以内</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p016_2.webp" alt="图 1：Xcode 的 fps 视图，显示一款游戏在 CPU 与 GPU 上的耗时都轻松落在 33.3 ms 以内" loading="lazy" decoding="async"><figcaption>图 1：Xcode 的 fps 视图，显示一款游戏在 CPU 与 GPU 上的耗时都轻松落在 33.3 ms 以内</figcaption></figure>
 
 <h3>什么是 VSync？</h3>
 
@@ -12,7 +12,7 @@
 
 <p>按照下面的流程图，并借助 Profiler 来帮助确定应该把优化精力集中在何处：</p>
 
-<figure><figcaption>图 2：定位瓶颈的流程图，以「START HERE」为起点，按「瓶颈在哪里 → 现在该做什么 → 可能的修复方案」分支，并带有 Yes/No 判定</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p018_1.webp" alt="图 2：定位瓶颈的流程图，以「START HERE」为起点，按「瓶颈在哪里 → 现在该做什么 → 可能的修复方案」分支，并带有 Yes/No 判定" loading="lazy" decoding="async"><figcaption>图 2：定位瓶颈的流程图，以「START HERE」为起点，按「瓶颈在哪里 → 现在该做什么 → 可能的修复方案」分支，并带有 Yes/No 判定</figcaption></figure>
 
 <p>要全面了解所有的 CPU 活动（包括 CPU 在等待 GPU 时的时段），请使用 Profiler 的 CPU Usage 模块中的 Timeline 视图。熟悉常见的 Profiler 标记（Profiler marker），才能正确解读捕获数据。部分 Profiler 标记在不同目标平台上可能呈现出不同的样子，因此请花些时间查看游戏在各个目标平台上的捕获数据，感受一下你的项目「正常」的捕获数据是什么样子。</p>
 
@@ -48,7 +48,7 @@
 
 <p>如果你处于帧预算之内——包括为考虑电量消耗与热降频而对预算所做的任何调整——那么在下一次需要做性能分析之前，你已经完成了本次性能分析工作，恭喜。可以考虑运行 Memory Profiler，以确保应用同样处于其内存预算之内。</p>
 
-<figure><figcaption>图 3：一款游戏轻松运行在 30 fps 所需的约 22 ms 帧预算之内，且没有过热；请注意 WaitForTargetfps 把主线程时间填充到 VSync 为止，以及渲染线程与工作线程中的灰色空闲时间；另请注意，通过观察逐帧的 Gfx.Present 结束时间可以观察到 VBlank 间隔，并且你可以在 Timeline 区域或顶部的 Time 标尺上拉出时间刻度，来测量从其中一个到下一个之间的间隔</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p021_1.webp" alt="图 3：一款游戏轻松运行在 30 fps 所需的约 22 ms 帧预算之内，且没有过热；请注意 WaitForTargetfps 把主线程时间填充到 VSync 为止，以及渲染线程与工作线程中的灰色空闲时间；另请注意，通过观察逐帧的 Gfx.Present 结束时间可以观察到 VBlank 间隔，并且你可以在 Timeline 区域或顶部的 Time 标尺上拉出时间刻度，来测量从其中一个到下一个之间的间隔" loading="lazy" decoding="async"><figcaption>图 3：一款游戏轻松运行在 30 fps 所需的约 22 ms 帧预算之内，且没有过热；请注意 WaitForTargetfps 把主线程时间填充到 VSync 为止，以及渲染线程与工作线程中的灰色空闲时间；另请注意，通过观察逐帧的 Gfx.Present 结束时间可以观察到 VBlank 间隔，并且你可以在 Timeline 区域或顶部的 Time 标尺上拉出时间刻度，来测量从其中一个到下一个之间的间隔</figcaption></figure>
 
 <h2>受限于 CPU</h2>
 
@@ -68,7 +68,7 @@
 
 <p>尽管渲染线程和工作线程看起来与那个处于帧预算之内的示例相似，但主线程显然在整个帧期间都忙于工作。即便把帧末尾少量的 Profiler 额外开销计算在内，主线程也忙了超过 45 ms，这意味着该项目只能达到低于 22 fps 的帧率。没有任何标记显示主线程在空闲地等待 VSync；它整帧都在忙。</p>
 
-<figure><figcaption>图 4：来自一个受限于主线程的项目的捕获数据</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p023_1.webp" alt="图 4：来自一个受限于主线程的项目的捕获数据" loading="lazy" decoding="async"><figcaption>图 4：来自一个受限于主线程的项目的捕获数据</figcaption></figure>
 
 <p>下一阶段的调查是找出帧中耗时最长的部分，并理解其中的原因。在这一帧上，PostLateUpdate.FinishFrameRendering 耗时 16.23 ms，超过了整个帧预算。进一步查看会发现，有一个名为 Inl_RenderCameraStack 的标记出现了五次，说明有五个相机处于激活状态并在渲染场景。由于 Unity 中的每个相机都会调用完整的渲染管线（包括剔除、排序和批处理），这个项目最优先的任务就是减少激活相机的数量，理想情况下只保留一个。</p>
 

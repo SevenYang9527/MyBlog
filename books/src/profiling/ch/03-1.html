@@ -20,7 +20,7 @@
 
 <p>玩家衡量性能的常见方式是帧率，即每秒帧数。不过，建议你改用毫秒为单位的帧时间（frame time）。要理解其中的原因，请看下面这张 fps 与帧时间的对比图。</p>
 
-<figure><figcaption>图 1：fps 与帧时间的对比曲线，说明 fps 减半时帧时间的增量其实很小，因此帧时间比 fps 更能反映真实开销</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p014_1.webp" alt="图 1：fps 与帧时间的对比曲线，说明 fps 减半时帧时间的增量其实很小，因此帧时间比 fps 更能反映真实开销" loading="lazy" decoding="async"><figcaption>图 1：fps 与帧时间的对比曲线，说明 fps 减半时帧时间的增量其实很小，因此帧时间比 fps 更能反映真实开销</figcaption></figure>
 
 <p>看看这些数字：</p>
 
@@ -80,7 +80,7 @@
 
 <p>当你需要重点关注采用 Arm 或 Arm Mali 硬件的设备时，Arm Mobile Studio 工具链（具体来说是 Streamline Performance Analyzer）包含一些非常出色的性能计数器，可用于识别内存带宽问题。这些计数器针对每一代 Arm GPU（例如 Mali-G78）都有列出和说明。请注意，Mobile Studio 的 GPU 性能分析需要 Arm Mali。</p>
 
-<figure><figcaption>图 2：使用 FTrace 或 Perfetto 等工具监控 CPU 频率和空闲状态，以确认帧预算留白优化带来的效果（图为 Arm Streamline Performance Analyzer 在目标 Arm 硬件上实时分析时采集的丰富性能计数器信息，可用于识别过度绘制导致的内存带宽饱和等问题）</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p016_1.webp" alt="图 2：使用 FTrace 或 Perfetto 等工具监控 CPU 频率和空闲状态，以确认帧预算留白优化带来的效果（图为 Arm Streamline Performance Analyzer 在目标 Arm 硬件上实时分析时采集的丰富性能计数器信息，可用于识别过度绘制导致的内存带宽饱和等问题）" loading="lazy" decoding="async"><figcaption>图 2：使用 FTrace 或 Perfetto 等工具监控 CPU 频率和空闲状态，以确认帧预算留白优化带来的效果（图为 Arm Streamline Performance Analyzer 在目标 Arm 硬件上实时分析时采集的丰富性能计数器信息，可用于识别过度绘制导致的内存带宽饱和等问题）</figcaption></figure>
 
 <p>如需完整的移动平台优化指南，请参阅《Optimize Your Mobile Game Performance》。其中有许多技巧和窍门，可以帮助你减少热降频并延长运行你游戏的移动设备的电池续航。</p>
 

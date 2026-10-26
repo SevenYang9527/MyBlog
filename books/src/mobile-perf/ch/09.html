@@ -30,7 +30,7 @@
 
 <p>此外，在所有不需要的 UI 文本和图像上禁用 Raycast Target。如果 UI 很复杂、包含许多元素，所有这些细小的改动都能减少不必要的计算。</p>
 
-<figure><figcaption>图 1：在不需要接收点击的 UI 元素上关闭 Raycast Target，可减少射线检测的计算量。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p061_1.webp" alt="图 1：在不需要接收点击的 UI 元素上关闭 Raycast Target，可减少射线检测的计算量。" loading="lazy" decoding="async"><figcaption>图 1：在不需要接收点击的 UI 元素上关闭 Raycast Target，可减少射线检测的计算量。</figcaption></figure>
 
 <h3>避免使用 Layout Group（Avoid Layout Groups）</h3>
 
@@ -38,7 +38,7 @@
 
 <p>如果你确实需要为动态元素使用 Layout Group（Horizontal、Vertical、Grid），请避免嵌套使用，以提升性能。</p>
 
-<figure><figcaption>图 2：Layout Group 会降低性能，嵌套使用时尤为明显。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p061_2.webp" alt="图 2：Layout Group 会降低性能，嵌套使用时尤为明显。" loading="lazy" decoding="async"><figcaption>图 2：Layout Group 会降低性能，嵌套使用时尤为明显。</figcaption></figure>
 
 <h3>避免大型 List 和 Grid 视图</h3>
 
@@ -52,7 +52,7 @@
 
 <p>如今移动设备使用的分辨率和屏幕尺寸差异很大，因此请创建 UI 的替代版本，以便为每台设备提供最佳体验。使用 Device Simulator 在各类受支持设备上预览 UI。你也可以在 XCode 和 Android Studio 中创建虚拟设备。</p>
 
-<figure><figcaption>图 3：借助 Device Simulator 预览多种屏幕格式下的 UI 效果。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p062_1.webp" alt="图 3：借助 Device Simulator 预览多种屏幕格式下的 UI 效果。" loading="lazy" decoding="async"><figcaption>图 3：借助 Device Simulator 预览多种屏幕格式下的 UI 效果。</figcaption></figure>
 
 <h3>使用全屏 UI 时隐藏其他所有内容</h3>
 
@@ -66,7 +66,7 @@
 
 <p>如有可能，考虑为 Canvas 的 RenderMode 使用 Screen Space – Overlay，因为它不需要摄像机。</p>
 
-<figure><figcaption>图 4：使用 World Space Render Mode 时，务必填写 Event Camera。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p063_1.webp" alt="图 4：使用 World Space Render Mode 时，务必填写 Event Camera。" loading="lazy" decoding="async"><figcaption>图 4：使用 World Space Render Mode 时，务必填写 Event Camera。</figcaption></figure>
 
 <h2>UI Toolkit 性能优化建议（UI Toolkit performance optimization tips）</h2>
 

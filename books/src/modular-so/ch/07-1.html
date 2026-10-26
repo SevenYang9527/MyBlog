@@ -84,7 +84,7 @@ public class VoidEventChannelSO : ScriptableObject
 
 <p>另一个对象可以调用公共方法 RaiseEvent 来触发该事件。</p>
 
-<figure><figcaption>图 1：基于 ScriptableObject 的事件，展示了一个事件通道的示例</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p048_1.webp" alt="图 1：基于 ScriptableObject 的事件，展示了一个事件通道的示例" loading="lazy" decoding="async"><figcaption>图 1：基于 ScriptableObject 的事件，展示了一个事件通道的示例</figcaption></figure>
 
 <p>另一个 MonoBehaviour 可以在 Inspector 中引用该事件通道 ScriptableObject，然后订阅或取消订阅 OnEventRaised。</p>
 
@@ -134,6 +134,6 @@ public class VoidEventChannelSO : ScriptableObject
 
 <p>只需把 VoidEventListener 添加到某个 GameObject 上，然后将事件通道 ScriptableObject 拖到 Inspector 中的 _channel 字段里。在 OnRaisedEvent 上创建 UnityAction，以便对该事件做出响应。</p>
 
-<figure><figcaption>图 2：事件监听器让非程序员也能设置由事件驱动的行为</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p048_2.webp" alt="图 2：事件监听器让非程序员也能设置由事件驱动的行为" loading="lazy" decoding="async"><figcaption>图 2：事件监听器让非程序员也能设置由事件驱动的行为</figcaption></figure>
 
 <p>无论你选择哪个组件来监听事件，事件通道都提供了一种在运行时让对象之间通信的方式。玩家是否完成了任务或得了分？游戏是否结束？事件可以通知场景中任何需要该信息的 GameObject。</p>

@@ -4,7 +4,7 @@
 
 <p>观察者模式（Observer Pattern）是这类问题的常见解决方案。它让你的对象之间能够通信，同时通过一种“一对多”的依赖关系保持松耦合。当一个对象改变状态时，所有依赖它的对象都会自动收到通知。这类似于一座向众多不同听众广播的无线电塔。</p>
 
-<figure><figcaption>图 1：观察者模式就像一座无线电塔，主题向各个观察者广播信号。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p080_1.webp" alt="图 1：观察者模式就像一座无线电塔，主题向各个观察者广播信号。" loading="lazy" decoding="async"><figcaption>图 1：观察者模式就像一座无线电塔，主题向各个观察者广播信号。</figcaption></figure>
 
 <p>负责广播的对象称为主题（subject）。其他正在监听的对象称为观察者（observers）。</p>
 
@@ -25,7 +25,7 @@
 
 <p>通过这种方式，你可以让许多组件对来自主题的单个事件做出反应。如果主题表示某个按钮被点击了，观察者可以播放一段动画或音效、触发一段过场动画，或者保存一个文件。它们的响应可以是任何内容，这也是你会经常看到观察者模式被用于在对象之间发送消息的原因。</p>
 
-<figure><figcaption>图 2：主题引发事件，从而通知各个观察者。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p081_1.webp" alt="图 2：主题引发事件，从而通知各个观察者。" loading="lazy" decoding="async"><figcaption>图 2：主题引发事件，从而通知各个观察者。</figcaption></figure>
 
 <h3>示例：简单的主题与观察者</h3>
 
@@ -112,7 +112,7 @@ public class Subject: MonoBehaviour
 
 <p>UnityEvents 为观察者模式提供了图形化界面。如果你用过 Unity 的 UI 系统（例如创建 UI Button 的 OnClick 事件），那么你已经对它有所体验了。</p>
 
-<figure><figcaption>图 3：UnityEvents 提供了用于配置的图形化组件。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p085_1.webp" alt="图 3：UnityEvents 提供了用于配置的图形化组件。" loading="lazy" decoding="async"><figcaption>图 3：UnityEvents 提供了用于配置的图形化组件。</figcaption></figure>
 
 <p>在这个示例中，按钮的 OnClick 事件会调用并触发两个 AudioObserver 的 OnThingHappened 方法作出响应。因此，你可以不写代码就设置好主题的事件。</p>
 

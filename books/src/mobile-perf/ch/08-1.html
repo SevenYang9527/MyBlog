@@ -4,7 +4,7 @@
 
 <p>随着项目变得越来越复杂，你需要一条能够优化 GPU 工作负载的管线。通用渲染管线（Universal Render Pipeline，URP）支持三种渲染方式：前向渲染（Forward）、前向+（Forward+）和延迟渲染（Deferred）。</p>
 
-<figure><figcaption>图 1：使用通用渲染管线创建的 Boat Attack 演示项目。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p047_1.webp" alt="图 1：使用通用渲染管线创建的 Boat Attack 演示项目。" loading="lazy" decoding="async"><figcaption>图 1：使用通用渲染管线创建的 Boat Attack 演示项目。</figcaption></figure>
 
 <p>前向渲染在单个渲染通道（pass）中计算所有光照，通常被推荐作为移动游戏的默认选择。前向+ 随 Unity 2022 LTS 引入，它按空间而不是按对象剔除光源，从而对标准前向渲染做出了改进。这显著增加了在一帧渲染中可以使用的光源总数。延迟渲染模式适合特定场景，例如包含大量动态光源的游戏。与主机和 PC 上相同、基于物理的光照与材质，同样可以扩展到你的手机或平板电脑上。</p>
 
@@ -95,7 +95,7 @@
   <li>GPU 实例化（GPU instancing）：如果你有大量相同的对象（例如使用相同网格和材质的建筑、树木、草地等），请使用 GPU 实例化。这项技术利用图形硬件对这些对象进行批处理。要启用 GPU Instancing，请在 Project 窗口中选择你的材质，然后在 Inspector 中勾选 Enable Instancing。</li>
 </ul>
 
-<figure><figcaption>图 2：SRP Batcher 帮助你批处理绘制调用。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p049_1.webp" alt="图 2：SRP Batcher 帮助你批处理绘制调用。" loading="lazy" decoding="async"><figcaption>图 2：SRP Batcher 帮助你批处理绘制调用。</figcaption></figure>
 
 <ul>
   <li>静态批处理（Static batching）：对于不移动的几何体，Unity 可以减少共享同一材质的任意网格的绘制调用。它比动态批处理更高效，但会占用更多内存。<br>在 Inspector 中把所有永不移动的网格标记为 Batching Static。Unity 会在构建时将所有静态网格合并为一个大型网格。StaticBatchingUtility 也允许你在运行时自己创建这些静态批次（例如在生成了一个由不移动部件组成的程序化关卡之后）。</li>
@@ -119,4 +119,4 @@
 
 <p>初次接触帧调试器？请在这里查看入门介绍。</p>
 
-<figure><figcaption>图 3：帧调试器把每一帧拆分成各自独立的步骤。</figcaption></figure>
+<figure><img src="../assets/figures/mobile-perf/p050_1.webp" alt="图 3：帧调试器把每一帧拆分成各自独立的步骤。" loading="lazy" decoding="async"><figcaption>图 3：帧调试器把每一帧拆分成各自独立的步骤。</figcaption></figure>

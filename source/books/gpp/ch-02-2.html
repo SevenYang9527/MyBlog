@@ -68,7 +68,7 @@
     }
 }</code></pre>
 
-<figure><figcaption>图 1：一个汽车对战火车的示例游戏，分别展示公路移动与铁轨移动</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p009_1.webp" alt="图 1：一个汽车对战火车的示例游戏，分别展示公路移动与铁轨移动" loading="lazy" decoding="async"><figcaption>图 1：一个汽车对战火车的示例游戏，分别展示公路移动与铁轨移动</figcaption></figure>
 
 <p>你可能还会有另一个名为 Navigator 的类，用来沿着预定路径操纵载具：</p>
 
@@ -86,7 +86,7 @@
 
 <p>借助这个类，你会期望能把任何载具传入 Navigator 的 Move 方法，而这对汽车和卡车来说都能正常工作。但是，当你想要实现一个名为 Train 的类时，会发生什么呢？</p>
 
-<figure><figcaption>图 2：Train 会违反基类的约定</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p010_1.webp" alt="图 2：Train 会违反基类的约定" loading="lazy" decoding="async"><figcaption>图 2：Train 会违反基类的约定</figcaption></figure>
 
 <p>由于火车无法脱离轨道，TurnLeft 和 TurnRight 方法在 Train 类中无法工作。如果你确实把火车传入了 Navigator 的 Move 方法，那么执行到这些行时就会抛出一个未实现的异常（或者什么也不做）。如果你不能用一个类型替换它的子类型，就违反了里氏替换原则（Liskov substitution principle）。</p>
 
@@ -102,7 +102,7 @@
 <li>优先使用组合（composition）而非继承（inheritance）：不要试图通过继承来传递功能，而应创建一个接口或单独的类来封装特定行为。然后通过混用与搭配，构建出不同功能的“组合”。</li>
 </ul>
 
-<figure><figcaption>图 3：用组合代替继承的设计思路</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p013_1.webp" alt="图 3：用组合代替继承的设计思路" loading="lazy" decoding="async"><figcaption>图 3：用组合代替继承的设计思路</figcaption></figure>
 
 <p>要修正这个设计，请丢弃原来的 Vehicle 类型，然后把大部分功能移入接口（interface）：</p>
 
@@ -117,7 +117,7 @@ public interface IMovable
     public void Reverse();
 }</code></pre>
 
-<figure><figcaption>图 4：重构后由 ITurnable 与 IMovable 接口承担转向和移动功能</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p014_1.webp" alt="图 4：重构后由 ITurnable 与 IMovable 接口承担转向和移动功能" loading="lazy" decoding="async"><figcaption>图 4：重构后由 ITurnable 与 IMovable 接口承担转向和移动功能</figcaption></figure>
 
 <p>通过创建 RoadVehicle 类型和 RailVehicle 类型，可以更严格地遵循 LSP 原则。Car 和 Train 随后分别继承各自的基类。</p>
 
@@ -163,7 +163,7 @@ public class Train : RailVehicle
     ...
 }</code></pre>
 
-<figure><figcaption>图 5：考虑里氏替换原则之后重构出的类层次结构</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p016_1.webp" alt="图 5：考虑里氏替换原则之后重构出的类层次结构" loading="lazy" decoding="async"><figcaption>图 5：考虑里氏替换原则之后重构出的类层次结构</figcaption></figure>
 
 <p>通过这种方式，功能是经由接口而非继承传递的。Car 和 Train 不再共享同一个基类，这就满足了 LSP。尽管你也可以让 RoadVehicle 和 RailVehicle 派生自同一个基类，但在本例中并没有太大必要。</p>
 
@@ -201,7 +201,7 @@ public class Train : RailVehicle
 
 <p>与其让一个接口赋予可破坏道具过多方法，不如把它拆分成若干更小的接口。这样，实现这些接口的类只需按需混用和搭配。</p>
 
-<figure><figcaption>图 6：把庞大的接口拆分成多个更小的接口</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p017_1.webp" alt="图 6：把庞大的接口拆分成多个更小的接口" loading="lazy" decoding="async"><figcaption>图 6：把庞大的接口拆分成多个更小的接口</figcaption></figure>
 
 <p>你还可以为爆炸桶添加一个 IExplodable 接口：</p>
 
@@ -259,7 +259,7 @@ public class EnemyUnit : MonoBehaviour, IDamageable, IMovable, IUnitStats
 
 <p>如果一个类对另一个类的工作方式了解过多，那么修改第一个类就可能破坏第二个类，反之亦然。高度耦合被视为不整洁的编码实践。应用程序某一部分的错误可能会像滚雪球一样扩散成许多错误。</p>
 
-<figure><figcaption>图 7：追求松散耦合与高内聚</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p018_1.webp" alt="图 7：追求松散耦合与高内聚" loading="lazy" decoding="async"><figcaption>图 7：追求松散耦合与高内聚</figcaption></figure>
 
 <p>理想情况下，应尽量减少类与类之间的依赖。每个类还需要让其内部各部分协同一致地工作，而不是依赖与外部的连接。当一个对象基于内部或私有逻辑运行时，它就被认为是内聚的（cohesive）。</p>
 
@@ -269,7 +269,7 @@ public class EnemyUnit : MonoBehaviour, IDamageable, IMovable, IUnitStats
 
 <p>依赖倒置原则有助于减少类与类之间的这种紧密耦合。在应用程序中构建类和系统时，有些天然属于“高层”，有些属于“低层”。一个高层类依赖一个低层类来完成某件事。SOLID 告诉我们要把这种关系倒过来。</p>
 
-<figure><figcaption>图 8：在没有依赖倒置的情况下，Switch（高层）直接依赖 Door（低层）类</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p025_1.webp" alt="图 8：在没有依赖倒置的情况下，Switch（高层）直接依赖 Door（低层）类" loading="lazy" decoding="async"><figcaption>图 8：在没有依赖倒置的情况下，Switch（高层）直接依赖 Door（低层）类</figcaption></figure>
 
 <p>假设你正在制作一款游戏，角色在关卡中探索并触发一扇门打开。你可能想创建一个名为 Switch 的类，以及另一个名为 Door 的类。</p>
 

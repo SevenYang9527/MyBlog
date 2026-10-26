@@ -6,7 +6,7 @@
 
 <p>因此，可以考虑把数据存放在 ScriptableObject 上，做成一个“运行时集合（Runtime Set）”。这是一种专门的数据容器，它维护一个公开的元素集合，同时提供向集合添加元素和从集合移除元素的基础方法。</p>
 
-<figure><figcaption>图 1：运行时集合为某一数据集合提供全局访问能力。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p064_1.webp" alt="图 1：运行时集合为某一数据集合提供全局访问能力。" loading="lazy" decoding="async"><figcaption>图 1：运行时集合为某一数据集合提供全局访问能力。</figcaption></figure>
 
 <p>下面是一个跟踪 GameObject 列表的基础运行时集合：</p>
 
@@ -92,13 +92,13 @@ public class FooRuntimeSetSO : RuntimeSet&lt;Foo&gt;
 
 <p>这项技术的一个局限是：如果你在运行时检查该 ScriptableObject，你将无法在 Inspector 中看到运行时集合列表的内容。如果你试图把该列表公开暴露到 Inspector 中，就会看到这样：</p>
 
-<figure><figcaption>图 2：运行时集合不会在 Inspector 中显示场景对象或组件。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p065_1.webp" alt="图 2：运行时集合不会在 Inspector 中显示场景对象或组件。" loading="lazy" decoding="async"><figcaption>图 2：运行时集合不会在 Inspector 中显示场景对象或组件。</figcaption></figure>
 
 <p>默认情况下，每个元素字段都会显示“Type mismatch”，因为 ScriptableObject 无法序列化场景对象。列表本身工作正常，但数据无法正确显示。如果想避免混淆并阻止该列表在 Inspector 中显示，请使用公开属性（property）或 HideInInspector 特性（attribute）。</p>
 
 <p>你也可以用自定义的 Editor 脚本和 Inspector 修复这个问题。关于良好示例，参见 Asset Store 上的 SOAP（ScriptableObject Architectural Pattern）。</p>
 
-<figure><figcaption>图 3：SOAP 中的自定义 Editor 会显示运行时集合的内容。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p068_1.webp" alt="图 3：SOAP 中的自定义 Editor 会显示运行时集合的内容。" loading="lazy" decoding="async"><figcaption>图 3：SOAP 中的自定义 Editor 会显示运行时集合的内容。</figcaption></figure>
 
 <h3>关于 foo 和 bar 的趣闻（Fun facts about foo and bar）</h3>
 

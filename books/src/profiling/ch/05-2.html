@@ -14,7 +14,7 @@
 
 <p>现在你可以在 Frame Debug 列表层级中单步查看绘制调用与事件，并在活动的播放器中观察结果。</p>
 
-<figure><figcaption>图 1：附加到远程播放器构建的 Frame Debug 窗口。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p045_1.webp" alt="图 1：附加到远程播放器构建的 Frame Debug 窗口。" loading="lazy" decoding="async"><figcaption>图 1：附加到远程播放器构建的 Frame Debug 窗口。</figcaption></figure>
 
 <h4>渲染目标的显示选项</h4>
 
@@ -24,11 +24,11 @@
 
 <p>当一次渲染到多个渲染目标时，可以使用 RenderTarget 下拉列表选择要在 Game 视图中显示哪一个。</p>
 
-<figure><figcaption>图 2：Frame Debug 渲染目标的深度通道控件。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p045_2.webp" alt="图 2：Frame Debug 渲染目标的深度通道控件。" loading="lazy" decoding="async"><figcaption>图 2：Frame Debug 渲染目标的深度通道控件。</figcaption></figure>
 
 <p>该下拉列表还包含一个 Depth 选项，用于显示深度缓冲区的内容。</p>
 
-<figure><figcaption>图 3：使用 Frame Debug 窗口查看深度缓冲区的内容。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p046_1.webp" alt="图 3：使用 Frame Debug 窗口查看深度缓冲区的内容。" loading="lazy" decoding="async"><figcaption>图 3：使用 Frame Debug 窗口查看深度缓冲区的内容。</figcaption></figure>
 
 <h3>常见问题的五项渲染优化</h3>
 
@@ -40,7 +40,7 @@
 
 <p>使用对应平台的原生性能分析器，把帧开销拆解为具体的组成部分。这就是你改善图形性能的起点。</p>
 
-<figure><figcaption>图 4：该视图在 PS4 Pro 上受 GPU 限制，每帧约 45 ms。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p047_1.webp" alt="图 4：该视图在 PS4 Pro 上受 GPU 限制，每帧约 45 ms。" loading="lazy" decoding="async"><figcaption>图 4：该视图在 PS4 Pro 上受 GPU 限制，每帧约 45 ms。</figcaption></figure>
 
 <h4>绘制调用优化</h4>
 
@@ -64,7 +64,7 @@
 
 <p>彼此叠放渲染的物体会造成过度绘制。如果你使用的是内置渲染管线，可以使用 Scene 视图控制栏来可视化过度绘制。将绘制模式切换为 Overdraw。</p>
 
-<figure><figcaption>图 5：Scene 视图控制栏中的 Overdraw 选项。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p047_2.webp" alt="图 5：Scene 视图控制栏中的 Overdraw 选项。" loading="lazy" decoding="async"><figcaption>图 5：Scene 视图控制栏中的 Overdraw 选项。</figcaption></figure>
 
 <p>明亮的像素表示物体彼此叠放绘制，而较暗的像素意味着过度绘制较少。</p>
 
@@ -78,13 +78,13 @@
 
 <p>启用此模式后，你可以游历应用程序的场景与区域，记录下过度绘制明显的区域。</p>
 
-<figure><figcaption>图 6：为 Fullscreen Debug Mode 启用 TransparencyOverdraw，以帮助定位场景中的过度绘制。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p047_3.webp" alt="图 6：为 Fullscreen Debug Mode 启用 TransparencyOverdraw，以帮助定位场景中的过度绘制。" loading="lazy" decoding="async"><figcaption>图 6：为 Fullscreen Debug Mode 启用 TransparencyOverdraw，以帮助定位场景中的过度绘制。</figcaption></figure>
 
-<figure><figcaption>图 7：标准 Shaded 视图下的场景。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p048_1.webp" alt="图 7：标准 Shaded 视图下的场景。" loading="lazy" decoding="async"><figcaption>图 7：标准 Shaded 视图下的场景。</figcaption></figure>
 
-<figure><figcaption>图 8：同一场景的 Overdraw 视图——重叠的几何体往往是过度绘制的来源。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p049_1.webp" alt="图 8：同一场景的 Overdraw 视图——重叠的几何体往往是过度绘制的来源。" loading="lazy" decoding="async"><figcaption>图 8：同一场景的 Overdraw 视图——重叠的几何体往往是过度绘制的来源。</figcaption></figure>
 
-<figure><figcaption>图 9：使用 HDRP 与 Fullscreen Debug Mode 可视化过度绘制。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p050_1.webp" alt="图 9：使用 HDRP 与 Fullscreen Debug Mode 可视化过度绘制。" loading="lazy" decoding="async"><figcaption>图 9：使用 HDRP 与 Fullscreen Debug Mode 可视化过度绘制。</figcaption></figure>
 
 <p>还有更多可用于帧调试与分析的工具。请查看性能分析与调试工具索引以获取更多灵感。</p>
 
@@ -120,13 +120,13 @@
 
 <p>使用 Profile Analyzer 时，一个好做法是把性能分析会话保存下来，以便比较性能优化工作前后的情况。</p>
 
-<figure><figcaption>图 10：从 Package Manager 安装 Profile Analyzer。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p050_2.webp" alt="图 10：从 Package Manager 安装 Profile Analyzer。" loading="lazy" decoding="async"><figcaption>图 10：从 Package Manager 安装 Profile Analyzer。</figcaption></figure>
 
 <p>Profile Analyzer 会提取在 Unity Profiler 中捕获的一组帧，并对它们执行统计分析。随后这些数据会被显示出来，为每个函数生成有用的性能耗时信息，例如 Min、Max、Mean 与 Median 耗时。</p>
 
 <p>它可以帮助你回答开发过程中的问题定位与优化问题。可以用它对某个游戏场景做 A/B 测试以比较性能差异，比较代码重构与优化前后的性能分析数据，也可以用于新功能，甚至 Unity 版本升级。</p>
 
-<figure><figcaption>图 11：作为 Unity Profiler 的绝佳搭档，Profile Analyzer 可以聚合并比较性能分析会话中捕获的多个帧。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p051_1.webp" alt="图 11：作为 Unity Profiler 的绝佳搭档，Profile Analyzer 可以聚合并比较性能分析会话中捕获的多个帧。" loading="lazy" decoding="async"><figcaption>图 11：作为 Unity Profiler 的绝佳搭档，Profile Analyzer 可以聚合并比较性能分析会话中捕获的多个帧。</figcaption></figure>
 
 <p>在 Profile Analyzer 的 Single 视图中使用聚合数据视图，也可以在一开始就回答高层次的、随时间变化的性能问题。与一次只看一帧相比，这可能是查看数据更好的方式。例如，在一段 300 帧（10 秒）的玩法捕获或一段 20 秒的加载序列中：</p>
 
@@ -145,9 +145,9 @@
 
 <p>Marker Summary 窗格显示所选标记的深入信息。列表中的每个标记，都是该标记在所选帧范围内、所有经过筛选的线程上的全部实例的聚合。</p>
 
-<figure><figcaption>图 12：Profile Analyzer 主窗口概览。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p051_2.webp" alt="图 12：Profile Analyzer 主窗口概览。" loading="lazy" decoding="async"><figcaption>图 12：Profile Analyzer 主窗口概览。</figcaption></figure>
 
-<figure><figcaption>图 13：Marker Summary 面板包含在 Marker Details 面板中所选每个标记聚合的详细信息。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p052_1.webp" alt="图 13：Marker Summary 面板包含在 Marker Details 面板中所选每个标记聚合的详细信息。" loading="lazy" decoding="async"><figcaption>图 13：Marker Summary 面板包含在 Marker Details 面板中所选每个标记聚合的详细信息。</figcaption></figure>
 
 <p>使用 Filters 可以按名称包含或排除标记，或按特定线程进行筛选。当你在范围选择中查看 Time 或 Count 统计值时，这很有用。</p>
 
@@ -166,6 +166,6 @@
 <li><strong>Threads</strong>：显示标记所在线程的名称</li>
 </ul>
 
-<figure><figcaption>图 14：可以按线程或标记名称筛选，从而在 Marker details 窗格中聚焦特定的性能数据区域。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p053_1.webp" alt="图 14：可以按线程或标记名称筛选，从而在 Marker details 窗格中聚焦特定的性能数据区域。" loading="lazy" decoding="async"><figcaption>图 14：可以按线程或标记名称筛选，从而在 Marker details 窗格中聚焦特定的性能数据区域。</figcaption></figure>
 
-<figure><figcaption>图 15：用于自定义 Marker details 窗格所显示统计信息的 Marker 列预设。</figcaption></figure>
+<figure><img src="../assets/figures/profiling/p054_1.webp" alt="图 15：用于自定义 Marker details 窗格所显示统计信息的 Marker 列预设。" loading="lazy" decoding="async"><figcaption>图 15：用于自定义 Marker details 窗格所显示统计信息的 Marker 列预设。</figcaption></figure>

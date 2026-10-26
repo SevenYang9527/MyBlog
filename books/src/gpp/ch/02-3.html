@@ -34,7 +34,7 @@ public class Door : MonoBehaviour
 
 <p>抽象又一次来救场了。你可以在两个类之间夹入一个名为 ISwitchable 的接口（interface）。</p>
 
-<figure><figcaption>图 1：在两个类之间插入接口 ISwitchable，把开关与门之间的直接依赖倒置为对抽象接口的依赖。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p028_1.webp" alt="图 1：在两个类之间插入接口 ISwitchable，把开关与门之间的直接依赖倒置为对抽象接口的依赖。" loading="lazy" decoding="async"><figcaption>图 1：在两个类之间插入接口 ISwitchable，把开关与门之间的直接依赖倒置为对抽象接口的依赖。</figcaption></figure>
 
 <p>ISwitchable 只需要一个公共属性来判断它当前是否处于激活状态，再加上一对用来 Activate 和 Deactivate 它的方法。</p>
 
@@ -87,7 +87,7 @@ public class Door : MonoBehaviour
 
 <p>这样一来，你就可以做出更多能被 Switch 激活的类。无论是活板门还是激光束，高层的 Switch 都能照常工作。它只需要一个实现了 ISwitchable 的兼容客户端。</p>
 
-<figure><figcaption>图 2：Switch 现在可以激活任何 ISwitchable 对象。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p030_1.webp" alt="图 2：Switch 现在可以激活任何 ISwitchable 对象。" loading="lazy" decoding="async"><figcaption>图 2：Switch 现在可以激活任何 ISwitchable 对象。</figcaption></figure>
 
 <p>和 SOLID 的其余原则一样，依赖倒置原则要求你审视自己平时是如何搭建类与类之间关系的。借助松耦合（loose coupling），你可以从容地扩展项目。</p>
 
@@ -101,7 +101,7 @@ public class Door : MonoBehaviour
 
 <p>abstract 关键字让你可以定义一个基类，从而通过继承把通用的功能（方法、字段、常量等）传递给子类。</p>
 
-<figure><figcaption>图 3：用抽象类实现同一套依赖倒置——继承表达的是「is a」（是一个）关系，图中列出的都是可以开启和关闭的「可切换」事物。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p031_1.webp" alt="图 3：用抽象类实现同一套依赖倒置——继承表达的是「is a」（是一个）关系，图中列出的都是可以开启和关闭的「可切换」事物。" loading="lazy" decoding="async"><figcaption>图 3：用抽象类实现同一套依赖倒置——继承表达的是「is a」（是一个）关系，图中列出的都是可以开启和关闭的「可切换」事物。</figcaption></figure>
 
 <p>抽象类的优势在于，它可以拥有字段和常量，也可以拥有静态成员。它还能使用限制更严的访问修饰符，比如 protected 和 private。与接口不同，抽象类允许你实现逻辑，从而在具体的类之间共享核心功能。</p>
 
@@ -125,7 +125,7 @@ public class Door : MonoBehaviour
 
 <p>在这个例子里，你可以让 NPC 派生自 Robot 基类以继承其核心特性，然后再用一个接口 ISwitchable 为 NPC 增添开关能力。</p>
 
-<figure><figcaption>图 4：NPC 机器人同时使用两者：NPC 是（is a）机器人，同时又有一个（has a）开关。</figcaption></figure>
+<figure><img src="../assets/figures/gpp/p032_1.webp" alt="图 4：NPC 机器人同时使用两者：NPC 是（is a）机器人，同时又有一个（has a）开关。" loading="lazy" decoding="async"><figcaption>图 4：NPC 机器人同时使用两者：NPC 是（is a）机器人，同时又有一个（has a）开关。</figcaption></figure>
 
 <p>记住：一个类最多只能继承一个抽象类，但可以实现多个接口。</p>
 

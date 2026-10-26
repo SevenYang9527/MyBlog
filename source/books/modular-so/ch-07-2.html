@@ -58,7 +58,7 @@
 
 <p>请浏览随附的示例项目，了解更多关于实现自己的基于 ScriptableObject 的事件的示例。</p>
 
-<figure><figcaption>图 1：示例项目中的 GameManager 通过事件通道（Event Channel）驱动游戏的各个系统。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p052_1.webp" alt="图 1：示例项目中的 GameManager 通过事件通道（Event Channel）驱动游戏的各个系统。" loading="lazy" decoding="async"><figcaption>图 1：示例项目中的 GameManager 通过事件通道（Event Channel）驱动游戏的各个系统。</figcaption></figure>
 
 <p>请注意，你可以借助不同的事件负载（payload），让每个事件携带不同类型的数据。例如，基于 ScriptableObject 的事件包括 IntEventChannelSO、Vector2EventChannelSO、VoidEventChannelsSO 等。使用哪一种事件取决于具体场景。</p>
 
@@ -98,7 +98,7 @@ public class VoidEventChannelSOEditor : Editor
 
 <p>这会创建一个按钮，让你可以随意触发该事件，从而更容易在运行时诊断问题。</p>
 
-<figure><figcaption>图 2：自定义编辑器按钮可以帮助测试事件通道。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p053_1.webp" alt="图 2：自定义编辑器按钮可以帮助测试事件通道。" loading="lazy" decoding="async"><figcaption>图 2：自定义编辑器按钮可以帮助测试事件通道。</figcaption></figure>
 
 <p>再多做一点工作，你还可以为携带数据的事件通道制作按钮。在事件通道本身中预留一个用于调试值的字段，然后把它传给编辑器脚本。你可以在 SOAP 或 Unity Atoms 项目中找到实现这一功能的示例。</p>
 
@@ -110,13 +110,13 @@ public class VoidEventChannelSOEditor : Editor
 
 <p>而每个 InputAction 又包含自己的 started、performed 和 canceled 事件。</p>
 
-<figure><figcaption>图 3：在 Input System 编辑器中设置 Action 和 Action Map。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p055_2.webp" alt="图 3：在 Input System 编辑器中设置 Action 和 Action Map。" loading="lazy" decoding="async"><figcaption>图 3：在 Input System 编辑器中设置 Action 和 Action Map。</figcaption></figure>
 
 <p>为了解读 InputAction 的绑定，你可以创建一个特殊的 InputReader ScriptableObject。同样，它充当主体（subject）与观察者（observer）之间的中介。不过在这种情况下，MonoBehaviour 不会显式地触发事件。</p>
 
 <p>取而代之的是，由 Input System 来充当主体或广播者：</p>
 
-<figure><figcaption>图 4：一个 ScriptableObject 的 InputReader 转发来自 InputAction 的事件。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p056_1.webp" alt="图 4：一个 ScriptableObject 的 InputReader 转发来自 InputAction 的事件。" loading="lazy" decoding="async"><figcaption>图 4：一个 ScriptableObject 的 InputReader 转发来自 InputAction 的事件。</figcaption></figure>
 
 <p>在这里，我们在 Input System 中设置 Action 和 ActionMap。每个 InputAction 描述一条独立的输入轴，并绑定到键盘、手柄或其他输入设备。</p>
 

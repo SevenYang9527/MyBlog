@@ -63,7 +63,7 @@
 
 <h2>Light Inspector（光照检查器）</h2>
 <p>Light Inspector 是设置光照的三个位置之一。与内置渲染管线（Built-in Render Pipeline）一样，URP 支持平行光（Directional）、聚光灯（Spot）、点光源（Point）和面光源（Area）四种光照，不过面光源仅在 Baked Indirect 模式下有效。更多细节请参阅 Light Mode 一节。</p>
-<figure><figcaption>图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比</figcaption></figure>
+<figure><img src="../assets/figures/urp/p038_1.webp" alt="图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比" loading="lazy" decoding="async"><figcaption>图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比</figcaption></figure>
 <p>上图展示了两个版本的 Light Inspector 中光照属性的呈现方式。URP 版本根据光照是平行光还是点光源，把控件分为五组，并为聚光灯和面光源额外增加一个 Shape 分组。</p>
 <p>下表列出了 URP 与内置渲染管线 Inspector 之间的差异。</p>
 <table>
@@ -119,9 +119,9 @@
 
 <h3>环境光或环境光照（Ambient / Environment lighting）</h3>
 <p>从内置渲染管线到 URP，环境光/环境光照的定义方式没有变化。主环境光通过 Window &gt; Rendering &gt; Lighting &gt; Environment 面板计算。</p>
-<figure><figcaption>图 2：Environment 面板中可用的光照设置</figcaption></figure>
+<figure><img src="../assets/figures/urp/p040_1.webp" alt="图 2：Environment 面板中可用的光照设置" loading="lazy" decoding="async"><figcaption>图 2：Environment 面板中可用的光照设置</figcaption></figure>
 <p>你可以将 Environment Lighting 设置为使用场景的 Skybox，并可选地调整 Intensity、Gradient 或 Color。</p>
-<figure><figcaption>图 3：Environment Lighting 选项</figcaption></figure>
+<figure><img src="../assets/figures/urp/p040_2.webp" alt="图 3：Environment Lighting 选项" loading="lazy" decoding="async"><figcaption>图 3：Environment Lighting 选项</figcaption></figure>
 
 <h2>阴影（Shadows）</h2>
 <p>从内置渲染管线转到 URP 后，最大的变化在于阴影的设置方式。</p>
@@ -138,10 +138,10 @@
 <li>阴影过滤（Soft Shadows）。</li>
 </ul>
 <p>最高分辨率并不总是理想选择。例如 Soft Shadows 选项会产生模糊贴图的效果。在下面这张卡通风格的鬼屋房间图中，你可以看到前景的椅子在书桌抽屉上投下阴影，当分辨率高于 1024 时，这道阴影显得过于锐利。</p>
-<figure><figcaption>图 4：为主光源设置 Shadow Resolution：左上图分辨率为 256，右上图为 512，左中图为 1024，右中图为 2048，下图为 4096。</figcaption></figure>
+<figure><img src="../assets/figures/urp/p041_1.webp" alt="图 4：为主光源设置 Shadow Resolution：左上图分辨率为 256，右上图为 512，左中图为 1024，右中图为 2048，下图为 4096。" loading="lazy" decoding="async"><figcaption>图 4：为主光源设置 Shadow Resolution：左上图分辨率为 256，右上图为 512，左中图为 1024，右中图为 2048，下图为 4096。</figcaption></figure>
 
 <h4>Main Light: Shadow Max Distance</h4>
-<figure><figcaption>图 5：改变主光源阴影的 Max Distance：左上图为 10，右上图为 30，左下图为 60，右下图为 400。</figcaption></figure>
+<figure><img src="../assets/figures/urp/p042_2.webp" alt="图 5：改变主光源阴影的 Max Distance：左上图为 10，右上图为 30，左下图为 60，右下图为 400。" loading="lazy" decoding="async"><figcaption>图 5：改变主光源阴影的 Max Distance：左上图为 10，右上图为 30，左下图为 60，右下图为 400。</figcaption></figure>
 <p>Main Light Shadow 的另一项重要设置是 Max Distance。它以场景单位设定。在上图中，立柱之间相距 10 个单位，Max Distance 从 10 变化到 400 个单位。注意只有第一根立柱投下阴影，而且阴影在距摄像机 10 个单位处就被截断。取 60 个单位时（左下图），所有阴影都在视野内——阴影保真度足够。当 Max Distance 远大于可见资产的范围时，阴影贴图会被摊到过大的区域上，这意味着镜头内区域的分辨率远低于所需。</p>
 <p>Max Distance 属性需要与用户实际能看到的内容以及场景所用的单位直接相关。以能够给出可接受阴影的最小距离为目标（见下方注释）。如果玩家只能看到距摄像机 60 个单位的动态物体所投下的阴影，就把 Max Distance 设为 60。当混合光源（Mixed Lights）的 Lighting Mode 设为 Shadowmask 时，超出 Shadow Distance 的物体阴影会被烘焙。如果这是静态场景，你会看到所有物体上都有阴影，但动态阴影只绘制到 Shadow Distance 范围内。</p>
 <p><strong>注意：</strong>URP 仅支持 Stable Fit Shadow Projection，这依赖用户自行设置 Max Distance。内置渲染管线在 Shadow Projection 属性上同时支持 Stable Fit 和 Close Fit。在后一种模式下，左下与右下两张图会具有相同的质量，因为 Close Fit 会收缩阴影距离平面以贴合最后一个投射者。其缺点是，由于 Close Fit 会“动态”改变阴影视锥，阴影中可能出现闪烁/抖动（shimmer/dancing）现象。</p>
@@ -150,16 +150,16 @@
 <p>由于透视关系，物体会在远处逐渐消失，因此降低 Shadow Resolution 是合理的，这样可以把更多阴影贴图用于靠近摄像机的阴影。Shadow Cascades 可以帮助实现这一点。</p>
 <p>下面两张图展示了鬼屋中带椅子和书桌的场景的阴影贴图。左图的级联数量为 1，贴图占满整个区域。右图的级联数量为 4，注意贴图中包含四张不同的贴图，每个区域分到的贴图分辨率更低。</p>
 <p>对于这样的小场景，级联数量为 1 很可能给出最佳结果。但如果你的 Max Distance 值很大，那么级联数量为 2 或 3 会让前景物体获得更好的阴影，因为它们分到了更大比例的阴影贴图。注意左图中的椅子要大得多，因而阴影更锐利。</p>
-<figure><figcaption>图 6：级联数量设为 1（左图）和 4（右图）时的阴影贴图</figcaption></figure>
+<figure><img src="../assets/figures/urp/p044_1.webp" alt="图 6：级联数量设为 1（左图）和 4（右图）时的阴影贴图" loading="lazy" decoding="async"><figcaption>图 6：级联数量设为 1（左图）和 4（右图）时的阴影贴图</figcaption></figure>
 <p>你可以用可拖动的指针调整每个级联区段的起止范围，也可以在相应字段中设置单位值（见下图）。务必把 Max Distance 调整为贴合场景的值，并谨慎选择滑块位置。如果你以米（metric）作为工作单位，请始终让最后一个级联的范围最大不超过最后一个 Shadow Caster 的距离。</p>
 
 <h3>Additional Light Shadows（附加光源阴影）</h3>
-<figure><figcaption>图 7：URP Asset 中可用于 Additional Lights 的设置</figcaption></figure>
+<figure><img src="../assets/figures/urp/p044_2.webp" alt="图 7：URP Asset 中可用于 Additional Lights 的设置" loading="lazy" decoding="async"><figcaption>图 7：URP Asset 中可用于 Additional Lights 的设置</figcaption></figure>
 <p>处理好 Main Light 的阴影之后，就该转向 Additional Lights Mode 了。将 URP Asset 的 Additional Lights Mode 设为 Per Pixel，即可让附加光源投射阴影。虽然该模式可以设为 Disabled、Per Vertex 或 Per Pixel（见上图），但只有最后一种支持阴影。</p>
 <p>勾选 Cast Shadows 复选框，然后选择 Shadow Atlas 的分辨率。这张图集将用于合并所有投射阴影的光源各自的贴图。请记住，点光源会投射六张阴影贴图、构成一张立方体贴图，因为它向所有方向发光。这使点光源成为性能开销最大的选择。单张附加光源阴影贴图的分辨率，由三档 Shadow Resolution 与在 Hierarchy 窗口中选中光源后通过 Light Inspector 设置的分辨率共同决定。</p>
-<figure><figcaption>图 8：Light Inspector 中的 Shadows 分组</figcaption></figure>
+<figure><img src="../assets/figures/urp/p044_3.webp" alt="图 8：Light Inspector 中的 Shadows 分组" loading="lazy" decoding="async"><figcaption>图 8：Light Inspector 中的 Shadows 分组</figcaption></figure>
 <p>在鬼屋中，镜子上方有一盏聚光灯，书桌上方有一盏点光源，此外还有七张贴图。要把这七张贴图放进一张 1024 像素见方的贴图中，每张贴图的尺寸需要是 256 像素或更小。如果超过这个尺寸，阴影贴图的分辨率会被压缩以适配图集，并在控制台中输出一条警告信息。</p>
-<figure>
+<figure><img src="../assets/figures/urp/p046_1.webp" alt="图 9：根据附加光源阴影贴图的数量与每张贴图所选的分辨率档位来设置 Shadow Atlas 尺寸" loading="lazy" decoding="async">
 <table>
 <thead>
 <tr>

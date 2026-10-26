@@ -72,7 +72,7 @@ public class GameItemSO : ScriptableObject
 }
 </code></pre>
 
-<figure><figcaption>图 1：项目窗口中由同一个空 ScriptableObject 生成的多个资产，它们不含任何数据，却被当作枚举值使用。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p034_1.webp" alt="图 1：项目窗口中由同一个空 ScriptableObject 生成的多个资产，它们不含任何数据，却被当作枚举值使用。" loading="lazy" decoding="async"><figcaption>图 1：项目窗口中由同一个空 ScriptableObject 生成的多个资产，它们不含任何数据，却被当作枚举值使用。</figcaption></figure>
 
 <p>这让你可以在项目中生成任意数量的资产。即使不包含任何数据，ScriptableObject 本身也能代表一个类别或物品类型。如果你进行相等性比较，它的工作方式与枚举非常相似。</p>
 
@@ -84,9 +84,9 @@ public class GameItemSO : ScriptableObject
 
 <p>如果你的应用需要一个装备游戏物品的库存系统（Inventory System），ScriptableObject 可以代表物品类型或武器槽位（Weapon Slot）。此时检视面板（Inspector）中的字段就成了用于配置它们的拖放式（Drag-and-Drop）界面。</p>
 
-<figure><figcaption>图 2：检视面板中以拖放方式指定 ScriptableObject 分类的字段，无需编写额外代码。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p035_1.webp" alt="图 2：检视面板中以拖放方式指定 ScriptableObject 分类的字段，无需编写额外代码。" loading="lazy" decoding="async"><figcaption>图 2：检视面板中以拖放方式指定 ScriptableObject 分类的字段，无需编写额外代码。</figcaption></figure>
 
-<figure><figcaption>图 3：按 ScriptableObject 分类的库存槽位，每个槽位引用一个特定的 ScriptableObject 资产。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p036_1.webp" alt="图 3：按 ScriptableObject 分类的库存槽位，每个槽位引用一个特定的 ScriptableObject 资产。" loading="lazy" decoding="async"><figcaption>图 3：按 ScriptableObject 分类的库存槽位，每个槽位引用一个特定的 ScriptableObject 资产。</figcaption></figure>
 
 <p>这种对美术友好的 UI 让设计师无需软件开发者的额外支持，就能修改和扩展游戏数据。把维护游戏数据的手段与责任交给设计团队，可以让每个人都专注于自己最擅长的事。</p>
 
@@ -132,7 +132,7 @@ public class GameItemSO : ScriptableObject
 
 <p>与枚举不同，ScriptableObject 很容易扩展。无需单独的查找表（Lookup Table），也无需与新的数据数组建立对应关系。只需添加一个额外的字段和/或方法来处理逻辑即可。</p>
 
-<figure><figcaption>图 4：带有比较逻辑的 ScriptableObject 示意图，展现物品之间相互克制的胜负关系。</figcaption></figure>
+<figure><img src="../assets/figures/modular-so/p038_1.webp" alt="图 4：带有比较逻辑的 ScriptableObject 示意图，展现物品之间相互克制的胜负关系。" loading="lazy" decoding="async"><figcaption>图 4：带有比较逻辑的 ScriptableObject 示意图，展现物品之间相互克制的胜负关系。</figcaption></figure>
 
 <p>把这一点与维护传统枚举相比。如果你有一长串没有显式编号的枚举值，插入或删除一个枚举值可能会改变它们的顺序。这种重排序可能引入细微的 bug 或非预期行为。</p>
 

@@ -1,0 +1,28 @@
+C#数据结构 - 复件.pdf: pages=262 pages_with_img=1 images=2
+   常见尺寸: 392x90x1, 6x1x1
+CLR via C# 第4版.pdf: pages=747 pages_with_img=747 images=747
+   常见尺寸: 2021x2911x747
+create-modular-game-architecture-in-unity-with-scriptableobjects.pdf: pages=76 pages_with_img=52 images=59
+   常见尺寸: 2232x2878x11, 2559x1550x1, 2560x1277x1, 1428x952x1, 1428x680x1
+HLSL初级教程.pdf: pages=38 pages_with_img=8 images=13
+   常见尺寸: 256x256x6, 640x480x3, 558x187x1, 428x265x1, 508x254x1
+Introduction_to_the_Universal_Render_Pipeline_for_advanced_Unity_creators_2024.pdf: pages=140 pages_with_img=111 images=212
+   常见尺寸: 1057x443x3, 1428x759x2, 838x448x2, 1428x867x2, 796x320x2
+Level_up_your_code_with_Game_Programming_Pattern.pdf: pages=99 pages_with_img=56 images=35049
+   常见尺寸: 14x13x1365, 9x9x1252, 13x14x1235, 13x13x823, 22x22x771
+Lua源码赏析.pdf: pages=113 pages_with_img=0 images=0
+   常见尺寸: 
+Ultimate_Guide_to_Profiling_Unity_Games.pdf: pages=75 pages_with_img=45 images=66
+   常见尺寸: 713x439x2, 1000x638x1, 1102x509x1, 1102x549x1, 1146x784x1
+Unity Shader入门精要.pdf: pages=389 pages_with_img=388 images=388
+   常见尺寸: 1980x2983x193, 1976x2976x185, 1968x2976x8, 2048x2983x2
+Unity_OptimizeYourMobileGamePerformance_Final.pdf: pages=80 pages_with_img=56 images=72
+   常见尺寸: 1745x1074x1, 476x264x1, 1089x492x1, 707x394x1, 1620x906x1
+Unity网络游戏实战-第二版_可编辑版.pdf: pages=434 pages_with_img=434 images=1077
+   常见尺寸: 996x1456x335, 999x1458x41, 999x1457x36, 1001x1460x6, 1002x1459x4
+大话设计模式.pdf: pages=400 pages_with_img=397 images=397
+   常见尺寸: 982x1321x369, 983x1321x28
+日式卡通渲染笔记(罪恶装备 碧蓝幻想 原神 战双.pdf: pages=91 pages_with_img=91 images=749
+   常见尺寸: 4482x371x182, 4489x22x180, 303x303x91, 4482x353x91, 4489x21x90
+网络同步在游戏历史中的发展变化（作者：Jerish）.pdf: pages=72 pages_with_img=56 images=78
+   常见尺寸: 1198x567x2, 1080x856x1, 538x237x1, 827x500x1, 713x579x1
