@@ -1,0 +1,140 @@
+<h2>先找瓶颈，再谈优化</h2>
+
+<p>讲义第 24 页把 UGUI 的性能问题分成四类：GPU 片段着色器/填充率过高、CPU 花在重建 Canvas 上、CPU 花在生成顶点上（通常是文本）、Canvas 重建次数过多。这个分类很实用，因为它把“UI 卡”拆成了四条不同的线索，而不是笼统地说“UI 性能不好”。</p>
+
+<p>第 25 页给出了一组网格重建优化策略：减少 UI 元素、动静分离、谨慎使用 <code>SetActive</code>、谨慎使用 Pixel Perfect、Animator 的最佳用法、谨慎使用 Tiled Image。本章逐条核对，并补上今天的做法。</p>
+
+<h3>四个入口，四种药</h3>
+
+<table>
+<thead>
+<tr><th>症状</th><th>Profiler 里看什么</th><th>优先动作</th></tr>
+</thead>
+<tbody>
+<tr><td>GPU 填充率过高</td><td>GPU 时间、Overdraw、Frame Debugger</td><td>减少全屏半透明、关闭被遮挡面板、裁掉透明区域、少用大面积粒子/模糊。</td></tr>
+<tr><td>CPU 重建 Canvas</td><td><code>Canvas.BuildBatch</code>、<code>Canvas.SendWillRenderCanvases</code></td><td>拆 Canvas、减少元素、减少重叠、降低更新频率。</td></tr>
+<tr><td>CPU 生成顶点</td><td><code>Graphic.OnPopulateMesh</code>、<code>Text.OnPopulateMesh</code>、<code>Font.RequestCharactersInTexture</code></td><td>少改长文本、少用 Best Fit、少用 Tiled/复杂 Effect、用 TMP、拆分文本。</td></tr>
+<tr><td>Canvas 重建次数过多</td><td>一帧内 <code>Canvas.BuildBatch</code> 的调用次数/总时长</td><td>动静分离、合并数据更新、避免每帧改颜色/文本/Active、用 Tween 代替 Animator 写 UGUI 属性。</td></tr>
+</tbody>
+</table>
+
+<p>这四类问题经常同时出现，但优化顺序应该是“先定位，再动手”。例如看到 UI 卡，先确认是 CPU 还是 GPU；如果是 CPU，再看是 C# Rebuild 还是原生 Batch；如果是 Batch，再看是元素太多还是 dirty 太频繁。否则很容易把“拆 Canvas”当成万能药，结果 DrawCall 变多、问题依旧。</p>
+
+<h3>策略一：减少 UI 元素</h3>
+
+<p>这是最朴素、也最有效的一条。每多一个可绘制元素，就多一份顶点、材质、排序和重叠检测成本。具体做法：</p>
+
+<ul>
+<li>删掉不显示的装饰性 Image/Text，而不是把 alpha 设为 0。</li>
+<li>合并可以用一张图表达的多个 Image；用九宫格/平铺代替重复的小图。</li>
+<li>扁平化层级，减少无意义的空 GameObject；但不要为了扁平化破坏合批顺序。</li>
+<li>避免“空 Image”占位；点击热区用不绘制的 Raycast Graphic，或把 Raycast 放在已有图形上。</li>
+<li>文本能合并的合并，避免一行字拆成很多 Text。</li>
+</ul>
+
+<h3>策略二：动静分离</h3>
+
+<p>Unity 官方优化指南的核心建议之一就是拆分 Canvas：一个元素变化会让整个 Canvas 重新分析；把静态元素和动态元素分到不同 Canvas，可以把重建范围缩小。子 Canvas 还会隔离父/兄弟 Canvas 的批次。</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="静态与动态 Canvas 拆分" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="200" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">一个 Canvas</text>
+    <text x="570" y="52">静态 / 动态拆开</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="55" y="75" width="270" height="125" rx="4"></rect>
+    <rect x="75" y="95" width="100" height="40" rx="3"></rect>
+    <rect x="75" y="145" width="100" height="40" rx="3"></rect>
+    <rect x="205" y="95" width="100" height="40" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <text x="125" y="120" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">静态背景</text>
+    <text x="125" y="170" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">静态列表</text>
+    <text x="255" y="120" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">动态数字</text>
+    <text x="190" y="220" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">数字每变一次，整张画布重排</text>
+
+    <rect x="435" y="75" width="270" height="125" rx="4" stroke-dasharray="5 4"></rect>
+    <rect x="450" y="90" width="150" height="95" rx="4"></rect>
+    <rect x="620" y="90" width="70" height="95" rx="4" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <text x="525" y="118" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">静态 Canvas</text>
+    <text x="525" y="140" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">背景 / 列表</text>
+    <text x="655" y="118" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">动态</text>
+    <text x="655" y="140" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">数字</text>
+    <text x="570" y="220" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">只重算动态子 Canvas</text>
+  </g>
+</svg>
+<figcaption>图 9-1：动静分离把“全量分析”限制在动态子 Canvas 内；代价是至少多一个批次/DrawCall，需要权衡。</figcaption>
+</figure>
+
+<p>拆 Canvas 不是越多越好。每个 Canvas 至少是一个独立的合批单元，通常会带来额外的 DrawCall；如果拆得太碎，批次数量反而上升。合理的拆法是按“更新频率”和“遮挡关系”拆：静态背景、动态数字、弹出窗口、滚动列表、全屏特效各成一组。用 Frame Debugger 看拆前拆后的批次数量，而不是凭感觉。</p>
+
+<h3>策略三：谨慎使用 SetActive</h3>
+
+<p>讲义说“UI 元素的 active 操作会触发耗时较高的 rebuild”。这是对的：禁用会触发 <code>OnDisable</code> 和布局重建，重新启用会触发 <code>OnEnable</code> 的 <code>SetAllDirty</code>，通常意味着 Layout + 顶点 + 材质全部重来。但它不是唯一选项。</p>
+
+<p>如果只是隐藏一整块面板，Unity 官方优化指南建议<strong>禁用 Canvas 组件</strong>：Canvas 停止发出 DrawCall，但保留顶点缓冲；重新启用时不会触发整棵层级的 OnDisable/OnEnable，只是继续画。这个方案适合“弹窗关闭但还要快速打开”的场景。</p>
+
+<table>
+<thead>
+<tr><th>做法</th><th>效果</th><th>适用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>gameObject.SetActive(false)</code></td><td>触发 OnDisable/OnEnable；重新启用时重建</td><td>小型元素、需要彻底停掉脚本/动画的对象</td></tr>
+<tr><td>禁用 Canvas 组件</td><td>停止 DrawCall，保留顶点缓冲；重新启用不触发整棵层级回调</td><td>整块面板/窗口的快速显隐</td></tr>
+<tr><td>禁用 CanvasRenderer</td><td>停止该元素绘制，但仍可能在层级/布局中</td><td>单个元素的临时隐藏</td></tr>
+<tr><td><code>CanvasGroup.alpha = 0</code></td><td>视觉透明，但是否省绘制取决于它是否在 Canvas 上、版本和设置；不能当作通用剔除</td><td>淡入淡出动画</td></tr>
+<tr><td>移出屏幕 / <code>RectMask2D</code> 裁剪</td><td>减少可见元素；仍可能参与布局/批次</td><td>滚动列表、临时飞出的元素</td></tr>
+</tbody>
+</table>
+
+<h3>策略四：Pixel Perfect 的成本</h3>
+
+<p>讲义说“Canvas 的 Pixel Perfect 开启会导致 UI 元素位移时长宽被微调，从而造成 layout Rebuild”。方向对，但描述不够准确。Unity 开发者曾经解释过：Pixel Perfect 开启时，元素的 Transform 一变化，就需要重新生成它和子元素的顶点，以便把位置对齐到像素网格。这里主要是 <strong>Graphic 顶点重建</strong>，不一定是 <code>LayoutRebuilder</code> 的布局计算。</p>
+
+<p>所以结论是：动画、滚动、频繁移动的 UI，尽量关闭 Pixel Perfect；等静止后再打开。尤其是深层级、元素多的面板，Pixel Perfect 会让每一次移动都变成一次顶点重建。</p>
+
+<h3>策略五：Animator 不是免费的</h3>
+
+<p>讲义说“Animator 每帧都会改变元素，即使动画中的数值没有变化，因为 Animator 没有空指令检查”。这句话要限定范围：如果 Animator 动画了 UGUI 的属性（位置、缩放、颜色、<code>sizeDelta</code> 等），它会按曲线写入这些属性；UGUI 的 <code>OnDidApplyAnimationProperties</code> 会调用 <code>SetAllDirty</code>，所以即使视觉上变化很小，也可能触发重建。它不是“所有 Animator 都必然每帧重建 UI”，但“用 Animator 驱动 UGUI 属性”确实要谨慎。</p>
+
+<p>更稳的做法：</p>
+
+<ul>
+<li>只响应事件的变化，用 Tween/代码插值，避免 Animator 持续写属性。</li>
+<li>必须用 Animator 时，动画 Transform 或 CanvasGroup，不要动画 <code>anchorMin/Max</code>、<code>sizeDelta</code> 这类会触发布局的属性。</li>
+<li>设置 Animator 的 Culling Mode，避免屏幕外还更新。</li>
+<li>用 Profiler 看 <code>Animator.Update</code> 和 <code>Canvas.SendWillRenderCanvases</code> 是否同时出现。</li>
+</ul>
+
+<h3>策略六：Tiled Image</h3>
+
+<p>讲义说“谨慎使用 Tiled 类型的 Image”，这是对的。Tiled 会为了平铺生成大量 quad，源文档也提到平铺网格有 16250 个 quad 的上限；超过后 Unity 会放大 tile 来控制在限制内。最省的做法是：</p>
+
+<ul>
+<li>Sprite 没有 border、没有被打包、纹理 Wrap Mode 设为 <code>Repeat</code>，让着色器直接平铺，避免生成额外几何。</li>
+<li>需要九宫格平铺时，限制平铺次数，或改用 Shader/材质实现。</li>
+<li>用 Frame Debugger 看 Tiled Image 的顶点数和 DrawCall，不要只看 Inspector。</li>
+</ul>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 24 页的四类问题、第 25 页的六条策略方向都成立。需要修正两处：Pixel Perfect 主要是顶点重建，不一定是 Layout Rebuild；Animator 的“每帧必重建”要限定为“被动画写入的 UGUI 属性”。另外，隐藏整块面板时，禁用 Canvas 组件通常比 <code>SetActive</code> 更划算。</p>
+</blockquote>
+
+<h3>一张优化优先级表</h3>
+
+<table>
+<thead>
+<tr><th>优先级</th><th>动作</th><th>预期收益</th><th>风险</th></tr>
+</thead>
+<tbody>
+<tr><td>1</td><td>用 Profiler / Frame Debugger 定位是 CPU 还是 GPU</td><td>避免吃错药</td><td>无</td></tr>
+<tr><td>2</td><td>删除不用的元素、空 Image、重复文本</td><td>同时降低顶点、批次、填充率</td><td>可能影响视觉细节</td></tr>
+<tr><td>3</td><td>动静分离、按更新频率拆 Canvas</td><td>缩小批次重建范围</td><td>DrawCall 可能增加</td></tr>
+<tr><td>4</td><td>关闭不必要的 Raycast / Pixel Perfect / Best Fit</td><td>降低事件和重建成本</td><td>交互/清晰度需要回归测试</td></tr>
+<tr><td>5</td><td>用 TMP、少改长文本、少用 Outline/Shadow</td><td>降低顶点和字体图集压力</td><td>需要迁移/美术配合</td></tr>
+<tr><td>6</td><td>滚动列表池化、RectMask2D、减少布局组</td><td>降低大量子项的成本</td><td>实现复杂度上升</td></tr>
+</tbody>
+</table>

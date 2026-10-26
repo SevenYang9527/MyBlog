@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>底本与方法：这份讲义怎么读 · UGUI 原理与优化：逐条考据版</title>
+<meta name="description" content="以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">UGUI 原理与优化：逐条考据版</div>
+    <div class="book-en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">底本与方法：这份讲义怎么读</a></li>
+      <li><a href="ch-02.html">UGUI 的坐标：五种 UI 系统与今天的选型</a></li>
+      <li><a href="ch-03.html">Canvas：渲染模式、层级顺序与“谁在谁上面”</a></li>
+      <li><a href="ch-04.html">适配：Canvas Scaler 的三种模式与两种匹配</a></li>
+      <li><a href="ch-05.html">RectTransform 基础：锚点、轴心与锚框</a></li>
+      <li><a href="ch-06.html">RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a></li>
+      <li><a href="ch-07.html">布局与 Rebuild：从 dirty 到新网格</a></li>
+      <li><a href="ch-08.html">合批：重叠检测、层级号与 SubMesh</a></li>
+      <li><a href="ch-09.html">性能入口与网格重建优化</a></li>
+      <li><a href="ch-10.html">Overdraw：看不见的像素也在花钱</a></li>
+      <li><a href="ch-11.html">DrawCall：合批优化与常见打断</a></li>
+      <li><a href="ch-12.html">字体与文本：动态图集、后备字体与顶点数</a></li>
+      <li><a href="ch-13.html">ScrollView、Raycast 与其他技巧</a></li>
+      <li><a href="ch-14.html">工具与美术规范：Profiler、Frame Debugger 与团队约定</a></li>
+      <li><a href="ch-15.html">勘误总表与参考资料</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      UGUI 技术讲义 · 逐条考据<br>
+      原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">01 · 底本与方法：这份讲义怎么读</div>
+    <div class="pager"><a href="ch-02.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>一份 2018 年的讲义，为什么还值得读</h2>
+
+<p>《UGUI 原理和优化》是一份 34 页的技术讲义，封面署名何冠峰（文西）。PowerPoint 内部元数据记录的创建时间是 2018 年 8 月 30 日，最后修改时间是 2019 年 7 月 23 日；文件系统里的修改时间则是 2022 年 2 月 27 日，很可能是后来复制或另存造成的，不能据此判断内容在 2019 年后又被改过。因此，本书把它当作一份 Unity 2018/2019 时代的分享来读，并在涉及版本差异时单独说明。</p>
+
+<p>这个时间点很重要。那时 UGUI 还是 Unity 运行时 UI 的绝对主力，TextMeshPro 还没有像今天这样成为默认文本方案，UI Toolkit 也还没有运行时版本。讲义里的大量结论来自当时的官方文档、引擎源码和项目经验；其中有些今天仍然成立，有些需要补充，有些则已经过时。</p>
+
+<p>本书不是把讲义逐字翻译一遍，而是把它当作一份“待核对的底稿”：先还原它想表达的技术模型，再对照 Unity 官方文档与 <code>com.unity.ugui</code> 源码，逐条判断真假；最后用今天的版本重写一遍。讲义里那些仍然有效的判断会被保留，错误或过时的部分会被明确标出。本书不复制原讲义的图片和整段文字，只保留必要的短语用于核对；技术结论以文档、源码和可复现的工程验证为准。</p>
+
+<h3>讲义里混着三种东西</h3>
+
+<p>读这类技术分享，最容易犯的错误是把所有句子都当成同一等级的“事实”。这份讲义里至少混着三种内容：</p>
+
+<ul>
+<li><strong>引擎事实</strong>：例如 Canvas 的绘制顺序、RectTransform 中 <code>sizeDelta</code> 的含义、Rebuild 由谁触发。这些可以用文档和源码验证，对错比较清楚。</li>
+<li><strong>性能经验</strong>：例如“动静 UI 分 Canvas”“关闭不用的 Raycast”“少用 Tiled Image”。方向通常是对的，但收益取决于项目规模、目标平台和具体实现，不能当成绝对值。</li>
+<li><strong>项目案例</strong>：例如讲义里提到的《龙与少女》优化方案、团队的美术规范、模板覆盖率。这些是分享者在特定项目里的做法，本书无法复现其工程现场，只核对其中可验证的技术机制；无法验证的部分会标成“经验之谈”。</li>
+</ul>
+
+<p>所以，本书的判断不会只有“真”和“假”两种。更常见的情况是“方向对，但需要补充条件”，或者“在 2018 年成立，今天需要改写”。</p>
+
+<h3>本书的核对方法</h3>
+
+<p>核对流程分四步：先把 34 页讲义拆成可判断的句子；再按主题归类；然后查 Unity 手册、脚本 API、uGUI 源码和官方优化指南；最后给出判定，并把结论改写成今天可执行的版本。</p>
+
+<figure>
+<svg viewBox="0 0 760 150" role="img" aria-label="从讲义到考据结论的流程图" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="35" width="124" height="66" rx="10"></rect>
+    <rect x="166" y="35" width="124" height="66" rx="10"></rect>
+    <rect x="322" y="35" width="124" height="66" rx="10"></rect>
+    <rect x="478" y="35" width="124" height="66" rx="10"></rect>
+    <rect x="634" y="35" width="116" height="66" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" text-anchor="middle" font-family="inherit">
+    <text x="72" y="64">34 页讲义</text>
+    <text x="72" y="84" font-size="11.5">拆成可判断的句子</text>
+    <text x="228" y="64">按主题归类</text>
+    <text x="228" y="84" font-size="11.5">Canvas / Rect / 合批…</text>
+    <text x="384" y="64">查文档与源码</text>
+    <text x="384" y="84" font-size="11.5">Unity Manual / uGUI</text>
+    <text x="540" y="64">给出判定</text>
+    <text x="540" y="84" font-size="11.5">真 / 补充 / 过时 / 假</text>
+    <text x="692" y="64">改写成今天</text>
+    <text x="692" y="84" font-size="11.5">可执行的版本</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow1)">
+    <line x1="134" y1="68" x2="158" y2="68"></line>
+    <line x1="290" y1="68" x2="314" y2="68"></line>
+    <line x1="446" y1="68" x2="470" y2="68"></line>
+    <line x1="602" y1="68" x2="626" y2="68"></line>
+  </g>
+</svg>
+<figcaption>图 1-1：本书的核对流程。讲义只是起点，最终结论以当前版本的文档、源码和可复现实验为准。</figcaption>
+</figure>
+
+<h3>版本基线</h3>
+
+<p>技术结论必须带版本。本书的默认基线是 Unity 2022.3 LTS（对应 <code>com.unity.ugui</code> 1.0.0）与 Unity 6（对应 <code>com.unity.ugui</code> 2.x；2.0.0 起合并了 TextMeshPro 包）。涉及旧版本差异时会单独说明。你在更老的 Unity 版本里读到的行为可能不同，尤其是字体、UI Toolkit、Canvas 批处理和多线程相关的细节。</p>
+
+<table>
+<thead>
+<tr><th>对象</th><th>本书采用的基线</th><th>需要特别注意</th></tr>
+</thead>
+<tbody>
+<tr><td>UGUI / Unity UI</td><td>Unity 2022.3 LTS（<code>com.unity.ugui</code> 1.0.0）与 Unity 6（<code>com.unity.ugui</code> 2.x）</td><td>UGUI 仍然受支持，没有被 UI Toolkit 取代；2.0.0 起合并了 TextMeshPro 包；源码在 GitHub 的 <code>Unity-Technologies/uGUI</code>。</td></tr>
+<tr><td>UI Toolkit</td><td>运行时 UI 自 Unity 2021.2 起可用</td><td>它原名 UIElements，最早在 2019.1 主要服务 Editor；讲义里“UI Element 是 Unity 2019 最新 UI 系统”的说法已经过时。</td></tr>
+<tr><td>文本</td><td>新项目优先 TextMeshPro（TMP）；旧项目可能仍用 <code>UnityEngine.UI.Text</code></td><td>两者字体图集、描边阴影、Best Fit 的成本模型不同，不能混着套结论。</td></tr>
+<tr><td>源码</td><td>uGUI GitHub <code>main</code> 分支与 Unity 包缓存</td><td>不同 Unity 版本的包源码会有差异；排查时应以项目 <code>Library/PackageCache</code> 里的版本为准。</td></tr>
+</tbody>
+</table>
+
+<h3>先看结论：最需要改掉的八个说法</h3>
+
+<p>为了避免你带着旧结论读完整本书，这里先列出最关键的八处订正。详细依据在对应章节和最后的勘误总表里。</p>
+
+<table>
+<thead>
+<tr><th>讲义说法</th><th>本书判定</th><th>更准确的说法</th></tr>
+</thead>
+<tbody>
+<tr><td>UGUI 支持多线程（UI 重建）</td><td>不准确</td><td>Canvas 的批次计算和几何 Job 可以多线程；C# 侧的 Layout / Graphic Rebuild 仍在主线程。</td></tr>
+<tr><td>UI Element 是最新 UI 系统（Unity 2019）</td><td>过时</td><td>它后来叫 UI Toolkit；运行时 UI 从 Unity 2021.2 才正式可用。</td></tr>
+<tr><td>通过修改 Canvas 的 Layer 隐藏面板</td><td>不通用，Overlay 下不成立</td><td>Screen Space - Overlay 不受相机 Culling Mask 影响；要隐藏整块面板，优先禁用 Canvas 组件或 GameObject。</td></tr>
+<tr><td>描边和阴影都会增大四倍顶点</td><td>假</td><td><code>Shadow</code> 约 2 倍顶点，<code>Outline</code> 约 5 倍顶点（原始 1 份 + 4 个方向各 1 份）。</td></tr>
+<tr><td>后备字体取自系统 Arial.ttf，安装包里没有</td><td>不准确</td><td>默认字体是 Arial；缺失时 Unity 会回退到自带的 Liberation Sans 或系统字体；WebGL / 主机不能依赖 OS 字体，必须把字体数据打进包。</td></tr>
+<tr><td>锚框不能超过父矩形</td><td>不准确</td><td>编辑器拖动时默认限制在父矩形内，但按住快捷键、直接输入数值或在代码里都可以让 <code>anchorMin/Max</code> 超出 0~1。</td></tr>
+<tr><td>修改 Size、Anchors、Pivot 都会改变 <code>UIVertex.position</code></td><td>不准确</td><td>尺寸变化会重建顶点；纯位置变化不会改本地顶点；Anchors / Pivot 只有在改变矩形尺寸或局部矩形原点时才需要重建。</td></tr>
+<tr><td>Canvas 下所有 UI 最终合批到同一个 Mesh</td><td>大体真，但容易误解</td><td>一个 Canvas 生成一个组合 Mesh，但其中按材质/纹理分成多个 SubMesh，也就是多个 DrawCall；不是所有元素都能合。</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>考据结论：</strong>这份讲义不是“官方规范”，而是一份带有强项目经验的技术分享。它的价值在于把 Canvas、RectTransform、Rebuild、合批、Overdraw、字体和 ScrollView 串成了一条完整的性能链路；它的风险在于部分结论是 2018 年的版本经验，不能无条件搬到今天。</p>
+</blockquote>
+
+<p>接下来，我们从最外层的 Canvas 开始，一层一层往里拆。</p>
+
+  </article>
+  <div class="prevnext">
+    <span class="empty"></span>
+    <a href="ch-02.html"><span class="dir">下一节 →</span>UGUI 的坐标：五种 UI 系统与今天的选型</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

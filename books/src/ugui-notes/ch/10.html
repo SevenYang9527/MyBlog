@@ -1,0 +1,124 @@
+<h2>Overdraw：看不见的像素也在花钱</h2>
+
+<p>Overdraw 指的是同一个屏幕像素在一帧里被着色多次。UGUI 的 UI 几乎都在透明队列里渲染，半透明混合要求从后往前画；一个全屏背景、一层半透明遮罩、一层弹窗、再加一层高光，同一个像素可能被画四五次。对移动端 GPU 来说，填充率往往比顶点数更先成为瓶颈。</p>
+
+<p>讲义第 26 页给了四条策略：禁用不可见的面板、不要用空 Image 做按键响应、使用 Polygon Mode Sprites、关闭 Sliced Image 的 Fill Center。其中第一条的具体做法有问题，其余三条基本成立。本章逐条拆。</p>
+
+<h3>策略一：隐藏不可见的面板</h3>
+
+<p>“打开一个系统时，如果它完全挡住了另一个系统，就把被遮挡的系统禁用。”这个方向是对的。问题在于讲义给的实现：“通过修改 Canvas 对象的 Layer 隐藏面板”。</p>
+
+<p>这个做法在 Screen Space - Overlay 下不成立。Overlay Canvas 不经过相机，相机的 Culling Mask 管不到它；Unity 官方文档还特别说明，UI 元素和 screen space canvas 的子物体是 Culling Mask 的例外，会照常渲染。也就是说，改 Layer 不会让 Overlay UI 消失，只会让你在 Hierarchy 里更难找。</p>
+
+<p>在 Screen Space - Camera 下，相机确实会按 Canvas 所在 Layer 裁剪，但通常看的是 Canvas 根对象的 Layer，而不是每个 UI 子物体的 Layer。想靠 Layer 隐藏子面板，往往要给它单独加一个 Canvas，再控制这个 Canvas 的 Layer；这已经比“禁用 Canvas 组件”复杂了。</p>
+
+<p>更稳的隐藏方式：</p>
+
+<ul>
+<li><strong>禁用 Canvas 组件</strong>：停止 DrawCall，保留顶点缓冲；重新启用时不会触发整棵层级的 OnDisable/OnEnable。这是 Unity 官方优化指南推荐的做法。</li>
+<li><strong>禁用 GameObject</strong>：彻底停掉脚本、动画和布局，但重新启用会触发 OnEnable 的 SetAllDirty。</li>
+<li><strong>禁用 CanvasRenderer</strong>：只停单个元素的绘制，适合临时隐藏。</li>
+</ul>
+
+<blockquote>
+<p><strong>考据结论：</strong>“隐藏被遮挡面板”是对的；“修改 Canvas Layer”不是通用做法，Overlay 下无效。优先禁用 Canvas 组件或 GameObject。</p>
+</blockquote>
+
+<h3>策略二：不要用空 Image 做按键响应</h3>
+
+<p>讲义说“如果使用空的 Image 也会产生不必要的 overdraw”。这个说法是对的，而且原因比“overdraw”更具体：<code>Image</code> 在 <code>activeSprite == null</code> 时会走 <code>Graphic.OnPopulateMesh</code> 的默认实现，生成一个使用白色纹理的 quad。它会占一次绘制、使用白图纹理，并且打断前后元素的合批。</p>
+
+<p>如果只是想要一个“能点击但不显示”的热区，可以写一个不生成任何顶点的 <code>Graphic</code>：</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.UI;
+
+// 只参与 Raycast，不生成任何绘制顶点
+public class RaycastOnlyGraphic : Graphic
+{
+    protected override void OnPopulateMesh(VertexHelper vh)
+    {
+        vh.Clear();
+    }
+}</code></pre>
+
+<p>把它挂在热区上，保持 <code>raycastTarget = true</code>，它就不会产生绘制，但仍能被 <code>GraphicRaycaster</code> 命中。也可以把 Raycast 放在已有的背景 Image 上，用 <code>raycastPadding</code> 扩大点击范围，完全不需要额外的空 Image。</p>
+
+<p>如果点击区域不是矩形，可以用 <code>Image.alphaHitTestMinimumThreshold</code> 做像素级命中测试，前提是 Sprite 可读且没有 Crunch 压缩。这个选项只影响 Raycast，不影响渲染；不要指望它减少 Overdraw。</p>
+
+<h3>策略三：Polygon Mode Sprites</h3>
+
+<p>讲义说“如果图片边缘有大片留白，就会产生很多无用填充；Unity 和 Texture Packer 都支持 Polygon Mode，把矩形 Sprite 用更紧致的 Polygon 来描述”。这个方向是对的，但要注意代价：多边形网格比矩形 quad 有更多顶点，适合“透明区域很大、但形状相对简单”的图片；如果形状复杂，顶点数可能反而成为瓶颈。</p>
+
+<p>在 Unity 里对应的做法是：</p>
+
+<ul>
+<li>Sprite 导入设置里把 <code>Mesh Type</code> 设为 <code>Tight</code>，而不是 <code>Full Rect</code>。</li>
+<li>Image 组件勾选 <code>Use Sprite Mesh</code>。</li>
+<li>在 Sprite Atlas 里注意 <code>Tight Packing</code> / <code>Allow Rotation</code> 等打包设置；Sprite 的 <code>Mesh Type</code> 在纹理导入设置里。</li>
+</ul>
+
+<p>用 Frame Debugger 对比开启前后的顶点数和 Overdraw；不要只看“透明面积变小了”就认为一定更快。</p>
+
+<h3>策略四：Sliced Image 的 Fill Center</h3>
+
+<p>讲义说“Image Type 为 Sliced 时，如果不需要中心区域，就取消 Fill Center”。这是对的。九宫格图片的中心区域如果被边框或内容完全遮住，关掉 <code>Fill Center</code> 可以直接省掉一块填充，而且不会影响边框。</p>
+
+<p>注意：<code>Fill Center</code> 只对 Sliced/Tiled 且 Sprite 有 border 的图片有意义；对 Simple 类型无效。</p>
+
+<h3>Overdraw 是怎么堆起来的</h3>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="Overdraw 叠加示意" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="200" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">视觉结果</text>
+    <text x="570" y="52">像素被画了几次</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="55" y="75" width="270" height="120" rx="4" style="fill:rgba(45,108,223,.10)"></rect>
+    <rect x="105" y="95" width="180" height="80" rx="4" style="fill:rgba(192,57,43,.12)"></rect>
+    <rect x="145" y="115" width="100" height="40" rx="4" style="fill:rgba(39,174,96,.14)"></rect>
+    <text x="190" y="140" fill="currentColor" font-size="12" text-anchor="middle" stroke="none">最终看到一层</text>
+
+    <rect x="435" y="75" width="270" height="120" rx="4" style="fill:rgba(45,108,223,.10)"></rect>
+    <rect x="485" y="95" width="180" height="80" rx="4" style="fill:rgba(192,57,43,.12)"></rect>
+    <rect x="525" y="115" width="100" height="40" rx="4" style="fill:rgba(39,174,96,.14)"></rect>
+    <text x="450" y="92" fill="#2d6cdf" font-size="11" stroke="none">1</text>
+    <text x="500" y="112" fill="#c0392b" font-size="11" stroke="none">2</text>
+    <text x="540" y="132" fill="#27ae60" font-size="11" stroke="none">3</text>
+    <text x="570" y="220" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">中心区域被 3 层覆盖 → 3 次着色</text>
+  </g>
+</svg>
+<figcaption>图 10-1：Overdraw 不是“画了几张图”，而是“每个像素被着色了几次”。被完全遮住的层，仍然可能参与绘制。</figcaption>
+</figure>
+
+<h3>还能做什么</h3>
+
+<table>
+<thead>
+<tr><th>手段</th><th>作用</th><th>注意</th></tr>
+</thead>
+<tbody>
+<tr><td>关闭被完全遮挡的面板</td><td>直接减少填充</td><td>禁用 Canvas 组件优先；Layer 在 Overlay 下无效。</td></tr>
+<tr><td>去掉空 Image / 全屏透明图</td><td>减少白 quad 和混合</td><td>用 RaycastOnlyGraphic 或已有图形承接点击。</td></tr>
+<tr><td>Tight Sprite Mesh</td><td>裁掉透明区域</td><td>顶点数增加，复杂形状要实测。</td></tr>
+<tr><td>关闭 Fill Center</td><td>省掉九宫格中心</td><td>只对 Sliced/Tiled 有效。</td></tr>
+<tr><td>RectMask2D / Mask 裁剪</td><td>减少窗口外元素</td><td>RectMask2D 更省；Mask 用 stencil，会打断合批。</td></tr>
+<tr><td>减少全屏半透明遮罩</td><td>降低大面积混合</td><td>可以用不透明背景或局部遮罩替代。</td></tr>
+<tr><td>控制粒子/模糊/后处理</td><td>降低 GPU 填充</td><td>UI 和场景的 GPU 预算是共享的。</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 26 页的四条策略中，“禁用不可见面板”“空 Image 产生 overdraw”“Polygon Mode 减少填充”“关闭 Fill Center”方向都成立；但“修改 Canvas Layer 隐藏面板”在 Overlay 下不成立，不能作为通用方案。空 Image 的问题不仅是 Overdraw，还会打断合批。</p>
+</blockquote>
+
+<h3>一个容易忽略的点：CanvasGroup 的 alpha</h3>
+
+<p>用 <code>CanvasGroup.alpha</code> 做淡入淡出很方便，但不要把 <code>alpha = 0</code> 当成“完全不渲染”。官方文档对 Canvas 上的 CanvasGroup 有特殊说明：当 CanvasGroup 的 alpha 为 0 时，Canvas 可能不渲染其子物体；但在普通 GameObject 上、不同版本和不同渲染模式下，行为并不完全一致。为了保证隐藏成本可控，整块面板还是优先禁用 Canvas 组件或 GameObject。</p>
+
+<p>另外，CanvasGroup 会产生 <code>CanvasInjectionIndex</code>，可能强制新的批次。给每个子元素都挂 CanvasGroup 来做淡入淡出，可能让 DrawCall 变多。淡入淡出挂在整块面板的根上，通常比挂在每个元素上更合理。</p>

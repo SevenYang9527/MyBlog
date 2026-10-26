@@ -1,0 +1,200 @@
+<h2>字体：UGUI 里最容易被低估的成本</h2>
+
+<p>讲义第 28 页把字体问题拆成七条：字体图集的重建机制、后备字体机制、Text 的网格重建、提前生成动态字体、使用美术数字、谨慎使用 Best Fit、减少长文本变动并慎用 UI/Effect。这些内容在 2018 年是很实用的经验；今天看，大部分仍然成立，但有两处需要修正，而且必须把 TextMeshPro 拉进来一起讲。</p>
+
+<h3>Legacy Text 与 TextMeshPro</h3>
+
+<p>UGUI 自带的 <code>UnityEngine.UI.Text</code> 现在通常被称为 Legacy Text。它使用动态字体：需要哪个字，就把哪个字的光栅化结果放进字体图集；不同字号通常需要不同的字形位图。TextMeshPro（TMP）使用 Signed Distance Field（SDF）图集：一个字形可以服务多个字号和缩放，描边/阴影主要通过材质和 Shader 实现，而不是复制顶点。</p>
+
+<table>
+<thead>
+<tr><th>维度</th><th>Legacy Text</th><th>TextMeshPro</th></tr>
+</thead>
+<tbody>
+<tr><td>图集</td><td>动态字体图集，按字号光栅化；字号越多，图集压力越大。</td><td>SDF 图集，一个字形可服务多字号；仍有图集大小和 fallback 管理。</td></tr>
+<tr><td>描边/阴影</td><td><code>Shadow</code> / <code>Outline</code> 复制顶点：Shadow 约 2 倍，Outline 约 5 倍。</td><td>通常通过材质/Shader 实现，不复制顶点；但仍有额外采样/绘制成本。</td></tr>
+<tr><td>清晰度</td><td>依赖字号和图集分辨率；大字号需要单独生成。</td><td>缩放更平滑；极小字号/复杂字形仍需调采样和 padding。</td></tr>
+<tr><td>功能</td><td>基础排版、富文本；复杂排版能力有限。</td><td>更丰富的排版、字符间距、行距、表情/精灵、超链接等。</td></tr>
+<tr><td>适用</td><td>老项目、少量简单文本、迁移成本敏感</td><td>新项目默认选择；大量文本、多语言、需要高质量描边/阴影</td></tr>
+</tbody>
+</table>
+
+<p>讲义没有提 TMP，这是时代限制。今天做新项目，除非有明确的迁移成本或兼容性原因，否则应优先 TMP；但 TMP 不是“零成本”：Font Asset、Material Preset、Fallback、动态图集、多语言字符集都需要设计。</p>
+
+<h3>动态字体图集的重建</h3>
+
+<p>Legacy Text 的动态字体图集不是一次性生成的。当文本里出现新字符，Unity 会把它加入图集；图集满了，就会触发重建。重建的目标是容纳当前需要显示的字符；如果空间不够，图集可能会扩容。具体重建尺寸和时机属于实现细节，不同版本可能不同，不要写代码去依赖“它一定按原尺寸重建”。</p>
+
+<p>需要稳定的地方是：重建后，旧字形的 UV 可能失效，所有使用该字体的 Text 都需要重新生成网格。UGUI 内部通过 <code>FontUpdateTracker</code> 和 <code>Font.textureRebuilt</code> 处理这件事；如果你自己用 <code>Font.RequestCharactersInTexture</code> 生成自定义网格，就必须监听 <code>Font.textureRebuilt</code>，在重建后重新请求字符、重建网格。</p>
+
+<pre><code>using UnityEngine;
+
+public class FontPrewarm : MonoBehaviour
+{
+    public Font font;
+    public int fontSize = 28;
+
+    void OnEnable()
+    {
+        Font.textureRebuilt += OnFontTextureRebuilt;
+        Request();
+    }
+
+    void OnDisable()
+    {
+        Font.textureRebuilt -= OnFontTextureRebuilt;
+    }
+
+    void Request()
+    {
+        // 预先把常用字符放进图集；仅对动态字体有意义
+        font.RequestCharactersInTexture("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", fontSize, FontStyle.Normal);
+    }
+
+    void OnFontTextureRebuilt(Font rebuiltFont)
+    {
+        if (rebuiltFont != font) return;
+        Request();
+        // 如果你有自定义网格，这里还要重新生成 UV/顶点
+    }
+}</code></pre>
+
+<p><code>Font.RequestCharactersInTexture</code> 的文档特别提醒：图集重建后，只保留“上一帧使用过”的字符。所以即使字符当前已经在图集里，也建议在需要时重新请求，避免它在重建时被清掉。这个 API 主要面向自定义文本渲染；普通 Text 组件会自己处理。</p>
+
+<h3>后备字体：不是简单的 Arial.ttf</h3>
+
+<p>讲义说“后备字体取自系统自带的 Arial.ttf，在发布的游戏安装包里该字库是不存在的”。这句话过于绝对，而且容易误导跨平台项目。更准确的机制是：</p>
+
+<ul>
+<li>Unity 的默认字体资源在文档里被描述为使用 Arial 的动态字体；如果系统没有 Arial，会回退到 Unity 自带的 Liberation Sans。</li>
+<li>字体资源可以配置 <code>Font Names</code> 后备字体列表；当主字体缺少某个字形时，Unity 会按列表查找项目内或系统上可用的字体。</li>
+<li>如果列表里的字体都不可用，Unity 还会回退到一个硬编码的全局后备字体列表，其中包含当前平台常见的国际字体。</li>
+<li>WebGL、部分主机平台没有可访问的 OS 字体；这些平台不能依赖 Arial 或系统字体，字体数据必须随项目提供，后备字体也要在项目里配置。</li>
+</ul>
+
+<p>所以“安装包里没有 Arial”在某些平台可能是事实，但不是通用结论；更重要的是“不要假设目标平台一定有某个系统字体”。多语言项目应该显式配置 Font Asset / Fallback，并在目标平台上验证生僻字、粗体、斜体是否正常。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>“后备字体来自系统 Arial.ttf、安装包里不存在”不准确。默认字体与 Arial 有关，但缺失时会回退到 Liberation Sans 或系统/全局 fallback；WebGL/主机不能依赖 OS 字体。跨平台项目必须自带字体数据并配置 fallback。</p>
+</blockquote>
+
+<h3>Text 的网格重建</h3>
+
+<p>讲义说“Text 组件被重新启用的时候，会重建 Text 的网格。如果含有大量文字，会造成严重的 CPU 开销”。这是对的。除此之外，以下情况也会触发 Text 重建：</p>
+
+<ul>
+<li><code>text</code> 字符串变化：<code>SetVerticesDirty</code> + <code>SetLayoutDirty</code>。</li>
+<li>字体、字号、样式、行距、对齐、换行模式变化：通常都会弄脏顶点和布局。</li>
+<li>字体图集重建：<code>FontTextureChanged</code> 会触发 <code>SetAllDirty</code> 或直接 <code>UpdateGeometry</code>。</li>
+<li>RectTransform 尺寸变化：如果文本参与布局或换行，需要重新排版。</li>
+<li>组件启用：OnEnable 会 <code>SetAllDirty</code>。</li>
+</ul>
+
+<p>所以“长文本每帧变”是很贵的：每次都要重新排版、生成顶点、可能触发布局。能不做就不做；必须做时，考虑拆分文本、只更新变化的部分、用 TMP 的 <code>SetText</code> 重载减少临时字符串。</p>
+
+<h3>Best Fit：方便但昂贵</h3>
+
+<p>讲义说“Best Fit 虽然可以动态调整字体大小以适应 UI 布局，但代价很高；Unity 会为用到的所有字号生成图元保存在图集里，增加生成时间，也让字体图集变大”。这个方向是对的：Best Fit 需要在最小和最大字号之间尝试，找到能放下的字号；这会增加排版次数，也可能让图集里出现多个字号的光栅化结果。</p>
+
+<p>更稳的做法：</p>
+
+<ul>
+<li>固定字号，用布局/换行/省略号处理溢出，而不是让字号自动缩。</li>
+<li>静态文本可以在 Editor 里用 Best Fit 找到合适字号，然后关掉 Best Fit，写死字号。</li>
+<li>必须动态适配时，限制 Best Fit 的 min/max 范围，避免跨度太大。</li>
+<li>TMP 的 Auto Size 同样会多次排版；TMP 文档也建议对频繁变化的动态文本避免 Auto Size。</li>
+</ul>
+
+<h3>UI/Effect 的顶点成本</h3>
+
+<p>讲义说“描边和阴影效果都会增大四倍的顶点数”。这句话是错的，而且错得很典型。UGUI 的 <code>Shadow</code> 和 <code>Outline</code> 都是 <code>BaseMeshEffect</code>，通过复制顶点实现：</p>
+
+<ul>
+<li><code>Shadow</code>：复制一份顶点并偏移，最终约为原来的 <strong>2 倍</strong>。</li>
+<li><code>Outline</code>：在四个方向各复制一份，最终约为原来的 <strong>5 倍</strong>（原始 1 份 + 4 份）。</li>
+<li>如果同时挂 Shadow 和 Outline，成本会继续叠加。</li>
+</ul>
+
+<p>因此，长文本 + Outline 是非常昂贵的组合。更好的方案：用 TMP 的材质描边/阴影；把描边烘焙进字体图集或图片；用 Shader 在片元阶段做描边；或者只在标题等少量文本上使用 Effect。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="字体图集与后备字体链" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="180" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="180" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">动态字体图集</text>
+    <text x="570" y="52">后备字体链</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="55" y="75" width="270" height="105" rx="3"></rect>
+    <g stroke="currentColor" stroke-width="1">
+      <line x1="122" y1="75" x2="122" y2="180"></line>
+      <line x1="189" y1="75" x2="189" y2="180"></line>
+      <line x1="256" y1="75" x2="256" y2="180"></line>
+      <line x1="55" y1="110" x2="325" y2="110"></line>
+      <line x1="55" y1="145" x2="325" y2="145"></line>
+    </g>
+    <g fill="currentColor" font-size="18" text-anchor="middle">
+      <text x="88" y="103">A</text>
+      <text x="155" y="103">B</text>
+      <text x="222" y="103">C</text>
+      <text x="289" y="103">1</text>
+      <text x="88" y="138">2</text>
+      <text x="155" y="138">3</text>
+      <text x="222" y="138">中</text>
+      <text x="289" y="138">文</text>
+      <text x="88" y="173">字</text>
+      <text x="155" y="173">体</text>
+      <text x="222" y="173">图</text>
+      <text x="289" y="173">集</text>
+    </g>
+    <text x="190" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">满了就重建/扩容，旧 UV 可能失效</text>
+
+    <rect x="435" y="75" width="120" height="40" rx="4" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <rect x="435" y="130" width="120" height="40" rx="4"></rect>
+    <rect x="575" y="130" width="120" height="40" rx="4"></rect>
+    <text x="495" y="100" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">主字体</text>
+    <text x="495" y="155" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">Font Names 列表</text>
+    <text x="635" y="155" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">全局 fallback</text>
+    <g stroke="currentColor" stroke-width="1.5">
+      <line x1="495" y1="115" x2="495" y2="122"></line>
+      <line x1="555" y1="150" x2="567" y2="150"></line>
+    </g>
+    <text x="570" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">WebGL / 主机：不要依赖 OS 字体</text>
+  </g>
+</svg>
+<figcaption>图 12-1：动态字体图集会重建；后备字体是一条链，不是单个 Arial.ttf。跨平台项目要显式打包并配置 fallback。</figcaption>
+</figure>
+
+<h3>用美术数字代替 Text</h3>
+
+<p>讲义建议“游戏的分数可以用美术数字（精灵图片）来代替 Text”。这在很多游戏里有效，尤其是数字变化频繁、字体风格强的界面。但它不是免费的：每个数字是一张图/一个 Image，可能增加 DrawCall 和 Overdraw；如果数字图不在同一图集，还会断批。适合“高频变化 + 固定样式 + 数量不大”的场景。现代替代方案是 TMP 的 Sprite Asset / 数字图集，或者用 Shader 做数字滚动。</p>
+
+<h3>一段 TMP 的实用写法</h3>
+
+<pre><code>using TMPro;
+using UnityEngine;
+
+public class ScoreView : MonoBehaviour
+{
+    public TMP_Text label;
+
+    int lastScore = -1;
+
+    public void SetScore(int score)
+    {
+        if (score == lastScore) return;
+        lastScore = score;
+
+        // SetText 的重载可以避免中间字符串分配
+        label.SetText("Score: {0}", score);
+    }
+}</code></pre>
+
+<p>如果是打字机效果，不要每帧重新拼字符串，可以用 <code>TMP_Text.maxVisibleCharacters</code> 控制显示范围；如果需要频繁改文本，注意 <code>SetText</code> 的重载和 <code>ForceMeshUpdate</code> 的调用时机。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 28 页的大部分字体策略成立；需要修正“后备字体是 Arial.ttf”和“Shadow/Outline 都增大 4 倍顶点”两处。新项目应把 TMP 纳入字体方案；长文本、Best Fit、Outline/Shadow 仍然是重点监控对象。</p>
+</blockquote>

@@ -1,0 +1,118 @@
+<h2>Canvas 不是背景板，它是渲染单元</h2>
+
+<p>讲义第 5 页把 Canvas 比作“油画的画布”：所有 UI 元素都要作为它的子对象才能被渲染，画布控制 UI 的渲染。这个比喻很好，但不够用。更准确地说，Canvas 是 UGUI 的<strong>渲染与合批单元</strong>：它决定这些 UI 元素最终怎样被组织成网格、怎样排序、怎样提交给 GPU。</p>
+
+<p>所有可见的 UGUI 元素都需要一个 Canvas 祖先。每个 <code>Graphic</code>（Image、Text、RawImage 等）身上会有一个 <code>CanvasRenderer</code>，它负责把 C# 生成的网格交给原生 Canvas。一个 Canvas 下的元素会被收集、排序、合批，生成一个组合网格；子 Canvas 则会单独成组，形成自己的批次。</p>
+
+<h3>绘制顺序：Hierarchy 从上到下，就是从前到后</h3>
+
+<p>讲义说“画布上的 UI 元素按照排列顺序渲染，位于上方的元素先被渲染，下方的元素后被渲染；嵌套结构先渲染父类，再渲染子类”。这句话大方向是对的，但“上方/下方”容易和屏幕空间混淆。更准确的表述是：</p>
+
+<ul>
+<li>UGUI 按 <strong>Hierarchy 顺序</strong> 绘制，采用深度优先遍历。</li>
+<li>同一个父节点下，<strong>排在前面的子物体先画</strong>，也就是在更底层；排在后面的子物体后画，盖在更上面。</li>
+<li>如果父物体自己也有 Graphic，父物体的图形先于它的子物体绘制；然后按子物体顺序继续。</li>
+<li>屏幕上的“谁遮住谁”由这个顺序决定，而不是由 Transform 的 Z 值单独决定（World Space 和 Screen Space - Camera 下 Z 还会影响与相机的距离）。</li>
+</ul>
+
+<p>因此，讲义里“上方的元素先渲染、下方的元素后渲染”要理解成“Hierarchy 里靠上的先画、靠后的后画”。在 Editor 里拖动排序，本质上就是在改这个顺序。脚本里可以用 <code>Transform.SetAsFirstSibling</code>、<code>SetAsLastSibling</code>、<code>SetSiblingIndex</code> 调整。</p>
+
+<h3>三种渲染模式</h3>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="Canvas 三种渲染模式示意图" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="20" width="236" height="200" rx="10"></rect>
+    <rect x="262" y="20" width="236" height="200" rx="10"></rect>
+    <rect x="514" y="20" width="236" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="128" y="48">Screen Space - Overlay</text>
+    <text x="380" y="48">Screen Space - Camera</text>
+    <text x="632" y="48">World Space</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="38" y="72" width="180" height="112" rx="4"></rect>
+    <rect x="58" y="92" width="140" height="72" rx="4" stroke-dasharray="4 4"></rect>
+    <path d="M 58 122 L 198 122" stroke-dasharray="3 4"></path>
+    <text x="128" y="118" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">UI 直接覆盖屏幕</text>
+    <text x="128" y="138" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">不需要相机</text>
+
+    <path d="M 286 174 L 322 84 L 358 174 Z"></path>
+    <rect x="300" y="112" width="80" height="46" rx="3"></rect>
+    <circle cx="340" cy="88" r="4" fill="currentColor"></circle>
+    <text x="380" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">相机前的 UI 平面</text>
+
+    <path d="M 548 174 L 584 84 L 620 174 Z"></path>
+    <rect x="562" y="112" width="80" height="46" rx="3" transform="rotate(-6 602 135)"></rect>
+    <circle cx="602" cy="88" r="4" fill="currentColor"></circle>
+    <rect x="650" y="130" width="40" height="30" rx="3"></rect>
+    <text x="632" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">画布是场景中的 3D 对象</text>
+  </g>
+</svg>
+<figcaption>图 3-1：三种 Canvas 渲染模式。Overlay 直接覆盖屏幕；Camera 模式由指定相机渲染；World Space 把画布当成场景里的 3D 对象。</figcaption>
+</figure>
+
+<table>
+<thead>
+<tr><th>模式</th><th>核心行为</th><th>适用场景</th><th>常见坑</th></tr>
+</thead>
+<tbody>
+<tr><td>Screen Space - Overlay</td><td>不需要相机，UI 在场景渲染之后直接覆盖屏幕；分辨率变化时自动匹配屏幕。</td><td>大多数 HUD、菜单、弹窗</td><td>不受相机 Culling Mask / Layer 影响；多个 Overlay Canvas 靠 Sorting Order 排序；不能夹在 3D 物体之间。</td></tr>
+<tr><td>Screen Space - Camera</td><td>Canvas 放在指定相机前的一段距离，由该相机渲染；相机参数会影响 UI（透视、FOV 等）。</td><td>需要后处理、需要和 3D 物体交错、需要相机裁切的 UI</td><td>场景物体可能挡在 UI 前面；相机 Culling Mask 只看 Canvas 所在 Layer，子物体的 Layer 不一定生效；相机移动/旋转要同步。</td></tr>
+<tr><td>World Space</td><td>Canvas 是普通 3D 对象，可以移动、旋转、缩放；UI 元素按 3D 位置参与排序。</td><td>世界内看板、VR/AR、角色头顶血条、场景内交互面板</td><td>需要 Event Camera；像素密度受 Canvas Scaler 的 Dynamic Pixels Per Unit 影响；距离缩放和文字清晰度要单独调。</td></tr>
+</tbody>
+</table>
+
+<p>讲义说 Overlay “永远在屏幕的最上面”。这句话在“相对于场景物体”的语境下成立，但不要理解成“绝对在所有 Canvas 之上”：多个 Overlay Canvas 之间仍然按 <code>Sorting Layer</code> / <code>Sorting Order</code> 排序；嵌套 Canvas 还可以用 <code>Override Sorting</code> 改变顺序。</p>
+
+<h3>Canvas 与 CanvasRenderer 的分工</h3>
+
+<p>理解 UGUI 的性能，先把三个概念分开：</p>
+
+<ul>
+<li><strong>Canvas</strong>：合批和渲染的根。一个 Canvas 的元素会一起参与批次构建；子 Canvas 会隔离出来，单独构建。</li>
+<li><strong>CanvasRenderer</strong>：每个 Graphic 身上的渲染代理。它接收 C# 生成的网格、材质、纹理和透明度，供 Canvas 合批。</li>
+<li><strong>Graphic</strong>：C# 侧的可见元素基类，负责 <code>OnPopulateMesh</code> 生成顶点、<code>UpdateMaterial</code> 更新材质，以及把“脏了”注册到 Rebuild 队列。</li>
+</ul>
+
+<p>所以“Canvas 下的所有 UI 元素最终都会被 Batch 到同一个 Mesh”这句话要加两个限定：一是“同一个 Canvas 下、没有被 Sub-canvas 隔离、没有被裁剪掉的可绘制元素”；二是“一个 Mesh 里可能有多个 SubMesh，也就是多个 DrawCall”。Canvas 的目标是<strong>尽量减少</strong> DrawCall，不是“保证只有一个”。</p>
+
+<h3>Layer 能隐藏 UI 吗？</h3>
+
+<p>讲义在后面（第 26 页）提到“通过修改 Canvas 对象的 Layer 隐藏面板”。这个做法在 Screen Space - Overlay 下不成立：Overlay Canvas 不经过相机，所以相机的 Culling Mask 管不到它。Unity 官方文档也明确说，UI 元素和 screen space canvas 的子物体是 Culling Mask 的例外，会照常渲染。</p>
+
+<p>在 Screen Space - Camera 下，相机确实会按 Canvas 所在 Layer 做裁剪，但通常看的是 Canvas 根对象的 Layer，而不是每个 UI 子物体的 Layer。想隐藏整块面板，最稳的做法是禁用 Canvas 组件或直接禁用 GameObject；具体取舍在第 10 章讲。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义对 Canvas 渲染模式和绘制顺序的描述大体正确，但有三处要补：Overlay 的“最上面”只相对于场景；一个 Canvas 生成的是一个含多个 SubMesh 的 Mesh，不是天然一个 DrawCall；Layer 不是 Overlay UI 的隐藏开关。</p>
+</blockquote>
+
+<h3>一段可运行的检查代码</h3>
+
+<p>如果你不确定当前 UI 到底挂在哪个 Canvas、用什么模式，可以在运行时打印出来：</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.UI;
+
+public class CanvasProbe : MonoBehaviour
+{
+    void Start()
+    {
+        var canvas = GetComponentInParent&lt;Canvas&gt;();
+        if (canvas == null)
+        {
+            Debug.Log("不在任何 Canvas 下");
+            return;
+        }
+
+        Debug.Log($"renderMode = {canvas.renderMode}, " +
+                  $"root = {canvas.rootCanvas.name}, " +
+                  $"sortingLayer = {canvas.sortingLayerName}, " +
+                  $"sortingOrder = {canvas.sortingOrder}, " +
+                  $"overrideSorting = {canvas.overrideSorting}, " +
+                  $"scaleFactor = {canvas.scaleFactor}");
+    }
+}</code></pre>
+
+<p>把这段挂在任意 UI 元素上，至少能避免“以为它在 Overlay，其实在 Camera 模式”的低级误判。</p>

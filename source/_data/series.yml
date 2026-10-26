@@ -17,7 +17,7 @@
     - 5 天节奏
   url: /gpp-unity/
 
-# —— Unity 官方电子书中文版（books/ 下按章翻译，tools/build-books.js 构建）——
+# —— 书籍系列（Unity 官方电子书全译 + 技术讲义考据；books/ 下按章构建）——
 
 - tag: 书籍系列 · 架构
   title: 《用 ScriptableObjects 构建模块化游戏架构》
@@ -63,3 +63,12 @@
     - 原书 80 页
     - 全译 + 代码
   url: /books/mobile-perf/
+
+- tag: 技术讲义 · UI
+  title: 《UGUI 原理与优化：逐条考据版》
+  intro: 以一份 2018-2019 年的 34 页 UGUI 讲义为底本，对照 Unity 官方文档与 uGUI 源码逐条校验：保留仍然有效的经验，标出过时与错误，并补上 2026 年仍适用的做法。
+  stats:
+    - 15 章
+    - 原讲义 34 页
+    - 逐条考据 + 代码
+  url: /books/ugui-notes/

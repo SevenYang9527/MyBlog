@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UGUI 原理与优化：逐条考据版 · 讲义</title>
+<meta name="description" content="以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">UGUI 原理与优化：逐条考据版</div>
+    <div class="book-en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">底本与方法：这份讲义怎么读</a></li>
+      <li><a href="ch-02.html">UGUI 的坐标：五种 UI 系统与今天的选型</a></li>
+      <li><a href="ch-03.html">Canvas：渲染模式、层级顺序与“谁在谁上面”</a></li>
+      <li><a href="ch-04.html">适配：Canvas Scaler 的三种模式与两种匹配</a></li>
+      <li><a href="ch-05.html">RectTransform 基础：锚点、轴心与锚框</a></li>
+      <li><a href="ch-06.html">RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a></li>
+      <li><a href="ch-07.html">布局与 Rebuild：从 dirty 到新网格</a></li>
+      <li><a href="ch-08.html">合批：重叠检测、层级号与 SubMesh</a></li>
+      <li><a href="ch-09.html">性能入口与网格重建优化</a></li>
+      <li><a href="ch-10.html">Overdraw：看不见的像素也在花钱</a></li>
+      <li><a href="ch-11.html">DrawCall：合批优化与常见打断</a></li>
+      <li><a href="ch-12.html">字体与文本：动态图集、后备字体与顶点数</a></li>
+      <li><a href="ch-13.html">ScrollView、Raycast 与其他技巧</a></li>
+      <li><a href="ch-14.html">工具与美术规范：Profiler、Frame Debugger 与团队约定</a></li>
+      <li><a href="ch-15.html">勘误总表与参考资料</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      UGUI 技术讲义 · 逐条考据<br>
+      原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+    
+      <div class="cover">
+    <div class="kicker">技术讲义 · 逐条考据</div>
+    <h1>UGUI 原理与优化：逐条考据版</h1>
+    <div class="en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <div class="sub">以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。</div>
+    <div class="stats">
+      <div><b>15</b><span>章</span></div>
+      <div><b>34</b><span>原讲义页数</span></div>
+      <div><b>15</b><span>已整理片段</span></div>
+    </div>
+  </div>
+  <div class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="ch-01.html"><span class="no">01</span><span class="tt">底本与方法：这份讲义怎么读<span class="en">The source deck and the method</span></span><span class="pg">p.1-2</span></a></li>
+      <li><a href="ch-02.html"><span class="no">02</span><span class="tt">UGUI 的坐标：五种 UI 系统与今天的选型<span class="en">Where UGUI sits among Unity UI systems</span></span><span class="pg">p.3</span></a></li>
+      <li><a href="ch-03.html"><span class="no">03</span><span class="tt">Canvas：渲染模式、层级顺序与“谁在谁上面”<span class="en">Canvas: render modes and draw order</span></span><span class="pg">p.4-5</span></a></li>
+      <li><a href="ch-04.html"><span class="no">04</span><span class="tt">适配：Canvas Scaler 的三种模式与两种匹配<span class="en">Canvas Scaler: scaling and screen matching</span></span><span class="pg">p.6</span></a></li>
+      <li><a href="ch-05.html"><span class="no">05</span><span class="tt">RectTransform 基础：锚点、轴心与锚框<span class="en">RectTransform basics: anchors and pivot</span></span><span class="pg">p.7-12</span></a></li>
+      <li><a href="ch-06.html"><span class="no">06</span><span class="tt">RectTransform 计算：anchoredPosition、sizeDelta 与 rect<span class="en">RectTransform math: anchoredPosition and sizeDelta</span></span><span class="pg">p.13-18</span></a></li>
+      <li><a href="ch-07.html"><span class="no">07</span><span class="tt">布局与 Rebuild：从 dirty 到新网格<span class="en">Layout and the rebuild pipeline</span></span><span class="pg">p.19-22</span></a></li>
+      <li><a href="ch-08.html"><span class="no">08</span><span class="tt">合批：重叠检测、层级号与 SubMesh<span class="en">Batching: depth, overlap and submeshes</span></span><span class="pg">p.23</span></a></li>
+      <li><a href="ch-09.html"><span class="no">09</span><span class="tt">性能入口与网格重建优化<span class="en">Performance entry points and mesh rebuild</span></span><span class="pg">p.24-25</span></a></li>
+      <li><a href="ch-10.html"><span class="no">10</span><span class="tt">Overdraw：看不见的像素也在花钱<span class="en">Overdraw and fill rate</span></span><span class="pg">p.26</span></a></li>
+      <li><a href="ch-11.html"><span class="no">11</span><span class="tt">DrawCall：合批优化与常见打断<span class="en">Draw calls and batch breaking</span></span><span class="pg">p.27</span></a></li>
+      <li><a href="ch-12.html"><span class="no">12</span><span class="tt">字体与文本：动态图集、后备字体与顶点数<span class="en">Fonts, text and vertex cost</span></span><span class="pg">p.28</span></a></li>
+      <li><a href="ch-13.html"><span class="no">13</span><span class="tt">ScrollView、Raycast 与其他技巧<span class="en">Scroll views, raycasts and other tricks</span></span><span class="pg">p.29-30</span></a></li>
+      <li><a href="ch-14.html"><span class="no">14</span><span class="tt">工具与美术规范：Profiler、Frame Debugger 与团队约定<span class="en">Tools and art production guidelines</span></span><span class="pg">p.31-34</span></a></li>
+      <li><a href="ch-15.html"><span class="no">15</span><span class="tt">勘误总表与参考资料<span class="en">Errata and references</span></span><span class="pg">p.3-34</span></a></li>
+    </ol>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

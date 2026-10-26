@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScrollView、Raycast 与其他技巧 · UGUI 原理与优化：逐条考据版</title>
+<meta name="description" content="以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">UGUI 原理与优化：逐条考据版</div>
+    <div class="book-en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">底本与方法：这份讲义怎么读</a></li>
+      <li><a href="ch-02.html">UGUI 的坐标：五种 UI 系统与今天的选型</a></li>
+      <li><a href="ch-03.html">Canvas：渲染模式、层级顺序与“谁在谁上面”</a></li>
+      <li><a href="ch-04.html">适配：Canvas Scaler 的三种模式与两种匹配</a></li>
+      <li><a href="ch-05.html">RectTransform 基础：锚点、轴心与锚框</a></li>
+      <li><a href="ch-06.html">RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a></li>
+      <li><a href="ch-07.html">布局与 Rebuild：从 dirty 到新网格</a></li>
+      <li><a href="ch-08.html">合批：重叠检测、层级号与 SubMesh</a></li>
+      <li><a href="ch-09.html">性能入口与网格重建优化</a></li>
+      <li><a href="ch-10.html">Overdraw：看不见的像素也在花钱</a></li>
+      <li><a href="ch-11.html">DrawCall：合批优化与常见打断</a></li>
+      <li><a href="ch-12.html">字体与文本：动态图集、后备字体与顶点数</a></li>
+      <li><a href="ch-13.html">ScrollView、Raycast 与其他技巧</a></li>
+      <li><a href="ch-14.html">工具与美术规范：Profiler、Frame Debugger 与团队约定</a></li>
+      <li><a href="ch-15.html">勘误总表与参考资料</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      UGUI 技术讲义 · 逐条考据<br>
+      原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">13 · ScrollView、Raycast 与其他技巧</div>
+    <div class="pager"><a href="ch-12.html">← 上一节</a><a href="ch-14.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>ScrollView、Raycast 与那些“看起来不像 UI”的开销</h2>
+
+<p>讲义第 29 页讲滚动视图，第 30 页讲其他优化：禁用无用 Raycast、OverrideSorting、Z 值、WaitingForJob / PutGeometryJobFence、选中动画单独 Canvas、CanvasGroup。这些点比较散，但都属于“UI 性能的边角料”——单项收益不一定大，叠起来却经常决定一台低端机能不能稳住帧率。</p>
+
+<h3>ScrollView：两种填充方式</h3>
+
+<p>讲义说滚动视图有两种填充方式：</p>
+
+<ol>
+<li><strong>全量填充</strong>：把所有可能出现的元素都放进 Content，滚动时只移动位置。</li>
+<li><strong>池化</strong>：只保留可见区域需要的元素，滚动时复用/重新摆放。</li>
+</ol>
+
+<p>元素少（几十个以内）时，全量填充最简单，布局稳定，代码少。元素多（几百上千）时，全量填充会让 Content 的布局、合批和内存都变得很重；这时应该池化。</p>
+
+<h3>RectMask2D：滚动视图的第一道优化</h3>
+
+<p>讲义说“给滚动视图添加 RectMask2D，可以确保窗口外的元素不会出现在可绘制元素列表中，省去 batch”。这个说法是对的。RectMask2D 的源码注释明确写了它“不需要 Stencil、额外 DrawCall 更少、会剔除遮罩区域外的元素”。</p>
+
+<table>
+<thead>
+<tr><th>裁剪方式</th><th>原理</th><th>适合</th><th>成本</th></tr>
+</thead>
+<tbody>
+<tr><td><code>RectMask2D</code></td><td>矩形裁剪，直接剔除窗口外元素</td><td>ScrollView、矩形列表、窗口</td><td>通常不增加额外 DrawCall；会改变裁剪状态</td></tr>
+<tr><td><code>Mask</code></td><td>Stencil 模板缓冲</td><td>圆形、异形、任意形状</td><td>额外写入/清除，打断合批，嵌套更贵</td></tr>
+</tbody>
+</table>
+
+<p>滚动视图通常只需要矩形裁剪，所以优先 RectMask2D。不要因为“Mask 更通用”就给它挂 Mask。</p>
+
+<h3>简单池：Slot + LayoutElement</h3>
+
+<p>讲义给出的“简单缓存池”做法是：用带 <code>LayoutElement</code> 的对象占位（Slot），给可见元素一个池，Slot 作为父物体来定位。这个做法适合“元素高度固定、布局由 LayoutGroup 管理”的列表。</p>
+
+<pre><code>using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class SimpleList : MonoBehaviour
+{
+    public RectTransform content;
+    public GameObject itemPrefab;
+    public int totalCount;
+    public float itemHeight = 80f;
+
+    readonly List&lt;GameObject&gt; pool = new List&lt;GameObject&gt;();
+    readonly List&lt;GameObject&gt; slots = new List&lt;GameObject&gt;();
+
+    void Start()
+    {
+        for (int i = 0; i &lt; totalCount; i++)
+        {
+            var slot = new GameObject($"Slot_{i}", typeof(RectTransform), typeof(LayoutElement));
+            slot.transform.SetParent(content, false);
+            slot.GetComponent&lt;LayoutElement&gt;().preferredHeight = itemHeight;
+            slots.Add(slot);
+
+            var item = Instantiate(itemPrefab, slot.transform);
+            item.SetActive(false);
+            pool.Add(item);
+        }
+    }
+
+    public void Show(int index, string text)
+    {
+        if (index &lt; 0 || index &gt;= pool.Count) return;
+        var item = pool[index];
+        item.SetActive(true);
+        item.GetComponentInChildren&lt;Text&gt;().text = text;
+    }
+}</code></pre>
+
+<p>这个示例为了说明结构，省略了真正的可见性计算。实际项目里，槽位和可见索引要根据 <code>ScrollRect.viewport</code>、<code>content.anchoredPosition</code> 和元素高度算出来；只对可见范围调用 <code>SetActive(true)</code>，其余回收。</p>
+
+<h3>位置池：直接移动 RectTransform</h3>
+
+<p>讲义还提到“基于位置的缓存池策略”：通过移动布局里 UI 元素的 RectTransform 坐标值来排序显示位置；通常写一个自定义滚动视图类或自定义布局组。这个做法适合“元素高度不固定、数量很大、布局不想交给 LayoutGroup”的场景。</p>
+
+<p>优点是避免了 LayoutGroup 的全量布局，缺点是你要自己处理内容总高度、滚动边界、复用时的数据刷新和遮罩。没有万能的实现，选社区验证过的虚拟列表（如 LoopScrollRect 一类）通常比从零写更稳。</p>
+
+<figure>
+<svg viewBox="0 0 760 240" role="img" aria-label="滚动视图池化" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="190" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="190" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">全量填充</text>
+    <text x="570" y="52">池化 + 复用</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="55" y="70" width="270" height="110" rx="4" stroke-dasharray="5 4"></rect>
+    <g stroke="currentColor" stroke-width="1">
+      <rect x="65" y="78" width="250" height="18" rx="3"></rect>
+      <rect x="65" y="100" width="250" height="18" rx="3"></rect>
+      <rect x="65" y="122" width="250" height="18" rx="3"></rect>
+      <rect x="65" y="144" width="250" height="18" rx="3"></rect>
+    </g>
+    <text x="190" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">所有元素都在 Content 里，布局/合批全量参与</text>
+
+    <rect x="435" y="70" width="270" height="110" rx="4" stroke-dasharray="5 4"></rect>
+    <g stroke="currentColor" stroke-width="1">
+      <rect x="445" y="78" width="250" height="18" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+      <rect x="445" y="100" width="250" height="18" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+      <rect x="445" y="122" width="250" height="18" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+      <rect x="445" y="144" width="250" height="18" rx="3" stroke-dasharray="3 3"></rect>
+    </g>
+    <text x="570" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">只保留可见槽位，滚出后回收/复用</text>
+  </g>
+</svg>
+<figcaption>图 13-1：全量填充 vs 池化。池化减少同时存活的元素数量，但需要自己管理可见范围和复用。</figcaption>
+</figure>
+
+<h3>禁用无用 Raycast</h3>
+
+<p>讲义说“UGUI 在默认情况下会对所有可见的 Graphic 组件调用 raycast；对于不需要接收 touch 事件的 graphic，一定要禁用 raycast”。这是对的。<code>GraphicRaycaster</code> 只会处理 <code>raycastTarget = true</code> 的 Graphic；把装饰性 Image/Text 的 Raycast Target 关掉，可以显著减少点击检测的遍历和排序。</p>
+
+<pre><code>// 装饰性元素：不需要点击
+image.raycastTarget = false;
+text.raycastTarget = false;
+
+// 整块面板：不拦截点击
+canvasGroup.blocksRaycasts = false;
+
+// 需要点击但不想画：用 RaycastOnlyGraphic
+// （见第 10 章）</code></pre>
+
+<p>反过来，如果一个全屏透明 Image 的 <code>raycastTarget = true</code>，它会挡住后面的所有点击，还会参与绘制/合批。很多“按钮点不到”的问题，最后都追到一个不该开 Raycast 的全屏 Image 上。</p>
+
+<h3>OverrideSorting 与 Raycast 遍历</h3>
+
+<p>讲义说“子 Canvas 中的 OverrideSorting 属性将会造成 Graphic Raycast 测试停止遍历 Transform 层级”。这个说法在源码里能找到对应：<code>Graphic.Raycast</code> 向上遍历父级组件时，如果遇到一个 <code>Canvas</code> 且 <code>overrideSorting == true</code>，就会把 <code>continueTraversal</code> 设为 false，停止继续向上。</p>
+
+<p>这意味着嵌套 Canvas + Override Sorting 会改变事件的排序和遍历边界。它可以是优化，也可能是“点击穿透/点不到”的原因。用的时候要清楚事件应该由哪个 Canvas 处理，不要为了排序随手打开 Override Sorting。</p>
+
+<h3>Z 值、共面与合批</h3>
+
+<p>讲义说“UI 对象的 Z 值不为零时会影响渲染顺序，并且不能合批”。更准确的表述是：Z 偏移会让元素和 Canvas 不共面，合批需要共面（Profiler 里的 <code>Not Coplanar With Canvas</code>），所以通常不能和平面 UI 合批；渲染顺序主要由 Hierarchy 和排序决定，但在 Screen Space - Camera / World Space 下，Z 还会影响与相机的距离。</p>
+
+<p>如果确实需要 3D 效果（倾斜、透视、粒子夹层），就把这些元素单独组织，接受额外的批次；不要指望它们和平面 UI 合批。</p>
+
+<h3>WaitingForJob / PutGeometryJobFence</h3>
+
+<p>讲义说“如果出现 WaitingForJob 或 PutGeometryJobFence，说明合并网格开销巨大（子线程网格合并）”。这两个标记确实和 UI 几何 Job / 同步等待有关，但不要看到它们就断定“有 bug”。它们说明主线程在等 UI 几何任务完成，通常意味着批次构建或顶点生成很重。</p>
+
+<p>处理方向：减少 Canvas 上的元素数量、减少重叠、拆 Canvas、降低更新频率、减少 Tiled/Effect/长文本。用 Profiler 看等待时间占总帧时间的比例，再决定是否值得改。</p>
+
+<h3>选中动画：单独动态 Canvas</h3>
+
+<p>讲义建议“对于处于选中播放动画的需求，并且所处 Canvas 下内容比较多的情况下，可以单独把选中对象放到预先建好的动态 Canvas 里，取消选中时再放回去”。这是一个有效的经验：把高频变化的对象隔离到小 Canvas，避免整张大 Canvas 反复合批。</p>
+
+<p>实现时注意：改变父节点会触发 <code>OnTransformParentChanged</code> / <code>SetAllDirty</code>，所以“放回去”本身也有成本；如果选中/取消非常频繁，最好预先准备两个 Canvas 或直接用独立 Canvas 承载选中态，而不是每次跨 Canvas 搬对象。</p>
+
+<h3>CanvasGroup：淡入淡出、交互开关</h3>
+
+<p>讲义说“在窗口 GameObject 上加 CanvasGroup，通过 alpha 淡入淡出；通过 Interactable 控制底层控件交互”。这是 CanvasGroup 最常用的两个功能，另外还有 <code>blocksRaycasts</code>。但要注意：</p>
+
+<ul>
+<li><code>alpha = 0</code> 不保证零绘制成本；不同版本/是否在 Canvas 上行为不同。隐藏整块面板优先禁用 Canvas 组件。</li>
+<li>CanvasGroup 会产生 <code>CanvasInjectionIndex</code>，可能强制新批次；不要给每个子元素都挂。</li>
+<li><code>interactable = false</code> 只是让控件不可交互，不会停止绘制；<code>blocksRaycasts = false</code> 才会让点击穿透。</li>
+<li>淡入淡出挂在面板根节点，比挂在每个元素上更合理。</li>
+</ul>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 29-30 页的方向基本正确：RectMask2D 剔除、池化、禁用 Raycast、OverrideSorting 停止向上遍历、Z 偏移断批、WaitingForJob 提示几何开销、选中动画隔离 Canvas、CanvasGroup 控制交互。需要补充的是：RectMask2D 优于 Mask；CanvasGroup alpha=0 不是通用剔除；Z 的渲染顺序要分模式看。</p>
+</blockquote>
+
+<h3>一个最小的对象池</h3>
+
+<p>如果列表元素不多，用 <code>UnityEngine.Pool.ObjectPool&lt;T&gt;</code> 就够，不必自己写池：</p>
+
+<pre><code>using UnityEngine;
+using UnityEngine.Pool;
+
+public class ItemPool : MonoBehaviour
+{
+    public GameObject prefab;
+
+    ObjectPool&lt;GameObject&gt; pool;
+
+    void Awake()
+    {
+        pool = new ObjectPool&lt;GameObject&gt;(
+            createFunc: () =&gt; Instantiate(prefab),
+            actionOnGet: go =&gt; go.SetActive(true),
+            actionOnRelease: go =&gt; go.SetActive(false),
+            actionOnDestroy: go =&gt; Destroy(go),
+            collectionCheck: true,
+            defaultCapacity: 16,
+            maxSize: 64);
+    }
+
+    public GameObject Get() =&gt; pool.Get();
+    public void Release(GameObject go) =&gt; pool.Release(go);
+}</code></pre>
+
+<p>池化本身不是目的；目的是“同一时间只让可见元素参与布局、合批和绘制”。如果池化后所有元素仍然挂在 Content 下、只是 SetActive(false)，它们不参与绘制，但对象数量和内存仍然在；这通常是可以接受的，但要用 Profiler 确认。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-12.html"><span class="dir">← 上一节</span>字体与文本：动态图集、后备字体与顶点数</a>
+    <a href="ch-14.html"><span class="dir">下一节 →</span>工具与美术规范：Profiler、Frame Debugger 与团队约定</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

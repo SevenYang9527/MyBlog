@@ -1,0 +1,116 @@
+<h2>合批：先算层级，再按层级贪心合并</h2>
+
+<p>讲义第 23 页给出了 UGUI 合批的两步：先做重叠检测、计算每个元素的“层级号”，再把同一层级里能合的元素合并成批次，最后把批次数据放进 CanvasMesh 的 SubMesh。这个描述大方向是对的，而且比很多“同图集就能合批”的说法准确得多。本章把算法补完整，并解释为什么“同图集”仍然可能不合。</p>
+
+<h3>合批的基本单位是 Canvas</h3>
+
+<p>一个 Canvas 会收集它下面、但不属于任何 Sub-canvas 的 <code>CanvasRenderer</code>。这些 Renderer 带着各自的网格、材质、纹理、裁剪信息和层级深度，进入批次构建。构建的目标是：在不改变绘制结果的前提下，把能一起画的元素合并成尽量少的批次。</p>
+
+<p>一个批次通常对应一个材质/纹理组合，最终通常是一个 SubMesh / 一次 DrawCall；具体取决于材质和 SubMesh 的组织方式。一个 Canvas 生成一个组合 Mesh，但里面可以有多个 SubMesh；所以“一个 Canvas 一个 Mesh”和“一个 Canvas 多个 DrawCall”可以同时成立。</p>
+
+<h3>层级号（Depth）怎么算</h3>
+
+<p>把 Canvas 下的可绘制元素按 Hierarchy 顺序（深度优先）排好，然后从前往后处理。对当前元素 <code>Current</code>：</p>
+
+<ol>
+<li>找出所有在它“下面”、并且和它矩形相交的元素。</li>
+<li>如果没有相交元素，<code>Current.depth = 0</code>。</li>
+<li>如果有相交元素，取这些元素里的最高深度 <code>MaxLowerDepth</code>：
+  <ul>
+  <li>如果 <code>Current</code> 能和最高深度上的元素合批，并且最高深度上只有一个“可合批候选”，则 <code>Current.depth = MaxLowerDepth</code>。</li>
+  <li>否则 <code>Current.depth = MaxLowerDepth + 1</code>。</li>
+  </ul>
+</li>
+<li>如果元素不共面（有 Z 偏移、旋转）、或者带 CanvasGroup 的注入索引等特殊情况，它可能被迫独占一个深度/批次。</li>
+</ol>
+
+<p>讲义把规则概括成“如果底下有一个能合批的，就同级；不能合批就 +1；有多个就取最大”。这个概括在多数情况下够用，但漏掉了“最高深度上有多个元素且不能全部合批”的细节。真正的实现还要考虑材质、纹理、裁剪、A8 纹理格式、是否共面等条件。</p>
+
+<h3>排序与合并</h3>
+
+<p>算完深度后，元素会按“深度 → 材质 → 纹理 → 渲染顺序”排序。然后从头到尾贪心地合并：相邻且满足合批条件的元素进入同一个批次；一旦遇到不能合的元素，批次就断开，后面的元素即使条件满足也回不到前面的批次。这就是为什么“中间插一个不同图集的元素”代价很大。</p>
+
+<pre><code>// 概念上的排序键（不同版本细节略有差异）
+// depth 小的先画；同 depth 按材质、纹理、renderOrder 排
+if (a.depth != b.depth) return a.depth.CompareTo(b.depth);
+if (a.materialId != b.materialId) return a.materialId.CompareTo(b.materialId);
+if (a.textureId != b.textureId) return a.textureId.CompareTo(b.textureId);
+return a.renderOrder.CompareTo(b.renderOrder);</code></pre>
+
+<h3>为什么同图集也可能不合批</h3>
+
+<p>讲义第 27 页讲“Hierarchy 穿插重叠问题”：红点和 Icon 如果在不同图集里，红点稍微大一点、遮住了旁边的 Icon，就不能合批。这个例子说明了一个关键点：合批不是“全局找同图集”，而是“按绘制顺序，在不破坏遮挡关系的前提下合并”。</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="重叠穿插打断合批的示意" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="200" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">A、B、C 依次排列</text>
+    <text x="570" y="52">B 移到两端之后</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="60" y="80" width="120" height="70" rx="3" style="stroke:#c0392b;fill:rgba(192,57,43,.12)"></rect>
+    <rect x="120" y="105" width="120" height="70" rx="3" style="stroke:#2d6cdf;fill:rgba(45,108,223,.12)"></rect>
+    <rect x="180" y="130" width="120" height="70" rx="3" style="stroke:#c0392b;fill:rgba(192,57,43,.12)"></rect>
+    <text x="120" y="118" fill="#c0392b" font-size="13" text-anchor="middle" stroke="none">A</text>
+    <text x="180" y="143" fill="#2d6cdf" font-size="13" text-anchor="middle" stroke="none">B</text>
+    <text x="240" y="168" fill="#c0392b" font-size="13" text-anchor="middle" stroke="none">C</text>
+    <text x="190" y="205" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">B 插在 A、C 之间，A/C 不能合批</text>
+
+    <rect x="440" y="80" width="120" height="70" rx="3" style="stroke:#c0392b;fill:rgba(192,57,43,.12)"></rect>
+    <rect x="500" y="105" width="120" height="70" rx="3" style="stroke:#c0392b;fill:rgba(192,57,43,.12)"></rect>
+    <rect x="560" y="130" width="120" height="70" rx="3" style="stroke:#2d6cdf;fill:rgba(45,108,223,.12)"></rect>
+    <text x="500" y="118" fill="#c0392b" font-size="13" text-anchor="middle" stroke="none">A</text>
+    <text x="560" y="143" fill="#c0392b" font-size="13" text-anchor="middle" stroke="none">C</text>
+    <text x="620" y="168" fill="#2d6cdf" font-size="13" text-anchor="middle" stroke="none">B</text>
+    <text x="570" y="205" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">B 放到最后，A/C 可以合批</text>
+  </g>
+</svg>
+<figcaption>图 8-1：合批看的是绘制顺序和遮挡关系。A、C 同材质，但 B 夹在中间时，A/C 无法跨过 B 合并。</figcaption>
+</figure>
+
+<h3>常见的合批打断原因</h3>
+
+<table>
+<thead>
+<tr><th>打断原因</th><th>典型场景</th><th>处理方向</th></tr>
+</thead>
+<tbody>
+<tr><td>不同纹理 / 图集</td><td>图标来自不同 Sprite Atlas，或未打图集</td><td>把同一界面的图放进同一图集；避免在一个批次中间穿插另一图集的元素。</td></tr>
+<tr><td>不同材质实例</td><td>自定义 Shader、不同的 Material Preset、字体材质不同</td><td>共享材质；把使用同一材质的元素放在一起；TMP 字体尽量用同一 Font Asset / Material Preset。</td></tr>
+<tr><td>Mask / RectMask2D</td><td>ScrollView、圆形头像、异形裁剪</td><td>矩形裁剪优先 RectMask2D；减少嵌套 Mask；Mask 的 stencil 状态会打断批次。</td></tr>
+<tr><td>不共面</td><td>元素有 Z 偏移、旋转、缩放（非 Canvas 平面）</td><td>可合批的元素保持 Z=0、无旋转；需要旋转的元素单独组织。</td></tr>
+<tr><td>CanvasGroup</td><td>用 CanvasGroup 做淡入淡出、弹窗遮罩</td><td>CanvasGroup 会产生 CanvasInjectionIndex，可能强制新批次；不要给每个元素都挂 CanvasGroup。</td></tr>
+<tr><td>空 Image</td><td>用空 Image 做点击热区</td><td>空 Image 会画白色 quad，纹理是白图，打断合批；换成不绘制的 Raycast Graphic。</td></tr>
+</tbody>
+</table>
+
+<p>注意：合批优化的是 <strong>DrawCall 数量</strong>，不是 <strong>像素填充量</strong>。一个大面积半透明图片即使和其他元素合批，Overdraw 仍然存在；反之，减少 Overdraw 也不一定减少 DrawCall。两个问题要分开看。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 23 页的两步合批模型基本正确，但“层级号”规则需要按“最高相交深度 + 是否能合批”补完整；“同一层级可以合批”是启发式，不是保证。最终数据放在 CanvasMesh 的 SubMesh 里是对的，但一个 Canvas 可能产生多个 SubMesh / DrawCall。</p>
+</blockquote>
+
+<h3>怎么验证</h3>
+
+<p>不要靠猜。打开 Frame Debugger，找到 UI 的绘制事件，看每个批次包含哪些 GameObject；或者用 Profiler 的 UI / UI Details 模块，看 <code>Self Batch Count</code>、<code>Cumulative Batch Count</code> 和 <code>Batch Breaking Reason</code>。常见原因会直接写出来，例如：</p>
+
+<ul>
+<li><code>Not Coplanar With Canvas</code>：元素不共面。</li>
+<li><code>CanvasInjectionIndex</code>：CanvasGroup 等注入了新的批次。</li>
+<li><code>Different Material Instance</code>、<code>Different Texture</code>、<code>Different Rect Clipping</code>、<code>Different A8TextureUsage</code>：材质、纹理、裁剪或 A8 纹理格式不同。</li>
+</ul>
+
+<p>先让工具告诉你“为什么断”，再决定是换图集、调层级，还是拆 Canvas。盲目把 UI 拆成很多 Canvas，可能只是把一次大批次换成很多小批次，DrawCall 反而更多。</p>
+
+<h3>一个实用的组织原则</h3>
+
+<p>把“会一起出现、会互相遮挡、且使用同一图集/材质”的元素放在相邻的层级位置；把“中间会插进来”的不同图集元素移到它们的前面或后面；把“独立更新”的模块拆到子 Canvas。这个原则比“相同层级原则”更接近实际：层级只是手段，遮挡关系和材质一致性才是目的。</p>

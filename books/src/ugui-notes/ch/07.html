@@ -1,0 +1,144 @@
+<h2>Rebuild 不是一个动作，而是三层管线</h2>
+
+<p>讲义第 19 到 22 页开始进入 UGUI 的内部：Canvas Batch、网格重建因素、Rebuild 流程图，以及“为什么 rebuild layout 时要优先处理根节点”。这部分信息密度很高，但也最容易把三件不同的事混成一件：</p>
+
+<ul>
+<li><strong>Layout Rebuild</strong>：布局组件重新计算尺寸和位置。</li>
+<li><strong>Graphic Rebuild</strong>：Graphic 重新生成顶点和材质。</li>
+<li><strong>Canvas Batch Rebuild</strong>：原生 Canvas 重新排序、合批、生成组合网格。</li>
+</ul>
+
+<p>日常说“这个 UI 触发了 Rebuild”，可能指其中任意一层。优化时如果不区分，就会得出“少改颜色就能减少 DrawCall”这种似是而非的结论。</p>
+
+<h3>谁会弄脏 UI</h3>
+
+<table>
+<thead>
+<tr><th>改动</th><th>触发什么</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>改 <code>Graphic.color</code></td><td>Graphic Rebuild（顶点色）</td><td>颜色写在 <code>UIVertex.color</code> 里，不会换材质，但仍要重建网格；也会让 Canvas 批次变脏。</td></tr>
+<tr><td>改 <code>Text.text</code></td><td>Graphic + Layout Rebuild</td><td>文字变了，顶点要重排；如果文本参与布局，还要重算尺寸。</td></tr>
+<tr><td>改 RectTransform 的尺寸 / 锚点 / 轴心</td><td>通常触发 Graphic + Layout</td><td>尺寸变化会触发 <code>OnRectTransformDimensionsChange</code>，进而 <code>SetVerticesDirty</code> 和 <code>SetLayoutDirty</code>。</td></tr>
+<tr><td>只改 RectTransform 的位置</td><td>Canvas Batch Rebuild</td><td>本地顶点没变，但变换矩阵变了，Canvas 需要重新合批；Pixel Perfect 开启时还可能强制重建顶点。</td></tr>
+<tr><td>启用 / 禁用 GameObject 或组件</td><td>OnEnable 触发 SetAllDirty</td><td>重新启用通常意味着 Layout + 顶点 + 材质全部重来；整块面板隐藏时，禁用 Canvas 组件更省。</td></tr>
+<tr><td>Animator 写入 UGUI 属性</td><td><code>OnDidApplyAnimationProperties</code> → SetAllDirty</td><td>被动画驱动的属性每帧写入时都可能弄脏；不一定每次都有视觉变化。</td></tr>
+<tr><td>换 Sprite / 换材质</td><td>SetAllDirty / SetMaterialDirty</td><td>图集或材质变化会改变合批条件，通常也会打断批次。</td></tr>
+</tbody>
+</table>
+
+<p>讲义第 20 页说“修改 Image、Text 的 color 会改变 UIVertex.color；修改 RectTransform 的 Size、Anchors、Pivot 会改变 UIVertex.position”。前半句对；后半句要分情况：尺寸变化确实会改变顶点位置，纯位置变化不会改本地顶点，Anchors/Pivot 只有在改变矩形尺寸或局部矩形原点时才需要重建顶点。把所有 RectTransform 改动都当成“顶点重建”会高估成本，也会找错瓶颈。</p>
+
+<h3>CanvasUpdateRegistry 的流水线</h3>
+
+<p>UGUI 的 C# 侧 Rebuild 由 <code>CanvasUpdateRegistry</code> 调度。它监听 <code>Canvas.willRenderCanvases</code>，每帧在渲染前执行一次 <code>PerformUpdate</code>。顺序大致是：</p>
+
+<ol>
+<li>清理已经销毁的注册项。</li>
+<li>把 Layout 重建队列按“父节点数量”排序，越靠近根越先处理。</li>
+<li>依次执行 <code>Prelayout</code>、<code>Layout</code>、<code>PostLayout</code> 三个阶段。</li>
+<li>执行裁剪（<code>ClipperRegistry.Cull</code>），让 Mask / RectMask2D 剔除不可见元素。</li>
+<li>依次执行 <code>PreRender</code>、<code>LatePreRender</code> 两个 Graphic 重建阶段。</li>
+<li>标记完成，清空队列。</li>
+</ol>
+
+<figure>
+<svg viewBox="0 0 760 280" role="img" aria-label="UGUI Rebuild 流水线" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="170" height="60" rx="9"></rect>
+    <rect x="220" y="25" width="170" height="60" rx="9"></rect>
+    <rect x="420" y="25" width="150" height="60" rx="9"></rect>
+    <rect x="600" y="25" width="140" height="60" rx="9"></rect>
+    <rect x="150" y="130" width="190" height="60" rx="9"></rect>
+    <rect x="370" y="130" width="150" height="60" rx="9"></rect>
+    <rect x="550" y="130" width="190" height="60" rx="9"></rect>
+    <rect x="250" y="225" width="260" height="40" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="105" y="50">Dirty 来源</text>
+    <text x="105" y="69" font-size="11">color / text / rect</text>
+    <text x="305" y="50">CanvasUpdateRegistry</text>
+    <text x="305" y="69" font-size="11">willRenderCanvases</text>
+    <text x="495" y="50">Layout 队列</text>
+    <text x="495" y="69" font-size="11">按父节点数排序</text>
+    <text x="670" y="50">Layout 三阶段</text>
+    <text x="670" y="69" font-size="11">Pre / Layout / Post</text>
+    <text x="245" y="155">Clipping</text>
+    <text x="245" y="174" font-size="11">Mask / RectMask2D Cull</text>
+    <text x="445" y="155">Graphic 两阶段</text>
+    <text x="445" y="174" font-size="11">PreRender / LatePreRender</text>
+    <text x="645" y="155">原生 Canvas</text>
+    <text x="645" y="174" font-size="11">排序 / 合批 / 生成网格</text>
+    <text x="380" y="250">下一帧渲染前复用或重建</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow7)">
+    <line x1="190" y1="55" x2="212" y2="55"></line>
+    <line x1="390" y1="55" x2="412" y2="55"></line>
+    <line x1="570" y1="55" x2="592" y2="55"></line>
+    <path d="M 670 85 L 670 112 L 245 112 L 245 122"></path>
+    <line x1="340" y1="160" x2="362" y2="160"></line>
+    <line x1="520" y1="160" x2="542" y2="160"></line>
+    <path d="M 645 190 L 645 212 L 510 212 L 510 217"></path>
+  </g>
+</svg>
+<figcaption>图 7-1：UGUI 一帧内的 Rebuild 流水线。C# 侧完成布局、裁剪和顶点/材质重建，之后原生 Canvas 再做批次构建。</figcaption>
+</figure>
+
+<h3>为什么“根节点优先”和“自底向上”不矛盾</h3>
+
+<p>讲义问：“为什么在 rebuild layout 的时候，要优先处理根节点的元素？”答案要分两个方向看：</p>
+
+<ul>
+<li><strong>布局计算（CalculateLayoutInput）是自底向上</strong>：父布局组要知道子元素的 preferred size，才能算出自己的尺寸。所以 <code>LayoutRebuilder</code> 在计算阶段先递归子节点，再处理父节点。</li>
+<li><strong>布局控制（SetLayout）是自顶向下</strong>：父布局组决定子元素能占多大空间，再把子元素摆进去。所以控制阶段必须先父后子。</li>
+</ul>
+
+<p><code>CanvasUpdateRegistry</code> 的队列按父节点数量升序排序，保证父级布局控制器先于子级执行；而 <code>LayoutRebuilder.Rebuild</code> 内部先做 <code>CalculateLayoutInputHorizontal</code>（递归子节点）再做 <code>SetLayoutHorizontal</code>（父先子后），然后同样的顺序做垂直方向。这样既满足“子元素先报尺寸”，又满足“父元素先分配空间”。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义说“Layout 队列按 hierarchy 排序、越靠近根越优先”是对的，但只说了控制阶段；“布局计算自底向上、布局控制自顶向下”才是完整答案。把 Rebuild 笼统说成一个过程也不够，至少要区分 Layout、Graphic、Batch 三层。</p>
+</blockquote>
+
+<h3>Canvas 批次重建：真正的“全量分析”</h3>
+
+<p>讲义引用了 Unity 官方的重要提示：当 Canvas 上任何可绘制元素发生变化时，Canvas 必须重新执行合批过程，并重新分析 Canvas 上的每个可绘制元素，不管它是否被修改。这个说法是准确的，也是“动静分离”最重要的理由。</p>
+
+<p>但要注意，“重新分析每个元素”不等于“重新生成每个元素的顶点”。顶点有 <code>CanvasRenderer</code> 级缓存：只要 <code>UpdateGeometry</code> 没被调用，就可以复用；真正全量的是 Canvas 级的排序和合批。所以一个元素移动时，可能只触发批次重建，而不触发所有元素的顶点重建；但批次重建本身仍然与 Canvas 上的元素数量相关。</p>
+
+<p>子 Canvas 的价值就在这里：子 Canvas 有自己的批次，子 Canvas 内的 dirty 不会让父 Canvas 重新合批。反过来，父 Canvas 的改动也不一定会让子 Canvas 重算。把更新频率不同的 UI 分到不同 Canvas，可以把“全量分析”的范围缩小。</p>
+
+<h3>什么时候该强制刷新</h3>
+
+<p>有些场景需要立刻拿到布局结果，例如打开面板后马上根据内容高度定位、或者在做截图/导出。UGUI 提供了两个强制入口：</p>
+
+<pre><code>// 立刻重建某个布局根（谨慎使用）
+LayoutRebuilder.ForceRebuildLayoutImmediate(rootRectTransform);
+
+// 立刻让所有 Canvas 执行一次更新（更重，不要每帧调用）
+Canvas.ForceUpdateCanvases();</code></pre>
+
+<p>这两个 API 都会把原本可以合并到帧末的工作提前执行，打乱批处理节奏。正确用法是“在必要的时间点调用一次”，而不是“在 Update 里每帧调用”。如果发现自己需要频繁强制刷新，通常说明布局结构或数据更新方式需要改。</p>
+
+<h3>用 Profiler 区分三层开销</h3>
+
+<p>在 Profiler 里，常见的相关标记包括：</p>
+
+<ul>
+<li><code>Canvas.SendWillRenderCanvases</code>：C# 侧 Rebuild 的总入口。</li>
+<li><code>CanvasUpdate.Prelayout</code> / <code>Layout</code> / <code>PostLayout</code>：布局三阶段。</li>
+<li><code>CanvasUpdate.PreRender</code> / <code>LatePreRender</code>：Graphic 重建。</li>
+<li><code>Canvas.BuildBatch</code>：原生批次构建。</li>
+<li><code>Graphic.OnPopulateMesh</code> / <code>Graphic.ModifyMesh</code>：具体 Graphic 的顶点生成和修改。</li>
+<li><code>WaitingForJob</code> / <code>PutGeometryJobFence</code>：等待 UI 几何 Job 的同步点。</li>
+</ul>
+
+<p>看到 <code>Canvas.BuildBatch</code> 高，优先考虑拆 Canvas、减少元素、减少重叠；看到 <code>Graphic.OnPopulateMesh</code> 高，优先考虑文本、Tiled Image、复杂的自定义 Graphic；看到 <code>CanvasUpdate.Layout</code> 高，优先考虑布局组嵌套、ContentSizeFitter、频繁改文本导致的布局重算。</p>
+
+<blockquote>
+<p><strong>本章要点：</strong>Rebuild 分三层；Layout 计算自底向上、控制自顶向下；Canvas 批次是全量分析但顶点有缓存；子 Canvas 能隔离批次；强制刷新是工具，不是常规操作。</p>
+</blockquote>

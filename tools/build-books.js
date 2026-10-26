@@ -1,4 +1,4 @@
-// 把 books/src/<slug>/ 里的译文片段构建成静态子站，输出到本站 source/books/ 下
+// 把 books/src/<slug>/ 里的译文/考据片段构建成静态子站，输出到本站 source/books/ 下
 // 用法: node tools/build-books.js [slug]
 // 之后: npx hexo clean && npx hexo generate
 const fs = require('fs');
@@ -12,6 +12,21 @@ const HUB = '../../series/';
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// 官方电子书与“技术讲义考据”共用一套构建器，只替换少量称谓。
+function labels(book) {
+  const notes = book.kind === 'notes';
+  return {
+    kicker: book.kicker || (notes ? '技术讲义 · 逐条考据' : 'UNITY 官方电子书 · 中文译文'),
+    foot: book.foot_note || (notes ? '技术讲义 · 逐条考据' : 'Unity 官方电子书 · 中文译文'),
+    pageLabel: book.source_pages_label || (notes ? '原讲义页数' : '原书页数'),
+    sourceLine:
+      book.source_line ||
+      `${notes ? '原讲义' : '原书'} ${book.pages} 页 · 共 ${book.chapters.length} 章`,
+    bookLabel: book.book_label || (notes ? '讲义' : '书籍'),
+    partLabel: book.part_label || (notes ? '已整理片段' : '已译片段')
+  };
 }
 
 function copyTheme() {
@@ -40,6 +55,7 @@ function copyFigures(slug) {
 
 function shell(opts) {
   const { book, title, sidebar, body, pager, isIndex } = opts;
+  const L = labels(book);
   return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -63,8 +79,8 @@ ${sidebar}
       </ol>
     </nav>
     <div class="side-foot">
-      Unity 官方电子书 · 中文译文<br>
-      原书 ${book.pages} 页 · 共 ${book.chapters.length} 章
+      ${esc(L.foot)}<br>
+      ${esc(L.sourceLine)}
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
@@ -96,11 +112,12 @@ function build(slug) {
   }
   const ready = units.filter((u) => u.ready);
   if (!ready.length) {
-    console.log(`[${slug}] 还没有任何译文，跳过`);
+    console.log(`[${slug}] 还没有任何片段，跳过`);
     return { slug, units: units.length, built: 0 };
   }
 
   meta.pages = meta.book_pages || '';
+  const L = labels(meta);
 
   const sidebarFor = (currentId) =>
     units
@@ -124,14 +141,14 @@ function build(slug) {
     .join('\n');
 
   const coverBody = `  <div class="cover">
-    <div class="kicker">UNITY 官方电子书 · 中文译文</div>
+    <div class="kicker">${esc(L.kicker)}</div>
     <h1>${esc(meta.title_zh)}</h1>
     <div class="en">${esc(meta.title_en)}</div>
     <div class="sub">${esc(meta.subtitle_zh)}</div>
     <div class="stats">
       <div><b>${meta.chapters.length}</b><span>章</span></div>
-      <div><b>${esc(meta.book_pages || '-')}</b><span>原书页数</span></div>
-      <div><b>${ready.length}</b><span>已译片段</span></div>
+      <div><b>${esc(meta.book_pages || '-')}</b><span>${esc(L.pageLabel)}</span></div>
+      <div><b>${ready.length}</b><span>${esc(L.partLabel)}</span></div>
     </div>
   </div>
   <div class="toc">
@@ -143,7 +160,7 @@ ${tocRows}
 
   fs.writeFileSync(
     path.join(outDir, 'index.html'),
-    shell({ book: meta, title: meta.title_zh + ' · 书籍', sidebar: sidebarFor(null), body: coverBody, isIndex: true }),
+    shell({ book: meta, title: meta.title_zh + ' · ' + L.bookLabel, sidebar: sidebarFor(null), body: coverBody, isIndex: true }),
     'utf8'
   );
 

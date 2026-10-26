@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DrawCall：合批优化与常见打断 · UGUI 原理与优化：逐条考据版</title>
+<meta name="description" content="以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">UGUI 原理与优化：逐条考据版</div>
+    <div class="book-en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">底本与方法：这份讲义怎么读</a></li>
+      <li><a href="ch-02.html">UGUI 的坐标：五种 UI 系统与今天的选型</a></li>
+      <li><a href="ch-03.html">Canvas：渲染模式、层级顺序与“谁在谁上面”</a></li>
+      <li><a href="ch-04.html">适配：Canvas Scaler 的三种模式与两种匹配</a></li>
+      <li><a href="ch-05.html">RectTransform 基础：锚点、轴心与锚框</a></li>
+      <li><a href="ch-06.html">RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a></li>
+      <li><a href="ch-07.html">布局与 Rebuild：从 dirty 到新网格</a></li>
+      <li><a href="ch-08.html">合批：重叠检测、层级号与 SubMesh</a></li>
+      <li><a href="ch-09.html">性能入口与网格重建优化</a></li>
+      <li><a href="ch-10.html">Overdraw：看不见的像素也在花钱</a></li>
+      <li><a href="ch-11.html">DrawCall：合批优化与常见打断</a></li>
+      <li><a href="ch-12.html">字体与文本：动态图集、后备字体与顶点数</a></li>
+      <li><a href="ch-13.html">ScrollView、Raycast 与其他技巧</a></li>
+      <li><a href="ch-14.html">工具与美术规范：Profiler、Frame Debugger 与团队约定</a></li>
+      <li><a href="ch-15.html">勘误总表与参考资料</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      UGUI 技术讲义 · 逐条考据<br>
+      原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">11 · DrawCall：合批优化与常见打断</div>
+    <div class="pager"><a href="ch-10.html">← 上一节</a><a href="ch-12.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>DrawCall：合批优化不是“把东西塞进一个图集”</h2>
+
+<p>讲义第 27 页讲合批优化，给了五条：相同层级原则、Mask 组件、隐藏的 Image、Screen Space - Camera 模式、Hierarchy 穿插重叠。这五条都是实战里最常见的断批原因。本章把它们展开，并补上“为什么”和“怎么验证”。</p>
+
+<h3>先分清 Batch、SubMesh 和 DrawCall</h3>
+
+<p>三个词经常被混用：</p>
+
+<ul>
+<li><strong>Batch</strong>：UGUI 在一次合批中合并出来的一组可一起绘制的元素。</li>
+<li><strong>SubMesh</strong>：组合网格里按材质/纹理分出来的一段；通常一个 SubMesh 对应一个 DrawCall。</li>
+<li><strong>DrawCall</strong>：GPU 实际收到的一次绘制命令。</li>
+</ul>
+
+<p>一个 Canvas 生成一个组合 Mesh，里面可以有多个 SubMesh；一个 Batch 也可能包含多个 DrawCall（例如一个材质下有多个 SubMesh）。所以“批次少”通常意味着“DrawCall 少”，但两者不是一一对应。优化时以 Frame Debugger 的 DrawCall 数和 UI Profiler 的 Batch Count 为准。</p>
+
+<h3>原则一：相同层级 / 相邻顺序</h3>
+
+<p>讲义说“父节点下所有子节点，尽量保持相同的层次结构，相同层级下的 UI 元素可以 Batch”。更准确地说：把使用同一图集/材质、会一起出现、不会互相穿插的元素放在相邻的 Hierarchy 位置。这样它们在深度排序后更容易相邻，从而被贪心合并。</p>
+
+<p>“相同层级”不是充分条件。两个元素即使在同一层，如果中间夹了一个不同图集的元素，或者它们不共面，仍然不能合批。反过来，不同父节点下的元素只要在最终绘制顺序里相邻且满足条件，也可以合批。</p>
+
+<h3>原则二：Mask 与 RectMask2D</h3>
+
+<p>讲义的“Mask 组件使用了模板缓存，Mask 中的 UI 元素无法与外界 UI 元素合批，Mask 组件还会额外增加 2 个 DrawCall”基本成立，但要把两个组件分开：</p>
+
+<table>
+<thead>
+<tr><th>组件</th><th>原理</th><th>DrawCall 成本</th><th>适用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Mask</code></td><td>模板缓冲（Stencil）：先写入模板，再让子元素按模板测试绘制，最后清除。</td><td>常见经验是额外 2 个（写入 + 清除），嵌套/内容更多时可能更多；会打断内外合批。</td><td>圆形头像、异形裁剪、需要任意形状遮罩。</td></tr>
+<tr><td><code>RectMask2D</code></td><td>矩形裁剪，不需要 Stencil；直接设置裁剪矩形并剔除窗口外元素。</td><td>通常不增加额外 DrawCall，但会改变裁剪状态、打断批次；比 Mask 省。</td><td>ScrollView、矩形窗口、列表裁剪。</td></tr>
+</tbody>
+</table>
+
+<p>所以“Mask 一定加 2 个 DrawCall”是一个经验值，不是引擎保证；但“Mask 会打断合批、比 RectMask2D 贵”是可靠的方向。能用 RectMask2D 就别用 Mask；必须用 Mask 时，减少嵌套层数，尽量不要把 Mask 放在大量元素的中间。</p>
+
+<h3>原则三：隐藏的 Image</h3>
+
+<p>讲义说“Image 组件中 sprite 为空，都是占用 drawcall 渲染的，并且还会打断前后元素的合批”。这句话容易被误解成“sprite 为空就不画”。实际相反：<code>Image</code> 在 <code>activeSprite == null</code> 时会走基类 <code>Graphic.OnPopulateMesh</code>，生成一个使用白色纹理的 quad。它会占绘制、用白图纹理，并且因为纹理不同而打断合批。</p>
+
+<p>常见来源：</p>
+
+<ul>
+<li>为了点击热区放了一个空 Image。</li>
+<li>美术把 Image 的 Sprite 清空了，但组件还在。</li>
+<li>用 Image 做占位，运行时再换图；在换图前它一直在画白块。</li>
+</ul>
+
+<p>处理：删掉空 Image；需要热区就写一个 <code>OnPopulateMesh</code> 为空的 <code>Graphic</code>；需要占位就禁用 <code>CanvasRenderer</code> 或整个对象，等有图再启用。</p>
+
+<h3>原则四：Screen Space - Camera 与屏幕外元素</h3>
+
+<p>讲义说“一个 Canvas 中的任何一个 UI 元素只要在屏幕中，则这个 Canvas 中的其他 UI 元素即使在屏幕外 DrawCall 仍不会减少”。这句话描述的是 Canvas 级的渲染单元特性：一个 Canvas 通常作为一个整体提交，Unity 不会因为某个 Graphic 在屏幕外就把它单独剔除出批次。屏幕外元素仍然可能参与合批、占用顶点和 DrawCall。</p>
+
+<p>所以不要指望“把元素挪到屏幕外”来省 DrawCall。有效的做法是：</p>
+
+<ul>
+<li>把屏幕外/低频率的内容拆到独立 Canvas，按需禁用 Canvas 组件。</li>
+<li>用 <code>RectMask2D</code> 裁剪窗口外元素；它会剔除完全在裁剪矩形外的可绘制元素。</li>
+<li>滚动列表用池化，而不是把几百个元素都放在 Content 里。</li>
+<li>用 Frame Debugger 确认“屏幕外元素”到底还在不在批次里。</li>
+</ul>
+
+<h3>原则五：Hierarchy 穿插重叠</h3>
+
+<p>讲义的红点/Icon 例子很典型：红点和 Icon 来自不同图集；红点稍微大一点，遮住了旁边的 Icon，就不能合批。原因不是“红点太大”，而是“红点夹在了本来可以合批的 Icon 之间，破坏了绘制顺序”。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="穿插重叠与分组后的合批" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="180" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="180" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">Icon / 红点交错</text>
+    <text x="570" y="52">按图集分组</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="55" y="80" width="60" height="60" rx="4"></rect>
+    <circle cx="125" cy="140" r="18" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
+    <rect x="145" y="80" width="60" height="60" rx="4"></rect>
+    <circle cx="215" cy="140" r="18" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
+    <rect x="235" y="80" width="60" height="60" rx="4"></rect>
+    <text x="190" y="195" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">不同图集交替，红点打断 Icon 合批</text>
+
+    <rect x="435" y="80" width="60" height="60" rx="4"></rect>
+    <rect x="505" y="80" width="60" height="60" rx="4"></rect>
+    <rect x="575" y="80" width="60" height="60" rx="4"></rect>
+    <circle cx="465" cy="160" r="16" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
+    <circle cx="535" cy="160" r="16" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
+    <circle cx="605" cy="160" r="16" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
+    <text x="570" y="195" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">Icon 一组、红点一组，各自成批</text>
+  </g>
+</svg>
+<figcaption>图 11-1：把同图集的元素放在相邻层级，能减少穿插造成的断批；但要注意遮挡关系不能被破坏。</figcaption>
+</figure>
+
+<p>调整节点关系时不能只看“合批”，还要保证视觉上层级正确。把红点全部放到 Icon 上面可能会改变遮挡关系；如果红点本来就应该盖住 Icon，那就要接受这种断批，或者把 Icon 和红点做进同一张图集/同一个材质。</p>
+
+<h3>还有哪些常见断批源</h3>
+
+<table>
+<thead>
+<tr><th>断批源</th><th>为什么</th><th>怎么改</th></tr>
+</thead>
+<tbody>
+<tr><td>不同 Sprite Atlas</td><td>纹理不同，无法共用材质</td><td>按界面/功能打图集；避免在中间穿插另一图集。</td></tr>
+<tr><td>不同 Material Preset（TMP）</td><td>材质实例不同</td><td>统一 Font Asset 和 Material Preset；少用逐字不同的材质。</td></tr>
+<tr><td>Z 偏移 / 旋转</td><td>不共面（Not Coplanar With Canvas）</td><td>可合批元素保持 Z=0、无旋转；旋转元素单独分组。</td></tr>
+<tr><td>CanvasGroup</td><td>CanvasInjectionIndex 强制新批次</td><td>淡入淡出挂在面板根，不要每个元素挂一个。</td></tr>
+<tr><td>Mask</td><td>Stencil 状态变化</td><td>矩形裁剪用 RectMask2D；减少嵌套 Mask。</td></tr>
+<tr><td>空 Image</td><td>白色纹理 quad</td><td>删除或用不绘制的 Raycast Graphic。</td></tr>
+<tr><td>自定义 Shader / 多材质</td><td>材质实例或关键字不同</td><td>共享材质；用顶点数据/材质属性而不是多份材质。</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 27 页的五条方向都成立，但要注意：相同层级只是启发式；Mask 的“2 个 DrawCall”是经验值；空 Image 确实会画白 quad 并断批；Screen Space - Camera 的屏幕外元素不会自动省 DrawCall；Z 偏移主要影响共面/合批，渲染顺序主要由层级和排序决定。</p>
+</blockquote>
+
+<h3>用工具验证，而不是背数字</h3>
+
+<p>同一个界面在不同 Unity 版本、不同图集设置、不同平台上，批次数可能不同。最可靠的验证组合是：</p>
+
+<ul>
+<li><strong>Frame Debugger</strong>：看每个 UI 绘制事件包含哪些对象，Stencil、材质、纹理是什么。</li>
+<li><strong>UI / UI Details Profiler</strong>：看每个 Canvas 的 Self/Cumulative Batch Count、Vertex Count、Batch Breaking Reason。</li>
+<li><strong>Profiler Timeline</strong>：看 <code>Canvas.BuildBatch</code> 和 <code>Canvas.SendWillRenderCanvases</code> 的耗时，确认优化的是 CPU 还是 GPU。</li>
+</ul>
+
+<p>如果 Frame Debugger 里看到很多“UI/Default”事件，每个事件只包含一两个对象，通常说明批次被切得很碎；如果看到少数几个事件包含大量对象，说明合批不错，接下来该看 Overdraw 和顶点数。</p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-10.html"><span class="dir">← 上一节</span>Overdraw：看不见的像素也在花钱</a>
+    <a href="ch-12.html"><span class="dir">下一节 →</span>字体与文本：动态图集、后备字体与顶点数</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

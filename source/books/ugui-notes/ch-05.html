@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RectTransform 基础：锚点、轴心与锚框 · UGUI 原理与优化：逐条考据版</title>
+<meta name="description" content="以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">UGUI 原理与优化：逐条考据版</div>
+    <div class="book-en">UGUI Internals and Optimization: A Fact-Checked Edition</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">底本与方法：这份讲义怎么读</a></li>
+      <li><a href="ch-02.html">UGUI 的坐标：五种 UI 系统与今天的选型</a></li>
+      <li><a href="ch-03.html">Canvas：渲染模式、层级顺序与“谁在谁上面”</a></li>
+      <li><a href="ch-04.html">适配：Canvas Scaler 的三种模式与两种匹配</a></li>
+      <li><a href="ch-05.html">RectTransform 基础：锚点、轴心与锚框</a></li>
+      <li><a href="ch-06.html">RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a></li>
+      <li><a href="ch-07.html">布局与 Rebuild：从 dirty 到新网格</a></li>
+      <li><a href="ch-08.html">合批：重叠检测、层级号与 SubMesh</a></li>
+      <li><a href="ch-09.html">性能入口与网格重建优化</a></li>
+      <li><a href="ch-10.html">Overdraw：看不见的像素也在花钱</a></li>
+      <li><a href="ch-11.html">DrawCall：合批优化与常见打断</a></li>
+      <li><a href="ch-12.html">字体与文本：动态图集、后备字体与顶点数</a></li>
+      <li><a href="ch-13.html">ScrollView、Raycast 与其他技巧</a></li>
+      <li><a href="ch-14.html">工具与美术规范：Profiler、Frame Debugger 与团队约定</a></li>
+      <li><a href="ch-15.html">勘误总表与参考资料</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      UGUI 技术讲义 · 逐条考据<br>
+      原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">05 · RectTransform 基础：锚点、轴心与锚框</div>
+    <div class="pager"><a href="ch-04.html">← 上一节</a><a href="ch-06.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>RectTransform：一个矩形，四个关键的归一化坐标</h2>
+
+<p>讲义第 7 到 12 页在讲 RectTransform。它列了组件里的几个东西：锚点、轴心、坐标值、旋转、缩放；又区分了 Blueprint 模式和 Raw Editor 模式；最后用“锚点形态”和“锚框形态”解释父物体变化时子物体怎么变。这部分是整份讲义里最值得保留的，因为它是后面所有布局和适配问题的根。</p>
+
+<p>先把术语统一：</p>
+
+<ul>
+<li><strong>锚点（Anchors）</strong>：两个归一化坐标 <code>anchorMin</code> 和 <code>anchorMax</code>，描述子矩形左下角和右上角“挂在父矩形里的百分比位置”。</li>
+<li><strong>锚框（Anchor Rect）</strong>：由 <code>anchorMin</code> 和 <code>anchorMax</code> 在父矩形里围出来的矩形。两个点重合时，锚框退化成一条“锚点”。</li>
+<li><strong>轴心（Pivot）</strong>：子矩形内部的归一化点，旋转和缩放围绕它进行，同时也是 <code>rect</code> 局部坐标的原点。</li>
+<li><strong>尺寸（Size）</strong>：子矩形最终的宽高，由锚框尺寸和 <code>sizeDelta</code> 共同决定。</li>
+<li><strong>位置（Anchored Position）</strong>：轴心相对“锚点参考点”的偏移。</li>
+</ul>
+
+<h3>锚点形态 vs 锚框形态</h3>
+
+<p>讲义用“锚点形态”和“锚框形态”区分两种情况，这个说法很形象：</p>
+
+<table>
+<thead>
+<tr><th>形态</th><th>条件</th><th>父物体变大时</th><th>尺寸由谁决定</th></tr>
+</thead>
+<tbody>
+<tr><td>锚点形态</td><td><code>anchorMin == anchorMax</code></td><td>子物体尺寸不变；位置跟着锚点移动，轴心到锚点的偏移保持不变。</td><td><code>sizeDelta</code> 就是实际尺寸。</td></tr>
+<tr><td>锚框形态</td><td><code>anchorMin != anchorMax</code></td><td>子物体尺寸跟着锚框变化；可以用 Left/Right/Top/Bottom 或 <code>sizeDelta</code> 控制相对边距。</td><td>实际尺寸 = 锚框尺寸 + <code>sizeDelta</code>。</td></tr>
+</tbody>
+</table>
+
+<figure>
+<svg viewBox="0 0 760 300" role="img" aria-label="锚点形态与锚框形态示意图" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="330" height="230" rx="10"></rect>
+    <rect x="410" y="30" width="330" height="230" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="185" y="56">锚点形态：anchorMin == anchorMax</text>
+    <text x="575" y="56">锚框形态：anchorMin != anchorMax</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="60" y="90" width="250" height="140" rx="3"></rect>
+    <rect x="125" y="125" width="120" height="70" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <circle cx="185" cy="160" r="5" fill="var(--accent)" stroke="none"></circle>
+    <path d="M 185 160 L 185 125 M 185 160 L 245 160" stroke="var(--accent)" stroke-dasharray="4 3"></path>
+    <text x="185" y="185" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">锚点 = 轴心</text>
+    <text x="185" y="205" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">尺寸固定，位置跟随父物体</text>
+
+    <rect x="450" y="90" width="250" height="140" rx="3"></rect>
+    <rect x="475" y="110" width="200" height="100" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <g fill="var(--accent)" stroke="none">
+      <circle cx="475" cy="110" r="4"></circle>
+      <circle cx="675" cy="110" r="4"></circle>
+      <circle cx="475" cy="210" r="4"></circle>
+      <circle cx="675" cy="210" r="4"></circle>
+    </g>
+    <text x="575" y="60" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">四个锚点围成锚框</text>
+    <text x="575" y="235" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">尺寸随锚框变化</text>
+  </g>
+</svg>
+<figcaption>图 5-1：锚点形态下，锚框退化为一个点，尺寸固定；锚框形态下，锚框是一个矩形，子矩形随它伸缩。</figcaption>
+</figure>
+
+<p>讲义说“锚框的范围不能超过父类的矩形框”。这句话只在“用鼠标拖拽锚点”的默认编辑器行为下成立。Unity 的 RectTransform 编辑器里，按住快捷键（Editor 里的 <code>EditorGUI.actionKey</code>）或者直接在 Inspector 里输入数值，是可以把锚点设到父矩形之外的；代码里 <code>anchorMin = new Vector2(-0.5f, 0f)</code> 也不会被运行时阻止。它更像一条可读性约定，而不是引擎限制。</p>
+
+<h3>轴心：旋转中心，也是局部坐标原点</h3>
+
+<p>轴心是子矩形内部的归一化点。取 <code>(0,0)</code> 时在左下角，取 <code>(1,1)</code> 时在右上角，取 <code>(0.5,0.5)</code> 时在中心。它有两个作用：</p>
+
+<ul>
+<li>旋转和缩放围绕轴心进行。</li>
+<li><code>RectTransform.rect</code> 以轴心为局部坐标原点，所以 <code>rect.x = -pivot.x * width</code>，<code>rect.y = -pivot.y * height</code>。轴心在中心时，<code>rect</code> 的范围是 <code>(-w/2, -h/2, w, h)</code>。</li>
+</ul>
+
+<p>讲义第 14 页说“轴心点就是 UI 元素旋转和缩放的基准点”，这是对的。第 7 页说 Raw Editor 模式下“pivot 会始终保持在 UI 内的相对位置，UI 跟随 pivot 的位置移动”，更准确的表述是：Raw Edit Mode 关闭了“改 pivot/anchor 时自动反向调整位置和尺寸以保持矩形不动”的行为；开启后，你改 pivot 或 anchor，矩形会跟着动。Blueprint 模式则是“忽略旋转和缩放来编辑矩形”，方便对齐。</p>
+
+<h3>锚点参考点：理解 anchoredPosition 的关键</h3>
+
+<p>当锚点分开时，<code>anchoredPosition</code> 并不是“到左下角锚点的偏移”，而是“轴心到<strong>锚点参考点</strong>的偏移”。锚点参考点由 <code>anchorMin</code>、<code>anchorMax</code> 和 <code>pivot</code> 共同决定：可以理解为在锚框里按 pivot 的比例取一个点。</p>
+
+<pre><code>// 概念上的锚点参考点（父矩形局部空间）
+Vector2 anchorRef = new Vector2(
+    Mathf.Lerp(anchorMin.x, anchorMax.x, pivot.x) * parentRect.width,
+    Mathf.Lerp(anchorMin.y, anchorMax.y, pivot.y) * parentRect.height
+);
+
+// 轴心的位置 = 锚点参考点 + anchoredPosition
+Vector2 pivotPos = anchorRef + anchoredPosition;</code></pre>
+
+<p>锚点重合时，锚点参考点就是那个锚点；锚点分开时，它是锚框里按 pivot 比例插值出来的点。讲义的“锚框里某一个点到 UI 轴心的矢量值”说的就是这个点，只是没有给它命名。</p>
+
+<h3>Left / Right / Top / Bottom 是什么</h3>
+
+<p>当锚点分开时，Inspector 会把 Pos 和 Width/Height 换成 Left、Right、Top、Bottom。它们表示子矩形四条边到对应锚框边的距离，可以理解成“锚框内部的 padding”。</p>
+
+<p>这四个值对应代码里的 <code>offsetMin</code> 和 <code>offsetMax</code>：</p>
+
+<pre><code>offsetMin = anchoredPosition - Vector2.Scale(sizeDelta, pivot);
+offsetMax = anchoredPosition + Vector2.Scale(sizeDelta, Vector2.one - pivot);</code></pre>
+
+<p>其中 <code>offsetMin</code> 对应左下角，<code>offsetMax</code> 对应右上角。设置 <code>offsetMin</code> / <code>offsetMax</code> 通常比直接改 <code>sizeDelta</code> 更直观，尤其是在四边拉伸的布局里。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义对锚点、轴心、锚点形态/锚框形态的解释基本正确；需要修正“锚框不能超过父矩形”的绝对化表述，并补充“锚点参考点”的概念。Raw Edit Mode 的描述也应改成“关闭改 pivot/anchor 时的自动反向调整”。</p>
+</blockquote>
+
+<h3>一段打印 RectTransform 的代码</h3>
+
+<p>把下面这段挂在任意 UI 元素上，改一改父物体大小和锚点，观察输出，比看十张图都快：</p>
+
+<pre><code>using UnityEngine;
+
+[RequireComponent(typeof(RectTransform))]
+public class RectProbe : MonoBehaviour
+{
+    RectTransform rt;
+    RectTransform parent;
+
+    void Awake()
+    {
+        rt = GetComponent&lt;RectTransform&gt;();
+        parent = rt.parent as RectTransform;
+    }
+
+    void OnGUI()
+    {
+        if (parent == null) return;
+
+        GUILayout.Label($"parent rect: {parent.rect}");
+        GUILayout.Label($"anchorMin: {rt.anchorMin}, anchorMax: {rt.anchorMax}");
+        GUILayout.Label($"pivot: {rt.pivot}");
+        GUILayout.Label($"anchoredPosition: {rt.anchoredPosition}");
+        GUILayout.Label($"sizeDelta: {rt.sizeDelta}");
+        GUILayout.Label($"rect: {rt.rect}");
+        GUILayout.Label($"offsetMin: {rt.offsetMin}, offsetMax: {rt.offsetMax}");
+    }
+}</code></pre>
+
+<p>观察重点：改变父物体尺寸时，<code>rect</code> 怎么变；锚点重合和分开时，<code>sizeDelta</code> 的含义怎么变；改 <code>pivot</code> 时，<code>rect</code> 的 x/y 怎么变。</p>
+
+<h3>三个常见误区</h3>
+
+<ul>
+<li><strong>把 <code>anchoredPosition</code> 当成 <code>localPosition</code></strong>：前者是相对锚点参考点的偏移，后者是相对父物体轴心的位置；两者在锚点不居中时完全不同。</li>
+<li><strong>把 <code>sizeDelta</code> 当成尺寸</strong>：锚点重合时它才是尺寸；锚点分开时它是“尺寸差”。读尺寸请用 <code>rect.size</code>。</li>
+<li><strong>用锚点做动画</strong>：改 <code>anchorMin/Max</code>、<code>sizeDelta</code> 会牵动布局和 Rebuild；位移动画优先改 <code>anchoredPosition</code> 或 Transform，缩放动画优先改 <code>localScale</code>。</li>
+</ul>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-04.html"><span class="dir">← 上一节</span>适配：Canvas Scaler 的三种模式与两种匹配</a>
+    <a href="ch-06.html"><span class="dir">下一节 →</span>RectTransform 计算：anchoredPosition、sizeDelta 与 rect</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

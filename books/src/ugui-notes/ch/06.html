@@ -1,0 +1,150 @@
+<h2>把 RectTransform 算清楚：三个公式就够了</h2>
+
+<p>讲义第 13 到 18 页问了一连串问题：<code>rect</code> 的 x、y 是什么？<code>anchoredPosition</code> 在两个形态下分别表示什么？<code>sizeDelta</code> 在两个形态下分别表示什么？在锚框形态下怎么读、怎么设 UI 的尺寸？这些问题其实可以用三个公式回答。把这三个公式记住，比背 Inspector 上的字段有用得多。</p>
+
+<h3>公式一：实际尺寸</h3>
+
+<pre><code>size = parentSize * (anchorMax - anchorMin) + sizeDelta</code></pre>
+
+<p>当 <code>anchorMin == anchorMax</code> 时，括号里是 0，<code>size = sizeDelta</code>；当锚点分开时，<code>sizeDelta</code> 是“实际尺寸和锚框尺寸的差”，可以是负数。比如四边拉伸、左右各留 20 像素时，<code>sizeDelta.x = -40</code>。</p>
+
+<h3>公式二：锚点参考点</h3>
+
+<pre><code>anchorRef = parentRect.min + parentRect.size * Lerp(anchorMin, anchorMax, pivot)
+pivotPos  = anchorRef + anchoredPosition</code></pre>
+
+<p><code>anchoredPosition</code> 是轴心相对锚点参考点的偏移，不是相对父物体中心，也不是相对左下角。锚点重合时，<code>anchorRef</code> 就是那个锚点；锚点分开时，它是锚框里按 <code>pivot</code> 比例插值出来的点。</p>
+
+<h3>公式三：局部矩形</h3>
+
+<pre><code>rect.size = size
+rect.min  = -Vector2.Scale(size, pivot)
+rect.max  = rect.min + size</code></pre>
+
+<p><code>RectTransform.rect</code> 是“以轴心为原点”的局部矩形。轴心在中心时，范围是 <code>(-w/2, -h/2, w, h)</code>；轴心在左下角时，范围是 <code>(0, 0, w, h)</code>。所以讲义说“rect 的 x、y 是轴心点到矩形框左下角的向量值”是对的，只不过这个向量通常指向负方向。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="rect、sizeDelta 与锚框的关系" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="180" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="180" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="52">锚点形态</text>
+    <text x="570" y="52">锚框形态</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <rect x="70" y="78" width="240" height="100" rx="3"></rect>
+    <rect x="110" y="98" width="160" height="60" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <circle cx="190" cy="128" r="5" fill="var(--accent)" stroke="none"></circle>
+    <path d="M 190 128 L 270 128 M 190 128 L 190 98" stroke="var(--accent)" stroke-dasharray="4 3"></path>
+    <text x="190" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">sizeDelta = size</text>
+
+    <rect x="450" y="78" width="240" height="100" rx="3"></rect>
+    <rect x="480" y="94" width="180" height="68" rx="3" style="stroke:var(--accent);fill:var(--accent-soft)"></rect>
+    <g fill="var(--accent)" stroke="none">
+      <circle cx="480" cy="94" r="4"></circle>
+      <circle cx="660" cy="94" r="4"></circle>
+      <circle cx="480" cy="162" r="4"></circle>
+      <circle cx="660" cy="162" r="4"></circle>
+    </g>
+    <text x="570" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">sizeDelta = size - 锚框尺寸</text>
+  </g>
+</svg>
+<figcaption>图 6-1：锚点重合时 <code>sizeDelta</code> 就是尺寸；锚点分开时，它是实际尺寸与锚框尺寸的差。</figcaption>
+</figure>
+
+<h3>在锚框形态下读尺寸、设尺寸</h3>
+
+<p>讲义把这两个问题单独列出来，因为它们是实际开发里最容易踩坑的地方。答案如下：</p>
+
+<table>
+<thead>
+<tr><th>目标</th><th>推荐写法</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>读实际尺寸</td><td><code>rectTransform.rect.size</code></td><td>不要读 <code>sizeDelta</code>，除非你确认锚点重合。</td></tr>
+<tr><td>设实际尺寸（保持当前锚点）</td><td><code>SetSizeWithCurrentAnchors(Axis.Horizontal, w)</code> 和 <code>Axis.Vertical</code></td><td>内部会按锚框尺寸反算 <code>sizeDelta</code>，最适合锚框形态。</td></tr>
+<tr><td>设四边边距</td><td><code>offsetMin</code> / <code>offsetMax</code></td><td>Left/Bottom 对应 <code>offsetMin</code>，Right/Top 对应 <code>offsetMax</code>；适合做 padding。</td></tr>
+<tr><td>设 <code>sizeDelta</code></td><td>先算锚框尺寸，再写差值</td><td>例如 <code>sizeDelta = desiredSize - anchorRectSize</code>；不直观，容易错。</td></tr>
+</tbody>
+</table>
+
+<p><code>SetSizeWithCurrentAnchors</code> 的源码逻辑可以写成：</p>
+
+<pre><code>// 以 Horizontal 为例
+sizeDelta.x = size - parentRect.width * (anchorMax.x - anchorMin.x);</code></pre>
+
+<p>这就是为什么锚点分开时不能直接写 <code>sizeDelta = new Vector2(w, h)</code>：它会被解释成“比锚框大多少/小多少”，而不是“最终宽度是多少”。</p>
+
+<h3>三个具体例子</h3>
+
+<p><strong>例 1：锚点形态，居中。</strong>父矩形 1000 × 500，锚点 <code>(0.5, 0.5)</code>，轴心 <code>(0.5, 0.5)</code>，<code>sizeDelta = (200, 100)</code>，<code>anchoredPosition = (0, 0)</code>。</p>
+
+<ul>
+<li>实际尺寸：200 × 100。</li>
+<li>锚点参考点：<code>(500, 250)</code>。</li>
+<li><code>rect</code>：<code>(-100, -50, 200, 100)</code>。</li>
+</ul>
+
+<p><strong>例 2：四边拉伸，左右各 20、上下各 10。</strong>父矩形 1000 × 500，<code>anchorMin = (0, 0)</code>，<code>anchorMax = (1, 1)</code>，<code>pivot = (0.5, 0.5)</code>，<code>offsetMin = (20, 10)</code>，<code>offsetMax = (-20, -10)</code>。</p>
+
+<ul>
+<li>实际尺寸：<code>960 × 480</code>。</li>
+<li><code>sizeDelta = (-40, -20)</code>。</li>
+<li>轴心居中，<code>anchoredPosition = (0, 0)</code>（因为上下左右边距对称）。</li>
+</ul>
+
+<p><strong>例 3：水平拉伸，高度固定 100。</strong>父矩形 1000 × 500，<code>anchorMin = (0, 0.5)</code>，<code>anchorMax = (1, 0.5)</code>，<code>pivot = (0.5, 0.5)</code>，<code>sizeDelta = (-40, 100)</code>。</p>
+
+<ul>
+<li>实际宽度：<code>960</code>。</li>
+<li>实际高度：<code>100</code>（锚框高度为 0，<code>sizeDelta.y</code> 就是高度）。</li>
+<li><code>anchoredPosition = (0, 0)</code> 表示轴心在锚点线上；如果要垂直偏移，改 <code>anchoredPosition.y</code>。</li>
+</ul>
+
+<h3>一段“按锚点设尺寸”的工具代码</h3>
+
+<pre><code>using UnityEngine;
+
+public static class RectTransformUtil
+{
+    public static void SetSize(RectTransform rt, float width, float height)
+    {
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+        rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, height);
+    }
+
+    public static void SetPadding(RectTransform rt, float left, float bottom, float right, float top)
+    {
+        rt.offsetMin = new Vector2(left, bottom);
+        rt.offsetMax = new Vector2(-right, -top);
+    }
+
+    public static void Print(RectTransform rt)
+    {
+        var p = rt.parent as RectTransform;
+        Debug.Log($"size={rt.rect.size}, sizeDelta={rt.sizeDelta}, " +
+                  $"anchoredPos={rt.anchoredPosition}, " +
+                  $"anchors=({rt.anchorMin},{rt.anchorMax}), pivot={rt.pivot}, " +
+                  $"parent={(p ? p.rect.size.ToString() : "null")}");
+    }
+}</code></pre>
+
+<p>注意：<code>SetPadding</code> 只在锚点分开时有意义；锚点重合时 <code>offsetMin/Max</code> 仍然会改 <code>sizeDelta</code> 和位置，但不是“四边 padding”的语义。</p>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义对 <code>rect</code>、<code>anchoredPosition</code>、<code>sizeDelta</code> 的解释基本正确；需要补充“锚点参考点”和三个公式。讲义问的“锚框形态下怎么读/怎么设尺寸”，答案是：读 <code>rect.size</code>，设 <code>SetSizeWithCurrentAnchors</code> 或 <code>offsetMin/Max</code>，不要直接拿 <code>sizeDelta</code> 当尺寸。</p>
+</blockquote>
+
+<h3>布局组件会接管这些值</h3>
+
+<p>如果父物体上有 <code>HorizontalLayoutGroup</code>、<code>VerticalLayoutGroup</code>、<code>GridLayoutGroup</code> 或 <code>ContentSizeFitter</code>，它们会在布局阶段写子物体的 <code>anchoredPosition</code>、<code>sizeDelta</code>，甚至 <code>anchorMin/Max</code>。这时你在 <code>Update</code> 里手动设置的值可能每帧被覆盖。</p>
+
+<p>判断方法：运行时看 <code>RectTransform.drivenByObject</code> 是否非空，或者看 Inspector 里被驱动的字段是否变灰。被布局驱动时，应该改布局组或 <code>LayoutElement</code> 的参数，而不是硬改 RectTransform。</p>
+
+<pre><code>var driven = rectTransform.drivenByObject;
+if (driven != null)
+    Debug.Log($"RectTransform 被 {driven.name} 驱动");</code></pre>
+
+<p>这也是为什么“在代码里设了尺寸但没生效”经常不是 RectTransform 的问题，而是布局组在下一帧把它改回去了。</p>

@@ -1,0 +1,196 @@
+{
+  "slug": "ugui-notes",
+  "kind": "notes",
+  "title_en": "UGUI Internals and Optimization: A Fact-Checked Edition",
+  "title_zh": "UGUI 原理与优化：逐条考据版",
+  "subtitle_zh": "以何冠峰（文西）2018 年创建、2019 年最后修改的 34 页讲义为底本，对照 Unity 官方文档与 uGUI 源码，逐条校验、订正，并补上 2026 年仍然适用的做法。",
+  "kicker": "技术讲义 · 逐条考据",
+  "foot_note": "UGUI 技术讲义 · 逐条考据",
+  "source_pages_label": "原讲义页数",
+  "source_line": "原讲义 34 页 · 2018-2019 年讲稿 · 2026 年校注",
+  "book_label": "讲义",
+  "part_label": "已整理片段",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "The source deck and the method",
+      "title_zh": "底本与方法：这份讲义怎么读",
+      "pages": "1-2",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "底本与方法：这份讲义怎么读"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Where UGUI sits among Unity UI systems",
+      "title_zh": "UGUI 的坐标：五种 UI 系统与今天的选型",
+      "pages": "3",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "UGUI 的坐标：五种 UI 系统与今天的选型"
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "Canvas: render modes and draw order",
+      "title_zh": "Canvas：渲染模式、层级顺序与“谁在谁上面”",
+      "pages": "4-5",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "Canvas：渲染模式、层级顺序与“谁在谁上面”"
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Canvas Scaler: scaling and screen matching",
+      "title_zh": "适配：Canvas Scaler 的三种模式与两种匹配",
+      "pages": "6",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "适配：Canvas Scaler 的三种模式与两种匹配"
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "RectTransform basics: anchors and pivot",
+      "title_zh": "RectTransform 基础：锚点、轴心与锚框",
+      "pages": "7-12",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "RectTransform 基础：锚点、轴心与锚框"
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "RectTransform math: anchoredPosition and sizeDelta",
+      "title_zh": "RectTransform 计算：anchoredPosition、sizeDelta 与 rect",
+      "pages": "13-18",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "RectTransform 计算：anchoredPosition、sizeDelta 与 rect"
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Layout and the rebuild pipeline",
+      "title_zh": "布局与 Rebuild：从 dirty 到新网格",
+      "pages": "19-22",
+      "parts": [
+        {
+          "id": "07",
+          "title_zh": "布局与 Rebuild：从 dirty 到新网格"
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Batching: depth, overlap and submeshes",
+      "title_zh": "合批：重叠检测、层级号与 SubMesh",
+      "pages": "23",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "合批：重叠检测、层级号与 SubMesh"
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "Performance entry points and mesh rebuild",
+      "title_zh": "性能入口与网格重建优化",
+      "pages": "24-25",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "性能入口与网格重建优化"
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "Overdraw and fill rate",
+      "title_zh": "Overdraw：看不见的像素也在花钱",
+      "pages": "26",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "Overdraw：看不见的像素也在花钱"
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Draw calls and batch breaking",
+      "title_zh": "DrawCall：合批优化与常见打断",
+      "pages": "27",
+      "parts": [
+        {
+          "id": "11",
+          "title_zh": "DrawCall：合批优化与常见打断"
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Fonts, text and vertex cost",
+      "title_zh": "字体与文本：动态图集、后备字体与顶点数",
+      "pages": "28",
+      "parts": [
+        {
+          "id": "12",
+          "title_zh": "字体与文本：动态图集、后备字体与顶点数"
+        }
+      ]
+    },
+    {
+      "no": 13,
+      "title_en": "Scroll views, raycasts and other tricks",
+      "title_zh": "ScrollView、Raycast 与其他技巧",
+      "pages": "29-30",
+      "parts": [
+        {
+          "id": "13",
+          "title_zh": "ScrollView、Raycast 与其他技巧"
+        }
+      ]
+    },
+    {
+      "no": 14,
+      "title_en": "Tools and art production guidelines",
+      "title_zh": "工具与美术规范：Profiler、Frame Debugger 与团队约定",
+      "pages": "31-34",
+      "parts": [
+        {
+          "id": "14",
+          "title_zh": "工具与美术规范：Profiler、Frame Debugger 与团队约定"
+        }
+      ]
+    },
+    {
+      "no": 15,
+      "title_en": "Errata and references",
+      "title_zh": "勘误总表与参考资料",
+      "pages": "3-34",
+      "parts": [
+        {
+          "id": "15",
+          "title_zh": "勘误总表与参考资料"
+        }
+      ]
+    }
+  ],
+  "book_pages": 34
+}

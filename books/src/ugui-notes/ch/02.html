@@ -1,0 +1,71 @@
+<h2>五种 UI 系统，各自解决什么问题</h2>
+
+<p>讲义第 3 页把 Unity 生态里的 UI 系统列了一遍：IMGUI、NGUI、FairyGUI、UGUI、UI Element。然后给出选择 UGUI 的理由：团队最擅长、官方支持、流行趋势、多线程支持（UI 重建）。这段内容在 2018 年是有上下文的；放到今天，需要逐句拆开看。</p>
+
+<h3>IMGUI、NGUI、FairyGUI、UGUI、UI Toolkit</h3>
+
+<table>
+<thead>
+<tr><th>系统</th><th>工作方式</th><th>典型用途</th><th>今天看要注意什么</th></tr>
+</thead>
+<tbody>
+<tr><td>IMGUI</td><td>立即模式：每帧在 <code>OnGUI</code> 里重新描述界面</td><td>Editor 扩展、调试面板、极简工具</td><td>不适合做游戏运行时 UI；每帧重建、GC 和布局成本高。</td></tr>
+<tr><td>NGUI</td><td>第三方、基于 GameObject 的运行时 UI</td><td>Unity 4/5 时代的大量老项目</td><td>“最流行的第三方 UI 插件”是历史判断；今天新项目基本不会首选 NGUI。</td></tr>
+<tr><td>FairyGUI</td><td>跨平台 UI 编辑器 + 运行时库</td><td>移动游戏、小游戏、需要美术独立编辑 UI 的团队</td><td>是否“商业案例以小游戏居多”是经验观察，不是技术结论；选型要看团队工作流。</td></tr>
+<tr><td>UGUI / Unity UI</td><td>官方运行时 UI：Canvas + Graphic + Layout + EventSystem</td><td>绝大多数 Unity 游戏 UI、World Space UI、与 3D 内容混合的界面</td><td>仍然受支持，生态成熟；但它的性能模型需要理解，不能“拖控件就完事”。</td></tr>
+<tr><td>UI Toolkit</td><td>保留模式 UI，UXML + USS + C#，类似 Web 的布局与样式</td><td>Editor 工具、数据密集型界面、较新的运行时 UI</td><td>原名 UIElements；运行时 UI 从 Unity 2021.2 起可用。它不是 UGUI 的无痛替代品。</td></tr>
+</tbody>
+</table>
+
+<p>讲义把 UI Toolkit 称为 “UI Element”，并说它是“最新版本的 UI 系统（Unity 2019 版）”。这里有两个时间误差：UIElements 在 2019.1 主要面向 Editor 扩展，运行时支持要到 2021.2；后来官方名称也统一成了 UI Toolkit。说它“最新”没有错，但把它理解成“2019 年就能全面替代 UGUI”就错了。</p>
+
+<h3>为什么很多团队仍然选 UGUI</h3>
+
+<p>讲义给出的四条理由里，只有一部分是技术事实，另一部分是项目决策：</p>
+
+<ul>
+<li><strong>团队最擅长</strong>：这是最重要、也最容易被低估的理由。UI 的生产效率很大程度取决于团队对工具链的熟悉程度，而不是纸面性能。</li>
+<li><strong>官方支持</strong>：成立。UGUI 是 Unity 官方包，源码公开，文档、教程和第三方工具都很多。</li>
+<li><strong>流行趋势</strong>：这是 2018 年的观察。今天 UGUI 仍然流行，但 UI Toolkit 的增长也很快；“流行”不能替代具体需求评估。</li>
+<li><strong>多线程支持（UI 重建）</strong>：需要拆开说。Canvas 的批次计算、排序和几何生成可以使用引擎内部的 Job；但 UGUI 的 C# 侧 Layout / Graphic Rebuild 仍然在主线程执行。把它笼统说成“UI 重建支持多线程”会误导优化方向。</li>
+</ul>
+
+<blockquote>
+<p><strong>考据结论：</strong>“UGUI 是官方 UI 系统”为真；“团队最擅长”是合理的项目理由；“流行趋势”是时效性判断；“多线程支持（UI 重建）”不准确，应改为“Canvas 批次计算可以多线程，C# Rebuild 仍在主线程”。</p>
+</blockquote>
+
+<h3>源码在哪里</h3>
+
+<p>讲义给的地址是 Bitbucket 上的 <code>Unity-Technologies/ui</code>。这个地址属于旧时代；现在 UGUI 的源码在 GitHub 的 <a href="https://github.com/Unity-Technologies/uGUI">Unity-Technologies/uGUI</a>，对应的 Unity 包是 <code>com.unity.ugui</code>。实际排查时，最可靠的不是 GitHub 的 <code>main</code> 分支，而是你项目里的 <code>Library/PackageCache/com.unity.ugui@版本号/</code>，因为那才是当前项目真正编译的代码。</p>
+
+<p>UGUI 不是纯 C# 实现。更准确地说，它是“C# 层 + 原生层”的混合体：</p>
+
+<ul>
+<li><strong>C# 层</strong>：<code>Graphic</code>、<code>Image</code>、<code>Text</code>、<code>LayoutGroup</code>、<code>CanvasUpdateRegistry</code>、<code>GraphicRaycaster</code> 等，负责生成顶点、布局、事件和 Rebuild 调度。</li>
+<li><strong>原生层</strong>：<code>Canvas</code>、<code>CanvasRenderer</code> 以及批次构建、裁剪、网格合并等，负责把 C# 生成的网格变成实际的绘制指令。</li>
+</ul>
+
+<p>理解这条分界线很重要：<code>Canvas.BuildBatch</code>、<code>Canvas.SendWillRenderCanvases</code> 这类开销在原生侧；<code>Graphic.UpdateGeometry</code>、<code>LayoutRebuilder</code> 这类开销在 C# 侧。优化时先看 Profiler 里到底是哪一段，再决定是“减少元素”“拆 Canvas”还是“少改文本”。</p>
+
+<h3>今天怎么选</h3>
+
+<p>如果把选型压缩成一张表，可以这样看：</p>
+
+<table>
+<thead>
+<tr><th>需求</th><th>优先考虑</th><th>原因</th></tr>
+</thead>
+<tbody>
+<tr><td>游戏内 HUD、背包、商店、World Space UI</td><td>UGUI + TMP</td><td>生态成熟，和 3D 场景、粒子、自定义 Shader 的配合方式多，团队资料多。</td></tr>
+<tr><td>Editor 工具、复杂数据面板</td><td>UI Toolkit</td><td>UXML/USS 的布局和样式更适合工具型界面，Editor 支持成熟。</td></tr>
+<tr><td>需要美术独立编辑、跨引擎复用 UI</td><td>FairyGUI 等第三方方案</td><td>工作流是主要卖点；要评估运行时性能、包体和团队维护成本。</td></tr>
+<tr><td>调试面板、临时工具</td><td>IMGUI</td><td>写起来最快，但不适合正式运行时 UI。</td></tr>
+<tr><td>新项目、UI 复杂且团队愿意投入学习</td><td>UGUI 或 UI Toolkit 都可</td><td>不要因为“新”就选 UI Toolkit，也不要因为“熟”就无脑 UGUI；用原型测一遍目标平台。</td></tr>
+</tbody>
+</table>
+
+<p>讲义里“团队最擅长”这一条，其实是选型里最诚实的一条。UI 系统的性能差异往往没有团队熟练度带来的生产效率差异大；真正要避免的是“用 UGUI 的皮做 UI Toolkit 的事”，或者反过来。</p>
+
+<blockquote>
+<p><strong>本章要点：</strong>UGUI 是官方运行时 UI，不是唯一选择；UI Toolkit 的运行时能力从 2021.2 才开始；UGUI 的“多线程”只适用于部分原生阶段。选型先看团队和需求，再看趋势。</p>
+</blockquote>

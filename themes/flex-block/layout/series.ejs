@@ -1,4 +1,4 @@
-<!-- 系列专题：挂载在知识站下的两份"独立小站" -->
+<!-- 系列专题：教程子站、官方电子书与讲义考据 -->
 
 <div class="body-container">
   <div class="content-container layout-block">
@@ -6,10 +6,11 @@
     <section class="layout-padding layout-margin">
       <div class="content-padding--primary soft-size--large soft-style--box">
         <div class="card-text--row" style="margin-top:0">
-          两类东西都放在这里：<strong>教程子站</strong>（图形学、架构模式，原本是独立小站，现在挂在自己域名下的
-          <code>/unity-graphics/</code>、<code>/gpp-unity/</code>，各自的目录、进度、深浅色都保留）和
-          <strong>Unity 官方电子书的中文全译</strong>（<code>/books/</code> 下的五本，按章分页，带目录与阅读进度）。
-          都是站内路径，能整站一起备份。
+          三类东西都放在这里：<strong>教程子站</strong>（图形学、架构模式，原本是独立小站，现在挂在自己域名下的
+          <code>/unity-graphics/</code>、<code>/gpp-unity/</code>，各自的目录、进度、深浅色都保留）、
+          <strong>Unity 官方电子书的中文全译</strong>（<code>/books/</code> 下的五本，按章分页，带目录与阅读进度），
+          以及<strong>技术讲义的逐条考据</strong>（<code>/books/ugui-notes/</code>：以一份 2018-2019 年的 UGUI 讲义为底本，
+          对照文档与源码逐条校验）。都是站内路径，能整站一起备份。
         </div>
       </div>
     </section>
@@ -25,8 +26,10 @@
     <section class="layout-padding layout-margin">
       <div class="card-text--row" style="opacity:.6;font-size:var(--font-base-size)">
         加教程子站：<code>source/_data/series.yml</code> 加一条 → 子站文件放进 <code>source/新的目录名/</code> → <code>node tools/sync-series.js</code>。<br>
-        加书：把 PDF 放进 <code>books/pdf/</code> → <code>python _demo-site/books/split.py</code> 切章 → 译文写进
-        <code>books/src/&lt;slug&gt;/ch/&lt;id&gt;.html</code> → <code>node tools/build-books.js</code> 重新生成五个子站。
+        加官方书：把 PDF 放进 <code>books/pdf/</code> → <code>python _demo-site/books/split.py</code> 切章 → 译文写进
+        <code>books/src/&lt;slug&gt;/ch/&lt;id&gt;.html</code> → <code>node tools/build-books.js</code> 重新生成。<br>
+        加讲义考据：在 <code>books/src/&lt;slug&gt;/meta.json</code> 里把 <code>kind</code> 设为 <code>notes</code>，
+        写 <code>ch/&lt;id&gt;.html</code> → <code>node tools/build-books.js &lt;slug&gt;</code>。
       </div>
     </section>
 

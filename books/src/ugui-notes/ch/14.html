@@ -1,0 +1,155 @@
+<h2>工具与规范：把“感觉”变成可复查的数字</h2>
+
+<p>讲义第 31、32 页只放了两个标题：Profiler 和 FrameDebug。第 33、34 页讲美术制作规范。前者是“怎么定位”，后者是“怎么少挖坑”。两部分都不是引擎原理，但决定了优化能不能落地。</p>
+
+<h3>Profiler：先分清 CPU 和 GPU</h3>
+
+<p>UGUI 的开销可能出现在 CPU，也可能出现在 GPU。Profiler 里最值得先看的标记：</p>
+
+<table>
+<thead>
+<tr><th>标记 / 模块</th><th>说明</th><th>看到它高时先想什么</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Canvas.SendWillRenderCanvases</code></td><td>C# 侧 Rebuild 的总入口</td><td>是不是每帧都在改 UI？Layout/Graphic 哪一段高？</td></tr>
+<tr><td><code>CanvasUpdate.Layout</code></td><td>布局三阶段</td><td>布局组嵌套、ContentSizeFitter、文本变化导致的布局重算。</td></tr>
+<tr><td><code>CanvasUpdate.PreRender</code> / <code>LatePreRender</code></td><td>Graphic 重建</td><td>顶点生成、材质更新、Text/Tiled/Effect。</td></tr>
+<tr><td><code>Canvas.BuildBatch</code></td><td>原生批次构建</td><td>元素太多、重叠太多、Canvas 太大、dirty 太频繁。</td></tr>
+<tr><td><code>Graphic.OnPopulateMesh</code></td><td>单个 Graphic 生成顶点</td><td>长文本、Tiled Image、复杂自定义 Graphic。</td></tr>
+<tr><td><code>Text.OnPopulateMesh</code></td><td>Legacy Text 排版/生成</td><td>长文本、Best Fit、频繁改字符串。</td></tr>
+<tr><td><code>Font.RequestCharactersInTexture</code></td><td>动态字体图集请求</td><td>新字符太多、图集频繁重建。</td></tr>
+<tr><td><code>EventSystem.Update</code> / <code>GraphicRaycaster.Raycast</code></td><td>输入与点击检测</td><td>Raycast Target 太多、全屏透明 Image、深层级。</td></tr>
+<tr><td><code>WaitingForJob</code> / <code>PutGeometryJobFence</code></td><td>等待 UI 几何 Job</td><td>批次/顶点生成太重，主线程在等。</td></tr>
+</tbody>
+</table>
+
+<p>注意：UI / UI Details Profiler 模块收集的是 Editor-only 数据，官方文档明确说它在 development builds 里不工作。也就是说，你可以在 Editor 里用它看批次和断批原因，但最终的帧率/GPU 数据要在真机 development build 上用 Profiler、Frame Debugger 或平台工具看。</p>
+
+<h3>UI / UI Details 模块看什么</h3>
+
+<ul>
+<li><strong>Self Batch Count</strong>：这个 Canvas 自己产生了多少批次。</li>
+<li><strong>Cumulative Batch Count</strong>：包含嵌套 Canvas 的累计批次。</li>
+<li><strong>Self / Cumulative Vertex Count</strong>：这个 Canvas 及其子 Canvas 的顶点数。</li>
+<li><strong>Batch Breaking Reason</strong>：为什么断批，常见有 Not Coplanar、CanvasInjectionIndex、Different Material/Texture/Rect Clipping/A8TextureUsage。</li>
+<li><strong>GameObject Count / GameObjects</strong>：每个批次包含哪些对象。</li>
+</ul>
+
+<p>这张表比“猜”有用得多。先看哪个 Canvas 的批次/顶点异常，再看断批原因，最后回到 Hierarchy 调整。</p>
+
+<h3>Frame Debugger：看每一笔 DrawCall</h3>
+
+<p>Frame Debugger 能暂停一帧，按事件顺序展开绘制。对 UGUI 来说，重点看：</p>
+
+<ul>
+<li>UI 的绘制事件有多少个，每个事件包含哪些对象。</li>
+<li>材质、纹理、Stencil、裁剪状态是否频繁切换。</li>
+<li>某个批次是不是被一个不同图集/不同材质的元素切断。</li>
+<li>Overdraw：结合 Scene 视图的 Overdraw 模式或 RenderDoc，看像素被画了几次。</li>
+</ul>
+
+<p>一个常见的误判是“DrawCall 少就一定快”。如果 DrawCall 少但都是全屏半透明，GPU 填充率仍然会爆。反过来，DrawCall 多但都是小图，CPU 可能先扛不住。Frame Debugger 和 GPU Profiler 要一起看。</p>
+
+<figure>
+<svg viewBox="0 0 760 190" role="img" aria-label="Profiler 时间线示意" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="720" height="140" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-family="inherit">
+    <text x="40" y="50">一帧 CPU 时间线</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1">
+    <line x1="40" y1="130" x2="720" y2="130"></line>
+    <line x1="40" y1="70" x2="40" y2="130"></line>
+  </g>
+  <g style="fill:var(--accent-soft);stroke:var(--accent)" stroke-width="1.5">
+    <rect x="60" y="78" width="120" height="24" rx="4"></rect>
+    <rect x="190" y="78" width="150" height="24" rx="4"></rect>
+    <rect x="350" y="78" width="90" height="24" rx="4"></rect>
+    <rect x="450" y="78" width="180" height="24" rx="4"></rect>
+    <rect x="640" y="78" width="70" height="24" rx="4"></rect>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="120" y="94">Layout</text>
+    <text x="265" y="94">Graphic</text>
+    <text x="395" y="94">Clipping</text>
+    <text x="540" y="94">Canvas.BuildBatch</text>
+    <text x="675" y="94">Render</text>
+    <text x="120" y="152">先看谁占得多</text>
+    <text x="540" y="152">再决定拆 Canvas / 少改 UI</text>
+  </g>
+</svg>
+<figcaption>图 14-1：Profiler 时间线的读法。Layout、Graphic、Batch 是三段不同的开销，不要用一个“UI 卡”概括。</figcaption>
+</figure>
+
+<h3>美术规范：不是审美问题，是合批和内存问题</h3>
+
+<p>讲义第 33、34 页的规范建议，表面上是“团队协作”，实际上每一条都对应一个技术成本：</p>
+
+<table>
+<thead>
+<tr><th>规范</th><th>技术理由</th><th>今天怎么做</th></tr>
+</thead>
+<tbody>
+<tr><td>设计模板（尺寸/布局/样式）</td><td>减少重复结构、减少临时布局、统一合批顺序</td><td>保留；用设计系统/ScriptableObject 管理尺寸和颜色。</td></tr>
+<tr><td>路径一致性</td><td>换图、打包、定位资源时不出错</td><td>保留；配合 Addressables / Sprite Atlas 的命名规则。</td></tr>
+<tr><td>图片命名</td><td>可读性和自动化打包</td><td>保留；用“功能_类型_颜色_尺寸”这类稳定规则，避免空格/中文路径。</td></tr>
+<tr><td>公用图集</td><td>减少重复纹理、方便合批</td><td>按界面/功能拆 Sprite Atlas；公共图复制到独立图集会减少断批但增加内存，要实测。</td></tr>
+<tr><td>合理出图尺寸</td><td>减少包体、导入时间、显存</td><td>按目标分辨率出图；UI 纹理通常关 Mipmap，使用 ASTC/ETC2 压缩。</td></tr>
+<tr><td>图片分类</td><td>不同类型的图有不同的打包策略</td><td>UISprite（九宫格/平铺）、UIFrame（大背景）、Icon、Photo、原画分开管理。</td></tr>
+<tr><td>字体大小分级</td><td>控制字号数量，减少字体图集压力</td><td>用 TMP Font Asset + 少量字号/材质；避免每个界面一套字号。</td></tr>
+<tr><td>色值表</td><td>减少“魔法颜色”，方便换肤</td><td>用设计 token / ScriptableObject / USS 变量统一管理。</td></tr>
+</tbody>
+</table>
+
+<p>讲义里“大概百分之九十的窗口都在这几个模板中选择”是一个项目经验，不是行业统计。它想表达的是“模板化能显著降低 UI 生产成本”，这个方向值得保留；具体比例不用当真。</p>
+
+<h3>Sprite 与 Sprite Atlas 的现代检查清单</h3>
+
+<p>讲义没有展开图集设置，但这是 UI 性能里最容易出错的地方。下面这些设置有的在 Sprite Atlas 上，有的在纹理/Sprite 导入设置里；按项目逐项检查，不要混在一个面板里找。</p>
+
+<ul>
+<li><strong>Include in Build</strong>：该图集是否需要打进包；不要把所有图集都设成 include。</li>
+<li><strong>Allow Rotation / Tight Packing</strong>：能提高 packing 率，但可能影响图集内 Sprite 的朝向/网格；UI 九宫格图要谨慎。</li>
+<li><strong>Padding</strong>：防止相邻 Sprite 采样串色；压缩格式和 Filter 会影响所需 padding。</li>
+<li><strong>Max Texture Size</strong>：图集太大会增加显存和采样成本；按目标平台设置。</li>
+<li><strong>Compression</strong>：移动端优先 ASTC/ETC2；UI 文字/细线要测试压缩伪影。</li>
+<li><strong>Generate Mip Maps</strong>：UI 通常关闭；World Space UI 远距离可能需要，但要权衡。</li>
+<li><strong>Wrap Mode</strong>：普通 UI 用 Clamp；Tiled Image 想用纹理平铺时用 Repeat。</li>
+<li><strong>Filter Mode</strong>：像素风用 Point，普通 UI 用 Bilinear；和压缩/缩放一起测试。</li>
+<li><strong>Read/Write Enabled</strong>：不需要像素级 Raycast 时关闭，省一份内存。</li>
+<li><strong>Mesh Type</strong>：需要 Tight 多边形时设为 Tight，否则 Full Rect 更省顶点。</li>
+</ul>
+
+<h3>QA 检查清单</h3>
+
+<p>上线前，至少用目标最低配设备跑一遍：</p>
+
+<ul>
+<li>UI 的 DrawCall / Batch 数量是否在预算内；有没有异常大的 Canvas。</li>
+<li>全屏 UI 的 Overdraw 是否过高；有没有被完全遮住却仍在绘制的面板。</li>
+<li>长文本、滚动列表、动态数字的 CPU 峰值是否可接受。</li>
+<li>字体图集是否频繁重建；生僻字/多语言是否缺字。</li>
+<li>所有装饰性 Graphic 的 Raycast Target 是否关闭；有没有全屏透明 Image 拦截点击。</li>
+<li>Canvas 的 Pixel Perfect、Animator、LayoutGroup、ContentSizeFitter 是否在不需要时仍然开启。</li>
+<li>UI 贴图/图集的实际内存和压缩格式是否符合目标平台。</li>
+</ul>
+
+<blockquote>
+<p><strong>考据结论：</strong>讲义第 31-34 页的工具体系和美术规范方向正确，但第 31-32 页只有标题，没有可核对的内容；第 33-34 页属于经验规范，不是绝对真理。今天需要补上 UI / UI Details Profiler、Frame Debugger、Sprite Atlas 设置、TMP 和真机验证。</p>
+</blockquote>
+
+<h3>把规范写成可执行的检查</h3>
+
+<p>规范如果只写在文档里，很容易变成“大家都知道，但没人检查”。更有效的做法是把关键项做成 Editor 检查或 CI 检查：</p>
+
+<ul>
+<li>扫描 UI Prefab，找出 <code>raycastTarget = true</code> 但没有交互组件的 Graphic。</li>
+<li>扫描 <code>Image.sprite == null</code> 的节点。</li>
+<li>扫描 Canvas 下的元素数量、嵌套 Canvas 数量、Mask 数量。</li>
+<li>扫描同时挂 <code>Shadow</code> 和 <code>Outline</code> 的长文本。</li>
+<li>扫描使用 Best Fit 的 Text，标记出来让负责人确认。</li>
+<li>在构建后输出各 Sprite Atlas 的大小和压缩格式。</li>
+</ul>
+
+<p>这些检查不需要运行时开销，却能在提交前拦住大部分“明明知道但总会犯”的问题。</p>
