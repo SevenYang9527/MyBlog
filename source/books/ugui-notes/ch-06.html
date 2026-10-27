@@ -107,7 +107,7 @@ rect.max  = rect.min + size</code></pre>
 
 <p>讲义把这两个问题单独列出来，因为它们是实际开发里最容易踩坑的地方。答案如下：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>目标</th><th>推荐写法</th><th>说明</th></tr>
 </thead>
@@ -117,7 +117,7 @@ rect.max  = rect.min + size</code></pre>
 <tr><td>设四边边距</td><td><code>offsetMin</code> / <code>offsetMax</code></td><td>Left/Bottom 对应 <code>offsetMin</code>，Right/Top 对应 <code>offsetMax</code>；适合做 padding。</td></tr>
 <tr><td>设 <code>sizeDelta</code></td><td>先算锚框尺寸，再写差值</td><td>例如 <code>sizeDelta = desiredSize - anchorRectSize</code>；不直观，容易错。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p><code>SetSizeWithCurrentAnchors</code> 的源码逻辑可以写成：</p>
 

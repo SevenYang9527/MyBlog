@@ -53,7 +53,7 @@
 
 <h3>三种 UI Scale Mode</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>模式</th><th>行为</th><th>适合</th><th>不适合</th></tr>
 </thead>
@@ -62,7 +62,7 @@
 <tr><td>Scale With Screen Size</td><td>以一套 Reference Resolution 为设计基准，按屏幕分辨率整体缩放画布。</td><td>大多数移动端、PC、主机 UI</td><td>需要物理尺寸一致的界面；需要极端的宽高比适配时，要配合锚点和安全区。</td></tr>
 <tr><td>Constant Physical Size</td><td>按物理单位（厘米、毫米、英寸、点、派卡）描述 UI；依赖设备上报的 DPI。</td><td>需要“按钮大约 1 厘米高”的跨设备界面</td><td>DPI 上报不可靠的设备；游戏 UI 很少用。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>World Space Canvas 不走上面三种模式，而是用 <code>Dynamic Pixels Per Unit</code> 控制动态生成位图（例如 Text）的像素密度。这个值太低，文字会糊；太高，字体图集和内存会涨。</p>
 
@@ -78,7 +78,7 @@ float scale     = Mathf.Pow(2, logAvg);</code></pre>
 
 <p>其中 <code>match = 0</code> 时完全按宽度，<code>match = 1</code> 时完全按高度，<code>match = 0.5</code> 时在 log 空间取中点。为什么不用普通平均？因为“宽度放大 2 倍”和“高度缩小 2 倍”在普通空间平均会得到 1.25，而在对数空间平均正好回到 1，视觉上更中性。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>Screen Match Mode</th><th>源码公式</th><th>直观效果</th><th>代价</th></tr>
 </thead>
@@ -87,7 +87,7 @@ float scale     = Mathf.Pow(2, logAvg);</code></pre>
 <tr><td>Expand</td><td><code>min(screenW/refW, screenH/refH)</code></td><td>画布只会变大，不会小于参考分辨率；参考分辨率里的内容能全部显示。</td><td>屏幕上会出现参考分辨率之外的区域；背景/边框要能延展。</td></tr>
 <tr><td>Shrink</td><td><code>max(screenW/refW, screenH/refH)</code></td><td>画布只会变小，不会大于参考分辨率；画面填满，不留黑边。</td><td>参考分辨率边缘的内容可能被裁掉；重要 UI 要放在安全区内。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <figure>
 <svg viewBox="0 0 760 210" role="img" aria-label="Expand 与 Shrink 的差异" style="width:100%;height:auto;color:var(--text-soft)">

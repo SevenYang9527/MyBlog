@@ -53,7 +53,7 @@
 
 <h3>IMGUI、NGUI、FairyGUI、UGUI、UI Toolkit</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>系统</th><th>工作方式</th><th>典型用途</th><th>今天看要注意什么</th></tr>
 </thead>
@@ -64,7 +64,7 @@
 <tr><td>UGUI / Unity UI</td><td>官方运行时 UI：Canvas + Graphic + Layout + EventSystem</td><td>绝大多数 Unity 游戏 UI、World Space UI、与 3D 内容混合的界面</td><td>仍然受支持，生态成熟；但它的性能模型需要理解，不能“拖控件就完事”。</td></tr>
 <tr><td>UI Toolkit</td><td>保留模式 UI，UXML + USS + C#，类似 Web 的布局与样式</td><td>Editor 工具、数据密集型界面、较新的运行时 UI</td><td>原名 UIElements；运行时 UI 从 Unity 2021.2 起可用。它不是 UGUI 的无痛替代品。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义把 UI Toolkit 称为 “UI Element”，并说它是“最新版本的 UI 系统（Unity 2019 版）”。这里有两个时间误差：UIElements 在 2019.1 主要面向 Editor 扩展，运行时支持要到 2021.2；后来官方名称也统一成了 UI Toolkit。说它“最新”没有错，但把它理解成“2019 年就能全面替代 UGUI”就错了。</p>
 
@@ -100,7 +100,7 @@
 
 <p>如果把选型压缩成一张表，可以这样看：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>需求</th><th>优先考虑</th><th>原因</th></tr>
 </thead>
@@ -111,7 +111,7 @@
 <tr><td>调试面板、临时工具</td><td>IMGUI</td><td>写起来最快，但不适合正式运行时 UI。</td></tr>
 <tr><td>新项目、UI 复杂且团队愿意投入学习</td><td>UGUI 或 UI Toolkit 都可</td><td>不要因为“新”就选 UI Toolkit，也不要因为“熟”就无脑 UGUI；用原型测一遍目标平台。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义里“团队最擅长”这一条，其实是选型里最诚实的一条。UI 系统的性能差异往往没有团队熟练度带来的生产效率差异大；真正要避免的是“用 UGUI 的皮做 UI Toolkit 的事”，或者反过来。</p>
 

@@ -66,7 +66,7 @@
 
 <p>下表列出了其中一些。类型 <code>real</code> 是在文件中设定的；根据不同的标志，它可能是 <code>half</code>，也可能是 <code>float</code>。</p>
 
-<table>
+<div class="table-wrap"><table>
   <thead>
     <tr>
       <th>辅助函数（Helper function）</th>
@@ -86,7 +86,7 @@
     <tr><td><code>float ComputeTextureLOD(float2 uv, float bias = 0.0)</code></td></tr>
     <tr><td><code>float Linear01Depth(float depth, float4 zBufferParam)</code></td></tr>
   </tbody>
-</table>
+</table></div>
 
 <h3>预处理器宏</h3>
 
@@ -94,7 +94,7 @@
 
 <p>下表给出了几个示例。</p>
 
-<table>
+<div class="table-wrap"><table>
   <thead>
     <tr>
       <th>内置渲染管线（Built-in Render Pipeline）</th>
@@ -141,7 +141,7 @@
       <td><code>SAMPLE_TEXTURE2D(textureName, samplerName, coord2)</code></td>
     </tr>
   </tbody>
-</table>
+</table></div>
 
 <p>表格注释：</p>
 
@@ -157,7 +157,7 @@
 
 <p>下表给出了内置渲染管线所用的 <code>LightMode</code> 标签与 URP 所期望的标签之间的对应关系。若干旧的内置渲染管线标签在 URP 中不受支持：<code>PrepassBase</code>、<code>PrepassFinal</code>、<code>Vertex</code>、<code>VertexLMRGBM</code> 和 <code>VertexLM</code>。同时，URP 中还有一些标签在内置渲染管线中没有对应项。为 URP 编写着色器时，最好先看看官方提供的着色器以及它们使用的 Pass。下面的代码示例展示了 Lit Shader 中的部分代码。完整着色器见此处。</p>
 
-<table>
+<div class="table-wrap"><table>
   <thead>
     <tr>
       <th>内置渲染管线（Built-in Render Pipeline，在此阅读更多）</th>
@@ -222,7 +222,7 @@
       <td><code>SRPDefaultUnlit</code></td>
     </tr>
   </tbody>
-</table>
+</table></div>
 
 <p><code>UniversalForward</code> 和 <code>ShadowCaster</code> 这两个 Pass 涉及许多 pragma 指令和两个 include 文件。检查 include 文件中的代码，将有助于你创建适合自己需求的自定义版本。</p>
 

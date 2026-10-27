@@ -128,7 +128,7 @@ return a.renderOrder.CompareTo(b.renderOrder);</code></pre>
 
 <h3>常见的合批打断原因</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>打断原因</th><th>典型场景</th><th>处理方向</th></tr>
 </thead>
@@ -140,7 +140,7 @@ return a.renderOrder.CompareTo(b.renderOrder);</code></pre>
 <tr><td>CanvasGroup</td><td>用 CanvasGroup 做淡入淡出、弹窗遮罩</td><td>CanvasGroup 会产生 CanvasInjectionIndex，可能强制新批次；不要给每个元素都挂 CanvasGroup。</td></tr>
 <tr><td>空 Image</td><td>用空 Image 做点击热区</td><td>空 Image 会画白色 quad，纹理是白图，打断合批；换成不绘制的 Raycast Graphic。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>注意：合批优化的是 <strong>DrawCall 数量</strong>，不是 <strong>像素填充量</strong>。一个大面积半透明图片即使和其他元素合批，Overdraw 仍然存在；反之，减少 Overdraw 也不一定减少 DrawCall。两个问题要分开看。</p>
 

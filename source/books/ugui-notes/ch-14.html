@@ -55,7 +55,7 @@
 
 <p>UGUI 的开销可能出现在 CPU，也可能出现在 GPU。Profiler 里最值得先看的标记：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>标记 / 模块</th><th>说明</th><th>看到它高时先想什么</th></tr>
 </thead>
@@ -70,7 +70,7 @@
 <tr><td><code>EventSystem.Update</code> / <code>GraphicRaycaster.Raycast</code></td><td>输入与点击检测</td><td>Raycast Target 太多、全屏透明 Image、深层级。</td></tr>
 <tr><td><code>WaitingForJob</code> / <code>PutGeometryJobFence</code></td><td>等待 UI 几何 Job</td><td>批次/顶点生成太重，主线程在等。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>注意：UI / UI Details Profiler 模块收集的是 Editor-only 数据，官方文档明确说它在 development builds 里不工作。也就是说，你可以在 Editor 里用它看批次和断批原因，但最终的帧率/GPU 数据要在真机 development build 上用 Profiler、Frame Debugger 或平台工具看。</p>
 
@@ -135,7 +135,7 @@
 
 <p>讲义第 33、34 页的规范建议，表面上是“团队协作”，实际上每一条都对应一个技术成本：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>规范</th><th>技术理由</th><th>今天怎么做</th></tr>
 </thead>
@@ -149,7 +149,7 @@
 <tr><td>字体大小分级</td><td>控制字号数量，减少字体图集压力</td><td>用 TMP Font Asset + 少量字号/材质；避免每个界面一套字号。</td></tr>
 <tr><td>色值表</td><td>减少“魔法颜色”，方便换肤</td><td>用设计 token / ScriptableObject / USS 变量统一管理。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义里“大概百分之九十的窗口都在这几个模板中选择”是一个项目经验，不是行业统计。它想表达的是“模板化能显著降低 UI 生产成本”，这个方向值得保留；具体比例不用当真。</p>
 

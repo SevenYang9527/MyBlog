@@ -66,7 +66,7 @@
 <figure><img src="../assets/figures/urp/p038_1.webp" alt="图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比" loading="lazy" decoding="async"><figcaption>图 1：URP（左）与内置渲染管线（右）中 Light Inspector 面板的并排对比</figcaption></figure>
 <p>上图展示了两个版本的 Light Inspector 中光照属性的呈现方式。URP 版本根据光照是平行光还是点光源，把控件分为五组，并为聚光灯和面光源额外增加一个 Shape 分组。</p>
 <p>下表列出了 URP 与内置渲染管线 Inspector 之间的差异。</p>
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>URP Light Inspector 属性</th>
@@ -111,7 +111,7 @@
 <td>Flare</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 
 <h2>为新场景布光</h2>
 <h3>创建光照设置资源（Lighting Settings Asset）</h3>
@@ -160,7 +160,7 @@
 <figure><img src="../assets/figures/urp/p044_3.webp" alt="图 8：Light Inspector 中的 Shadows 分组" loading="lazy" decoding="async"><figcaption>图 8：Light Inspector 中的 Shadows 分组</figcaption></figure>
 <p>在鬼屋中，镜子上方有一盏聚光灯，书桌上方有一盏点光源，此外还有七张贴图。要把这七张贴图放进一张 1024 像素见方的贴图中，每张贴图的尺寸需要是 256 像素或更小。如果超过这个尺寸，阴影贴图的分辨率会被压缩以适配图集，并在控制台中输出一条警告信息。</p>
 <figure><img src="../assets/figures/urp/p046_1.webp" alt="图 9：根据附加光源阴影贴图的数量与每张贴图所选的分辨率档位来设置 Shadow Atlas 尺寸" loading="lazy" decoding="async">
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>贴图数量</th>
@@ -185,7 +185,7 @@
 <td>4</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 <figcaption>图 9：根据附加光源阴影贴图的数量与每张贴图所选的分辨率档位来设置 Shadow Atlas 尺寸</figcaption>
 </figure>
 <p><strong>注意：</strong>URP 不支持附加平行光的阴影。请记住，Main Light 始终是最亮的平行光。若附加光源需要阴影，请使用点光源或聚光灯。</p>

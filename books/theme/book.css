@@ -172,6 +172,30 @@ a:hover { text-decoration: underline; }
 .content table { width: 100%; margin: 20px 0; border-collapse: collapse; font-size: 14px; }
 .content th, .content td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
 .content th { font-weight: 650; background: var(--bg-soft); }
+
+/* 宽表格在窄屏上横向滚动，避免撑破页面或把列挤成一条竖线 */
+.content .table-wrap {
+  margin: 20px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.content .table-wrap table { margin: 0; }
+
+@media (max-width: 900px) {
+  .content .table-wrap {
+    margin: 18px -4px;
+    padding: 0 4px;
+  }
+  .content .table-wrap table {
+    width: 100%;
+    min-width: 640px;
+    max-width: none;
+  }
+  .content .table-wrap th,
+  .content .table-wrap td {
+    word-break: break-word;
+  }
+}
 .content hr { margin: 32px 0; border: 0; border-top: 1px solid var(--line); }
 
 /* 书籍首页 */
@@ -211,5 +235,11 @@ a:hover { text-decoration: underline; }
 @media (max-width: 900px) {
   .sidebar { display: none; }
   .content, .cover, .toc, .prevnext { padding-left: 20px; padding-right: 20px; }
-  .topbar { padding: 14px 20px 0; }
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 14px 20px 0;
+  }
+  .topbar .pager { width: 100%; justify-content: space-between; }
 }

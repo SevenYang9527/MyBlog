@@ -55,7 +55,7 @@
 
 <h3>四个入口，四种药</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>症状</th><th>Profiler 里看什么</th><th>优先动作</th></tr>
 </thead>
@@ -65,7 +65,7 @@
 <tr><td>CPU 生成顶点</td><td><code>Graphic.OnPopulateMesh</code>、<code>Text.OnPopulateMesh</code>、<code>Font.RequestCharactersInTexture</code></td><td>少改长文本、少用 Best Fit、少用 Tiled/复杂 Effect、用 TMP、拆分文本。</td></tr>
 <tr><td>Canvas 重建次数过多</td><td>一帧内 <code>Canvas.BuildBatch</code> 的调用次数/总时长</td><td>动静分离、合并数据更新、避免每帧改颜色/文本/Active、用 Tween 代替 Animator 写 UGUI 属性。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>这四类问题经常同时出现，但优化顺序应该是“先定位，再动手”。例如看到 UI 卡，先确认是 CPU 还是 GPU；如果是 CPU，再看是 C# Rebuild 还是原生 Batch；如果是 Batch，再看是元素太多还是 dirty 太频繁。否则很容易把“拆 Canvas”当成万能药，结果 DrawCall 变多、问题依旧。</p>
 
@@ -126,7 +126,7 @@
 
 <p>如果只是隐藏一整块面板，Unity 官方优化指南建议<strong>禁用 Canvas 组件</strong>：Canvas 停止发出 DrawCall，但保留顶点缓冲；重新启用时不会触发整棵层级的 OnDisable/OnEnable，只是继续画。这个方案适合“弹窗关闭但还要快速打开”的场景。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>做法</th><th>效果</th><th>适用</th></tr>
 </thead>
@@ -137,7 +137,7 @@
 <tr><td><code>CanvasGroup.alpha = 0</code></td><td>视觉透明，但是否省绘制取决于它是否在 Canvas 上、版本和设置；不能当作通用剔除</td><td>淡入淡出动画</td></tr>
 <tr><td>移出屏幕 / <code>RectMask2D</code> 裁剪</td><td>减少可见元素；仍可能参与布局/批次</td><td>滚动列表、临时飞出的元素</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>策略四：Pixel Perfect 的成本</h3>
 
@@ -174,7 +174,7 @@
 
 <h3>一张优化优先级表</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>优先级</th><th>动作</th><th>预期收益</th><th>风险</th></tr>
 </thead>
@@ -186,7 +186,7 @@
 <tr><td>5</td><td>用 TMP、少改长文本、少用 Outline/Shadow</td><td>降低顶点和字体图集压力</td><td>需要迁移/美术配合</td></tr>
 <tr><td>6</td><td>滚动列表池化、RectMask2D、减少布局组</td><td>降低大量子项的成本</td><td>实现复杂度上升</td></tr>
 </tbody>
-</table>
+</table></div>
 
   </article>
   <div class="prevnext">

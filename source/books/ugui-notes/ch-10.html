@@ -147,7 +147,7 @@ public class RaycastOnlyGraphic : Graphic
 
 <h3>还能做什么</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>手段</th><th>作用</th><th>注意</th></tr>
 </thead>
@@ -160,7 +160,7 @@ public class RaycastOnlyGraphic : Graphic
 <tr><td>减少全屏半透明遮罩</td><td>降低大面积混合</td><td>可以用不透明背景或局部遮罩替代。</td></tr>
 <tr><td>控制粒子/模糊/后处理</td><td>降低 GPU 填充</td><td>UI 和场景的 GPU 预算是共享的。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <blockquote>
 <p><strong>考据结论：</strong>讲义第 26 页的四条策略中，“禁用不可见面板”“空 Image 产生 overdraw”“Polygon Mode 减少填充”“关闭 Fill Center”方向都成立；但“修改 Canvas Layer 隐藏面板”在 Overlay 下不成立，不能作为通用方案。空 Image 的问题不仅是 Overdraw，还会打断合批。</p>

@@ -61,7 +61,7 @@
 
 <h3>谁会弄脏 UI</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>改动</th><th>触发什么</th><th>说明</th></tr>
 </thead>
@@ -74,7 +74,7 @@
 <tr><td>Animator 写入 UGUI 属性</td><td><code>OnDidApplyAnimationProperties</code> → SetAllDirty</td><td>被动画驱动的属性每帧写入时都可能弄脏；不一定每次都有视觉变化。</td></tr>
 <tr><td>换 Sprite / 换材质</td><td>SetAllDirty / SetMaterialDirty</td><td>图集或材质变化会改变合批条件，通常也会打断批次。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义第 20 页说“修改 Image、Text 的 color 会改变 UIVertex.color；修改 RectTransform 的 Size、Anchors、Pivot 会改变 UIVertex.position”。前半句对；后半句要分情况：尺寸变化确实会改变顶点位置，纯位置变化不会改本地顶点，Anchors/Pivot 只有在改变矩形尺寸或局部矩形原点时才需要重建顶点。把所有 RectTransform 改动都当成“顶点重建”会高估成本，也会找错瓶颈。</p>
 

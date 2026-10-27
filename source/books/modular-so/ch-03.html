@@ -49,7 +49,7 @@
 
 <p>MonoBehaviour 和 ScriptableObject 类都派生自 UnityEngine.Object。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>MonoBehaviour</th>
@@ -66,7 +66,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 你可以在 ScriptableObject 上创建其他方法，但玩家循环不会自动调用它们。</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 
 <figure><img src="../assets/figures/modular-so/p010_1.webp" alt="图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。" loading="lazy" decoding="async"><figcaption>图 1：Unity 对象 UML 图，说明与 MonoBehaviour 一样，ScriptableObject 类也派生自 UnityEngine.Object 类。</figcaption></figure>
 
@@ -76,7 +76,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 
 <p>从表面上看，ScriptableObject 很简单。它的 API 只提供寥寥几个方法。在这种情况下，这是件好事：简单意味着出错的地方更少。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>MonoBehaviour</th>
@@ -100,13 +100,13 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 <td colspan="2">MonoBehaviour 与 ScriptableObject 都是可序列化的，并且都能在 Inspector 中查看。</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>回调与消息</h3>
 
 <p>ScriptableObject 拥有 MonoBehaviour 可用事件函数的一个子集。你可以为自己的 ScriptableObject 定义自定义方法，但调用它们是你的责任。只有下列这些方法会在 PlayerLoop 中被自动调用。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr>
 <th>事件函数（运行时）</th>
@@ -142,7 +142,7 @@ ScriptableObject 支持数量有限的事件函数，运行时包括 Awake、OnE
 <td>当你在 Inspector 的上下文菜单中点击 Reset 按钮时，Reset 会被调用。</td>
 </tr>
 </tbody>
-</table>
+</table></div>
 
 <p>要销毁一个 ScriptableObject，请在编辑器中移除它，或者在运行时调用 Destroy／DestroyImmediate。</p>
 

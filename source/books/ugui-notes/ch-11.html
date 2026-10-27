@@ -73,7 +73,7 @@
 
 <p>讲义的“Mask 组件使用了模板缓存，Mask 中的 UI 元素无法与外界 UI 元素合批，Mask 组件还会额外增加 2 个 DrawCall”基本成立，但要把两个组件分开：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>组件</th><th>原理</th><th>DrawCall 成本</th><th>适用</th></tr>
 </thead>
@@ -81,7 +81,7 @@
 <tr><td><code>Mask</code></td><td>模板缓冲（Stencil）：先写入模板，再让子元素按模板测试绘制，最后清除。</td><td>常见经验是额外 2 个（写入 + 清除），嵌套/内容更多时可能更多；会打断内外合批。</td><td>圆形头像、异形裁剪、需要任意形状遮罩。</td></tr>
 <tr><td><code>RectMask2D</code></td><td>矩形裁剪，不需要 Stencil；直接设置裁剪矩形并剔除窗口外元素。</td><td>通常不增加额外 DrawCall，但会改变裁剪状态、打断批次；比 Mask 省。</td><td>ScrollView、矩形窗口、列表裁剪。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>所以“Mask 一定加 2 个 DrawCall”是一个经验值，不是引擎保证；但“Mask 会打断合批、比 RectMask2D 贵”是可靠的方向。能用 RectMask2D 就别用 Mask；必须用 Mask 时，减少嵌套层数，尽量不要把 Mask 放在大量元素的中间。</p>
 
@@ -150,7 +150,7 @@
 
 <h3>还有哪些常见断批源</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>断批源</th><th>为什么</th><th>怎么改</th></tr>
 </thead>
@@ -163,7 +163,7 @@
 <tr><td>空 Image</td><td>白色纹理 quad</td><td>删除或用不绘制的 Raycast Graphic。</td></tr>
 <tr><td>自定义 Shader / 多材质</td><td>材质实例或关键字不同</td><td>共享材质；用顶点数据/材质属性而不是多份材质。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <blockquote>
 <p><strong>考据结论：</strong>讲义第 27 页的五条方向都成立，但要注意：相同层级只是启发式；Mask 的“2 个 DrawCall”是经验值；空 Image 确实会画白 quad 并断批；Screen Space - Camera 的屏幕外元素不会自动省 DrawCall；Z 偏移主要影响共面/合批，渲染顺序主要由层级和排序决定。</p>

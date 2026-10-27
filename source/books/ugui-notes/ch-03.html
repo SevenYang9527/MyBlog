@@ -102,7 +102,7 @@
 <figcaption>图 3-1：三种 Canvas 渲染模式。Overlay 直接覆盖屏幕；Camera 模式由指定相机渲染；World Space 把画布当成场景里的 3D 对象。</figcaption>
 </figure>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>模式</th><th>核心行为</th><th>适用场景</th><th>常见坑</th></tr>
 </thead>
@@ -111,7 +111,7 @@
 <tr><td>Screen Space - Camera</td><td>Canvas 放在指定相机前的一段距离，由该相机渲染；相机参数会影响 UI（透视、FOV 等）。</td><td>需要后处理、需要和 3D 物体交错、需要相机裁切的 UI</td><td>场景物体可能挡在 UI 前面；相机 Culling Mask 只看 Canvas 所在 Layer，子物体的 Layer 不一定生效；相机移动/旋转要同步。</td></tr>
 <tr><td>World Space</td><td>Canvas 是普通 3D 对象，可以移动、旋转、缩放；UI 元素按 3D 位置参与排序。</td><td>世界内看板、VR/AR、角色头顶血条、场景内交互面板</td><td>需要 Event Camera；像素密度受 Canvas Scaler 的 Dynamic Pixels Per Unit 影响；距离缩放和文字清晰度要单独调。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义说 Overlay “永远在屏幕的最上面”。这句话在“相对于场景物体”的语境下成立，但不要理解成“绝对在所有 Canvas 之上”：多个 Overlay Canvas 之间仍然按 <code>Sorting Layer</code> / <code>Sorting Order</code> 排序；嵌套 Canvas 还可以用 <code>Override Sorting</code> 改变顺序。</p>
 

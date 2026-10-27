@@ -55,7 +55,7 @@
 
 <p>UGUI 自带的 <code>UnityEngine.UI.Text</code> 现在通常被称为 Legacy Text。它使用动态字体：需要哪个字，就把哪个字的光栅化结果放进字体图集；不同字号通常需要不同的字形位图。TextMeshPro（TMP）使用 Signed Distance Field（SDF）图集：一个字形可以服务多个字号和缩放，描边/阴影主要通过材质和 Shader 实现，而不是复制顶点。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>维度</th><th>Legacy Text</th><th>TextMeshPro</th></tr>
 </thead>
@@ -66,7 +66,7 @@
 <tr><td>功能</td><td>基础排版、富文本；复杂排版能力有限。</td><td>更丰富的排版、字符间距、行距、表情/精灵、超链接等。</td></tr>
 <tr><td>适用</td><td>老项目、少量简单文本、迁移成本敏感</td><td>新项目默认选择；大量文本、多语言、需要高质量描边/阴影</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>讲义没有提 TMP，这是时代限制。今天做新项目，除非有明确的迁移成本或兼容性原因，否则应优先 TMP；但 TMP 不是“零成本”：Font Asset、Material Preset、Fallback、动态图集、多语言字符集都需要设计。</p>
 

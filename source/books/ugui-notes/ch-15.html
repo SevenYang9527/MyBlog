@@ -63,7 +63,7 @@
 
 <h3>一、UI 系统与 Canvas（第 3-5 页）</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>判定</th><th>依据 / 修正</th></tr>
 </thead>
@@ -83,11 +83,11 @@
 <tr><td>Screen Space - Camera 需要 UI 相机，画布放在相机前</td><td>真</td><td>由指定相机渲染；相机参数会影响 UI；场景物体可能挡在 UI 前。</td></tr>
 <tr><td>World Space 把画布当普通 3D 对象，可自由移动旋转</td><td>真</td><td>需要 Event Camera；像素密度用 Canvas Scaler 的 Dynamic Pixels Per Unit 控制。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>二、适配与 RectTransform（第 6-18 页）</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>判定</th><th>依据 / 修正</th></tr>
 </thead>
@@ -114,11 +114,11 @@
 <tr><td>锚框形态下读/设尺寸：用 sizeDelta 即可</td><td>不准确</td><td>读用 <code>rect.size</code>；设用 <code>SetSizeWithCurrentAnchors</code> 或 <code>offsetMin/Max</code>；<code>sizeDelta</code> 是差值。</td></tr>
 <tr><td>修改 Size、Anchors、Pivot 都会改变 UIVertex.position</td><td>不准确</td><td>尺寸变化会重建顶点；纯位置变化不会改本地顶点；Anchors/Pivot 只有在改变矩形尺寸或局部原点时才需要重建。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>三、Rebuild 与合批（第 19-23 页）</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>判定</th><th>依据 / 修正</th></tr>
 </thead>
@@ -139,11 +139,11 @@
 <tr><td>合批数据最后放进 CanvasMesh 的 SubMesh</td><td>真</td><td>一个 Canvas 可以有多个 SubMesh / DrawCall。</td></tr>
 <tr><td>为什么 rebuild layout 要优先处理根节点？</td><td>讲义未答</td><td>因为布局控制自顶向下（父分配空间给子），而布局计算自底向上（子先报 preferred size）。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>四、优化策略（第 24-30 页）</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>判定</th><th>依据 / 修正</th></tr>
 </thead>
@@ -183,11 +183,11 @@
 <tr><td>选中动画单独放到动态 Canvas</td><td>经验</td><td>有效隔离批次；跨 Canvas 搬对象本身也有 SetAllDirty 成本，预建独立 Canvas 更稳。</td></tr>
 <tr><td>CanvasGroup 控制 alpha 淡入淡出、Interactable 控制交互</td><td>真</td><td>另有 <code>blocksRaycasts</code>；alpha=0 不是通用零成本隐藏；CanvasGroup 会产生 CanvasInjectionIndex，可能断批。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>五、工具与美术规范（第 31-34 页）</h3>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>判定</th><th>依据 / 修正</th></tr>
 </thead>
@@ -199,7 +199,7 @@
 <tr><td>合理出图尺寸、图片分类</td><td>经验</td><td>影响包体、导入时间、显存、图集 packing；结合 Sprite Atlas / Addressables。</td></tr>
 <tr><td>字体大中小分级、色值表</td><td>经验</td><td>减少字号/颜色数量，降低字体图集和换肤成本；现代可用 TMP Font Asset + 设计 token。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>哪些说法无法验证</h3>
 

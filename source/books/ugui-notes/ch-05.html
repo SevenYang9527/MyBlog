@@ -65,7 +65,7 @@
 
 <p>讲义用“锚点形态”和“锚框形态”区分两种情况，这个说法很形象：</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>形态</th><th>条件</th><th>父物体变大时</th><th>尺寸由谁决定</th></tr>
 </thead>
@@ -73,7 +73,7 @@
 <tr><td>锚点形态</td><td><code>anchorMin == anchorMax</code></td><td>子物体尺寸不变；位置跟着锚点移动，轴心到锚点的偏移保持不变。</td><td><code>sizeDelta</code> 就是实际尺寸。</td></tr>
 <tr><td>锚框形态</td><td><code>anchorMin != anchorMax</code></td><td>子物体尺寸跟着锚框变化；可以用 Left/Right/Top/Bottom 或 <code>sizeDelta</code> 控制相对边距。</td><td>实际尺寸 = 锚框尺寸 + <code>sizeDelta</code>。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <figure>
 <svg viewBox="0 0 760 300" role="img" aria-label="锚点形态与锚框形态示意图" style="width:100%;height:auto;color:var(--text-soft)">

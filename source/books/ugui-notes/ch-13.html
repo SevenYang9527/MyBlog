@@ -66,7 +66,7 @@
 
 <p>讲义说“给滚动视图添加 RectMask2D，可以确保窗口外的元素不会出现在可绘制元素列表中，省去 batch”。这个说法是对的。RectMask2D 的源码注释明确写了它“不需要 Stencil、额外 DrawCall 更少、会剔除遮罩区域外的元素”。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>裁剪方式</th><th>原理</th><th>适合</th><th>成本</th></tr>
 </thead>
@@ -74,7 +74,7 @@
 <tr><td><code>RectMask2D</code></td><td>矩形裁剪，直接剔除窗口外元素</td><td>ScrollView、矩形列表、窗口</td><td>通常不增加额外 DrawCall；会改变裁剪状态</td></tr>
 <tr><td><code>Mask</code></td><td>Stencil 模板缓冲</td><td>圆形、异形、任意形状</td><td>额外写入/清除，打断合批，嵌套更贵</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <p>滚动视图通常只需要矩形裁剪，所以优先 RectMask2D。不要因为“Mask 更通用”就给它挂 Mask。</p>
 

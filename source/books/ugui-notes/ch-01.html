@@ -111,7 +111,7 @@
 
 <p>技术结论必须带版本。本书的默认基线是 Unity 2022.3 LTS（对应 <code>com.unity.ugui</code> 1.0.0）与 Unity 6（对应 <code>com.unity.ugui</code> 2.x；2.0.0 起合并了 TextMeshPro 包）。涉及旧版本差异时会单独说明。你在更老的 Unity 版本里读到的行为可能不同，尤其是字体、UI Toolkit、Canvas 批处理和多线程相关的细节。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>对象</th><th>本书采用的基线</th><th>需要特别注意</th></tr>
 </thead>
@@ -121,13 +121,13 @@
 <tr><td>文本</td><td>新项目优先 TextMeshPro（TMP）；旧项目可能仍用 <code>UnityEngine.UI.Text</code></td><td>两者字体图集、描边阴影、Best Fit 的成本模型不同，不能混着套结论。</td></tr>
 <tr><td>源码</td><td>uGUI GitHub <code>main</code> 分支与 Unity 包缓存</td><td>不同 Unity 版本的包源码会有差异；排查时应以项目 <code>Library/PackageCache</code> 里的版本为准。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <h3>先看结论：最需要改掉的八个说法</h3>
 
 <p>为了避免你带着旧结论读完整本书，这里先列出最关键的八处订正。详细依据在对应章节和最后的勘误总表里。</p>
 
-<table>
+<div class="table-wrap"><table>
 <thead>
 <tr><th>讲义说法</th><th>本书判定</th><th>更准确的说法</th></tr>
 </thead>
@@ -141,7 +141,7 @@
 <tr><td>修改 Size、Anchors、Pivot 都会改变 <code>UIVertex.position</code></td><td>不准确</td><td>尺寸变化会重建顶点；纯位置变化不会改本地顶点；Anchors / Pivot 只有在改变矩形尺寸或局部矩形原点时才需要重建。</td></tr>
 <tr><td>Canvas 下所有 UI 最终合批到同一个 Mesh</td><td>大体真，但容易误解</td><td>一个 Canvas 生成一个组合 Mesh，但其中按材质/纹理分成多个 SubMesh，也就是多个 DrawCall；不是所有元素都能合。</td></tr>
 </tbody>
-</table>
+</table></div>
 
 <blockquote>
 <p><strong>考据结论：</strong>这份讲义不是“官方规范”，而是一份带有强项目经验的技术分享。它的价值在于把 Canvas、RectTransform、Rebuild、合批、Overdraw、字体和 ScrollView 串成了一条完整的性能链路；它的风险在于部分结论是 2018 年的版本经验，不能无条件搬到今天。</p>

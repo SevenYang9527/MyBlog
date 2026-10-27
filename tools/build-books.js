@@ -29,6 +29,11 @@ function labels(book) {
   };
 }
 
+// 给表格套一层横向滚动容器，窄屏下不撑破正文
+function wrapTables(html) {
+  return html.replace(/<table(\s[^>]*)?>[\s\S]*?<\/table>/g, (m) => `<div class="table-wrap">${m}</div>`);
+}
+
 function copyTheme() {
   const dir = path.join(outRoot, 'assets');
   fs.mkdirSync(dir, { recursive: true });
@@ -176,7 +181,7 @@ ${tocRows}
       next && next.ready ? `<a href="ch-${next.id}.html">下一节 →</a>` : ''
     }</div>
   </div>`;
-    const content = fs.readFileSync(u.file, 'utf8');
+    const content = wrapTables(fs.readFileSync(u.file, 'utf8'));
     const body = `  <article class="content">
 ${content}
   </article>
