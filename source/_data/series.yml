@@ -83,10 +83,10 @@
   url: /books/shader-notes/
 
 - tag: 课程导读 · 计算机科学
-  title: 《计算机科学速成课》精要导读
-  intro: 以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI，配原创图解，并补充 2026 年视角。
+  title: 《计算机科学速成课》全 40 集精读
+  intro: 按 Crash Course Computer Science 的 40 集顺序逐集重讲，覆盖历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充。
   stats:
-    - 12 章
+    - 40 章
     - 原课程 40 集
     - 原创导读 + 图解
   url: /books/cs-crash-course/

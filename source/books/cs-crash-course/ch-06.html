@@ -3,136 +3,120 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 6 章 图灵、软件工程与操作系统 · 《计算机科学速成课》精要导读</title>
-<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<title>第 6 集 寄存器与内存 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
 <a class="hub-bar" href="../../series/">← 回到知识站</a>
 <div class="layout">
   <aside class="sidebar">
-    <div class="book-name">《计算机科学速成课》精要导读</div>
-    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
     <nav>
       <div class="nav-title">目录</div>
       <ol>
         <li><a href="index.html">封面与目录</a></li>
-      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
-      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
-      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
-      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
-      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
-      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
-      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
-      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
-      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
-      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
-      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
-      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
       </ol>
     </nav>
     <div class="side-foot">
-      《计算机科学速成课》导读<br>
-      原课程 40 集 · 2018 年 · 2026 年导读
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
   <div class="topbar">
-    <div class="chapter-no">06 · 第 6 章 图灵、软件工程与操作系统</div>
+    <div class="chapter-no">06 · 第 6 集 寄存器与内存</div>
     <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
   </div>
       <article class="content">
-<h2>图灵、软件工程与操作系统：从“能算”到“可靠地算”</h2>
+<h2>第 6 集 寄存器与内存</h2>
 
-<p>第十五到十八集把视角从单台机器抬到“计算的边界”和“系统的组织”：图灵机定义了什么叫可计算，软件工程解决“多人写大程序”的问题，集成电路/Moore 定律推动硬件规模，操作系统则把 CPU、内存、文件和设备管理起来，让程序不必直接面对硬件。</p>
-
-<h3>图灵机与计算的边界</h3>
-
-<p>图灵机用一条无限长的纸带、一个读写头和一张状态转移表描述计算。它看起来极简，却能模拟任何“有效可计算”的过程。由此得到两个重要结论：</p>
-
-<ul>
-<li><strong>通用性</strong>：一台通用图灵机可以模拟其他图灵机；这就是“存储程序”计算机的理论原型。</li>
-<li><strong>不可判定性</strong>：停机问题不存在通用算法能判断任意程序是否最终停止；计算有边界。</li>
-</ul>
-
-<p>图灵测试则是另一个方向：它不定义“智能是什么”，而是用对话行为来判断机器是否表现出类似人的智能。今天的大模型让这个讨论重新变热，但“通过测试”不等于“拥有意识”。</p>
-
-<h3>软件工程：把个人技巧变成团队工程</h3>
-
-<p>程序变大后，问题不再是“会不会写”，而是“能不能维护”。软件工程的核心手段：需求拆解、模块化、接口、版本控制、代码评审、自动化测试、持续集成、文档和迭代。敏捷/Scrum 只是组织方式，不是银弹；真正的底线是“可理解、可修改、可验证”。</p>
-
-<h3>集成电路与 Moore 定律</h3>
-
-<p>集成电路把大量晶体管做在同一块芯片上，光刻工艺决定线宽。Moore 定律观察到“单位面积晶体管数量约每两年翻倍”，推动了半个世纪的性能/成本进步。但它不是物理定律，随着漏电、发热、光刻极限和成本上升，行业转向多核、专用加速器和先进封装。</p>
-
-<h3>操作系统：硬件的“管家”</h3>
-
-<p>操作系统把硬件抽象成进程、线程、虚拟内存、文件、设备等概念：</p>
-
-<ul>
-<li><strong>进程/线程</strong>：隔离地址空间，调度 CPU 时间。</li>
-<li><strong>虚拟内存</strong>：让每个进程以为自己独占内存，通过页表映射到物理内存。</li>
-<li><strong>文件系统</strong>：把块设备抽象成文件和目录。</li>
-<li><strong>驱动/中断/系统调用</strong>：在用户态和内核态之间切换，访问硬件。</li>
-</ul>
+<p>触发器/锁存器可以用逻辑门保存 1 位：把输出反馈到输入，电路就能“锁住”当前值。多个触发器并排，就是一个寄存器；大量存储单元加上地址译码器，就是 RAM。</p>
+<p>CPU 通过地址总线选中某个单元，通过数据总线读写。SRAM 用触发器保存数据，速度快但面积大；DRAM 用电容保存电荷，容量大但需要刷新。</p>
+<p>这一集的关键是“记忆”：没有寄存器/内存，CPU 只能算一次；有了存储，程序才能保存中间结果和指令。</p>
 
 <figure>
-<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="图灵机与操作系统分层" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 220" role="img" aria-label="存储单元与内存阵列" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="20" y="25" width="340" height="210" rx="10"></rect>
-    <rect x="400" y="25" width="340" height="210" rx="10"></rect>
+    <rect x="30" y="35" width="250" height="150" rx="10"></rect>
+    <rect x="330" y="35" width="400" height="150" rx="10"></rect>
   </g>
   <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
-    <text x="190" y="50">图灵机：计算的模型</text>
-    <text x="570" y="50">操作系统：硬件的抽象</text>
+    <text x="155" y="60">1 位存储单元</text>
+    <text x="530" y="60">内存阵列 + 地址译码</text>
   </g>
   <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <rect x="50" y="80" width="280" height="40" rx="4"></rect>
-    <line x1="50" y1="100" x2="330" y2="100" stroke-dasharray="4 4"></line>
+    <rect x="60" y="85" width="80" height="50" rx="4"></rect>
+    <path d="M 140 110 L 190 110 L 190 145 L 140 145" stroke-dasharray="5 4"></path>
+    <text x="100" y="115" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">锁存</text>
+    <text x="165" y="132" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">反馈</text>
     <g stroke="currentColor" stroke-width="1">
-      <line x1="90" y1="80" x2="90" y2="120"></line>
-      <line x1="130" y1="80" x2="130" y2="120"></line>
-      <line x1="170" y1="80" x2="170" y2="120"></line>
-      <line x1="210" y1="80" x2="210" y2="120"></line>
-      <line x1="250" y1="80" x2="250" y2="120"></line>
-      <line x1="290" y1="80" x2="290" y2="120"></line>
+      <rect x="360" y="85" width="50" height="30"></rect><rect x="420" y="85" width="50" height="30"></rect><rect x="480" y="85" width="50" height="30"></rect><rect x="540" y="85" width="50" height="30"></rect><rect x="600" y="85" width="50" height="30"></rect>
+      <rect x="360" y="125" width="50" height="30"></rect><rect x="420" y="125" width="50" height="30"></rect><rect x="480" y="125" width="50" height="30"></rect><rect x="540" y="125" width="50" height="30"></rect><rect x="600" y="125" width="50" height="30"></rect>
     </g>
-    <circle cx="170" cy="60" r="6" fill="var(--accent)" stroke="none"></circle>
-    <line x1="170" y1="66" x2="170" y2="80" stroke="var(--accent)" stroke-width="2"></line>
-    <text x="190" y="155" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">纸带 + 读写头 + 状态表</text>
-    <text x="190" y="180" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">可计算性 / 停机问题</text>
-
-    <rect x="430" y="80" width="280" height="30" rx="3"></rect>
-    <rect x="430" y="118" width="280" height="30" rx="3"></rect>
-    <rect x="430" y="156" width="280" height="30" rx="3"></rect>
-    <rect x="430" y="194" width="280" height="24" rx="3"></rect>
-  </g>
-  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
-    <text x="570" y="100">应用程序 / 用户态</text>
-    <text x="570" y="138">系统调用 / 库</text>
-    <text x="570" y="176">内核：进程 / 内存 / 文件 / 驱动</text>
-    <text x="570" y="211" font-size="10.5">硬件：CPU / RAM / 磁盘 / 设备</text>
+    <text x="530" y="175" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">地址 → 行/列选择 → 读写数据</text>
   </g>
 </svg></div>
-<figcaption>图 6-1：图灵机定义“可计算”，操作系统把硬件抽象成进程、内存、文件和设备，让程序不必直接操作硬件。</figcaption>
+<figcaption>图 6-1：1 位存储单元与内存阵列。寄存器/缓存/内存都是“用更贵的器件换更快的访问”。</figcaption>
 </figure>
 
 <blockquote>
-<p><strong>2026 补充：</strong>云计算/容器把“操作系统”的边界扩展到集群：Kubernetes 调度容器，虚拟机/沙箱隔离租户；供应链安全、内核漏洞和权限最小化成为系统设计的重要议题。硬件侧，EUV 光刻、chiplet 和先进封装延续了“更多晶体管”的路线，但不再只靠单核频率。</p>
+<p><strong>2026 补充：</strong>缓存层次（L1/L2/L3）、HBM、持久内存和 CXL 都在改变“内存墙”；数据布局和局部性仍然比单纯增加容量更重要。</p>
 </blockquote>
 
 <blockquote>
-<p><strong>本章要点：</strong>图灵机定义可计算性与停机问题；软件工程让大程序可维护；IC/Moore 定律推动硬件规模；操作系统用进程、虚拟内存、文件系统和驱动把硬件抽象给程序。</p>
+<p><strong>本集要点：</strong>触发器保存 1 位；寄存器/内存保存大量数据；SRAM 快而贵，DRAM 大而需刷新；地址总线/数据总线让 CPU 读写内存。</p>
 </blockquote>
 
-<p style="opacity:.7;font-size:13px">对应视频：第 15-18 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=15" target="_blank" rel="noopener">B 站</a></p>
+<p style="opacity:.7;font-size:13px">对应视频：第 6 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=6" target="_blank" rel="noopener">B 站</a></p>
 
   </article>
   <div class="prevnext">
-    <a href="ch-05.html"><span class="dir">← 上一节</span>第 5 章 算法与数据结构</a>
-    <a href="ch-07.html"><span class="dir">下一节 →</span>第 7 章 存储、文件系统与压缩</a>
+    <a href="ch-05.html"><span class="dir">← 上一节</span>第 5 集 算术逻辑单元</a>
+    <a href="ch-07.html"><span class="dir">下一节 →</span>第 7 集 中央处理器</a>
   </div>
   </div>
 </div>

@@ -1,0 +1,50 @@
+<h2>第 33 集 加密</h2>
+
+<p>对称加密用同一把钥匙加解密（AES），快但需要安全地分发钥匙；非对称加密用公钥/私钥（RSA/ECC），解决密钥交换和签名；哈希把任意数据映射成固定长度指纹，用于完整性校验和密码存储（加盐 + 慢哈希）。</p>
+<p>HTTPS 把两者结合：用非对称/密钥交换建立共享密钥，再用对称加密传输数据；证书和 CA 解决“公钥属于谁”；数字签名用私钥签名、公钥验证，保证来源和完整性。</p>
+<p>这一集的核心是“信任的数学”：加密不仅保密，还解决认证、完整性和不可否认。</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="HTTPS 握手与安全目标" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="250" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="480" y="30" width="250" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="55">客户端</text>
+    <text x="105" y="75" font-size="10.5">浏览器</text>
+    <text x="335" y="55">握手</text>
+    <text x="335" y="75" font-size="10.5">证书 / 密钥交换</text>
+    <text x="605" y="55">服务器</text>
+    <text x="605" y="75" font-size="10.5">私钥 / 会话密钥</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs10)">
+    <line x1="190" y1="60" x2="242" y2="60"></line>
+    <line x1="420" y1="60" x2="472" y2="60"></line>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="40" y="130">1. 验证证书，确认服务器身份</text>
+    <text x="40" y="152">2. 协商/交换会话密钥</text>
+    <text x="40" y="174">3. 用对称加密传输 HTTP 数据</text>
+    <text x="40" y="196">4. 哈希/签名保证完整性</text>
+  </g>
+  <text x="380" y="230" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">HTTPS = 身份认证 + 密钥交换 + 对称加密 + 完整性校验</text>
+</svg>
+<figcaption>图 33-1：HTTPS 的核心流程。证书解决“公钥属于谁”，握手建立会话密钥，之后用对称加密传输数据。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>TLS 1.3 简化握手、默认前向保密；Passkeys/WebAuthn 用公钥替代密码；后量子密码（PQC）迁移应对未来量子计算威胁。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>对称加密快、非对称解决密钥交换/签名；哈希保证完整性；HTTPS = 证书 + 密钥交换 + 对称加密 + 完整性；加密是信任的基础。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 33 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=33" target="_blank" rel="noopener">B 站</a></p>

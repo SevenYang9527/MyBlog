@@ -1,0 +1,36 @@
+<h2>第 13 集 算法入门</h2>
+
+<p>算法是“解决问题的步骤”。这一集介绍排序（选择/插入/归并/快速）、查找（线性/二分）、图遍历（BFS/DFS）、最短路径（Dijkstra）和 Big-O。Big-O 描述输入规模变大时，运行时间/空间的增长趋势，而不是精确计时。</p>
+<p>排序从 O(n²) 到 O(n log n)；二分查找要求有序，O(log n)；BFS 找最短步数，DFS 找连通性/路径。实际工程还要看常数、缓存友好性、数据分布和实现质量。</p>
+<p>算法的价值在于“可扩展”：数据变大时，增长趋势决定还能不能算得动。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="常见复杂度增长趋势" style="width:100%;height:auto;color:var(--text-soft)">
+  <line x1="60" y1="180" x2="720" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+  <line x1="60" y1="180" x2="60" y2="30" stroke="currentColor" stroke-width="1.5"></line>
+  <g fill="none" stroke-width="2">
+    <path d="M 60 170 L 720 170" stroke="currentColor" opacity=".55"></path>
+    <path d="M 60 160 C 200 150 400 140 720 125" stroke="currentColor" opacity=".7"></path>
+    <path d="M 60 170 L 720 60" stroke="currentColor"></path>
+    <path d="M 60 170 C 250 150 450 90 720 35" stroke="var(--accent)"></path>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="620" y="165">O(1)</text>
+    <text x="620" y="120">O(log n)</text>
+    <text x="620" y="80">O(n)</text>
+    <text x="620" y="40">O(n log n)</text>
+    <text x="60" y="205">输入规模 n →</text>
+  </g>
+</svg>
+<figcaption>图 13-1：常见复杂度的增长趋势。n 变大时，O(n²)/O(2ⁿ) 会迅速变得不可接受。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>哈希表/布隆过滤器/倒排索引/向量索引（HNSW/IVF）等专用结构，以及缓存友好的数组布局，常常比“理论更优”的算法更快；工程要结合数据分布和硬件。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>算法是步骤；排序/查找/图算法是基础工具箱；Big-O 看增长趋势；实际工程还要看常数、缓存和数据分布；可扩展性决定大数据下能否算得动。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 13 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=13" target="_blank" rel="noopener">B 站</a></p>

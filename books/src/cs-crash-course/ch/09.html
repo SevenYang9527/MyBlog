@@ -1,109 +1,44 @@
-<h2>3D 图形与网络：把世界画出来，也把世界连起来</h2>
+<h2>第 9 集 高级 CPU 设计</h2>
 
-<p>第二十七到二十九集从“画面”和“连接”两个方向扩展计算机的能力：3D 图形把三维场景投影到二维屏幕，网络把多台计算机连成互联网。它们看起来无关，但都需要“分层”和“流水线”的工程思维。</p>
-
-<h3>3D 图形管线</h3>
-
-<p>3D 场景通常由顶点、三角形/多边形和材质组成。渲染管线大致是：</p>
-
-<ol>
-<li><strong>模型/顶点</strong>：顶点从模型空间变换到世界/观察/裁剪空间。</li>
-<li><strong>光栅化</strong>：把三角形覆盖的像素找出来，插值属性。</li>
-<li><strong>片元着色</strong>：采样纹理、计算光照、阴影、反射。</li>
-<li><strong>深度/混合</strong>：决定像素是否可见、如何与背景混合。</li>
-<li><strong>输出</strong>：写入帧缓冲，显示到屏幕。</li>
-</ol>
-
-<p>Z-buffer 用每个像素的深度解决遮挡；纹理映射把 2D 图片贴到 3D 表面；光照模型决定明暗。GPU 把大量顶点/像素并行处理，是现代游戏和实时渲染的核心。</p>
-
-<h3>计算机网络</h3>
-
-<p>网络把“发送数据”拆成分层问题：物理介质、链路、网络、传输、应用。每一层只关心自己的职责，上层不需要知道下层怎么传。</p>
-
-<table>
-<thead>
-<tr><th>层</th><th>典型协议/概念</th><th>解决的问题</th></tr>
-</thead>
-<tbody>
-<tr><td>链路层</td><td>Ethernet、Wi-Fi、MAC</td><td>同一局域网内怎么找到设备、怎么传帧</td></tr>
-<tr><td>网络层</td><td>IP、路由、BGP</td><td>跨网络怎么寻址、怎么选路</td></tr>
-<tr><td>传输层</td><td>TCP、UDP</td><td>端到端可靠性/顺序/拥塞控制</td></tr>
-<tr><td>应用层</td><td>HTTP、DNS、SMTP</td><td>具体应用怎么交换数据</td></tr>
-</tbody>
-</table>
-
-<p>互联网是“网络的网络”：数据被切成包，经过路由器逐跳转发；TCP 负责可靠传输和重传，UDP 负责低延迟但不可靠；DNS 把域名解析成 IP；BGP 让不同运营商网络互相通告路由。</p>
+<p>单条指令的取指/译码/执行可以拆成多级流水线，让不同指令同时处于不同阶段。超标量一个周期发射多条指令；乱序执行按依赖关系重排；分支预测提前猜方向，推测执行先做再回滚。</p>
+<p>缓存利用时间/空间局部性，把常用数据放在离 CPU 更近的地方；多核/超线程提升吞吐。RISC 与 CISC 是两种设计取向：指令少而简单 vs 指令多而复杂。</p>
+<p>这一集的核心是“并行 + 预测 + 缓存”：现代 CPU 的性能不是靠单条指令更快，而是靠同时做更多事。</p>
 
 <figure>
-<svg viewBox="0 0 760 230" role="img" aria-label="3D 图形管线" style="width:100%;height:auto;color:var(--text-soft)">
-  <defs>
-    <marker id="arrow-cs9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-    </marker>
-  </defs>
+<svg viewBox="0 0 760 220" role="img" aria-label="CPU 流水线" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="15" y="45" width="130" height="58" rx="8"></rect>
-    <rect x="165" y="45" width="130" height="58" rx="8"></rect>
-    <rect x="315" y="45" width="130" height="58" rx="8"></rect>
-    <rect x="465" y="45" width="130" height="58" rx="8"></rect>
-    <rect x="615" y="45" width="130" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="20" y="35" width="130" height="45" rx="7"></rect>
+    <rect x="170" y="35" width="130" height="45" rx="7"></rect>
+    <rect x="320" y="35" width="130" height="45" rx="7"></rect>
+    <rect x="470" y="35" width="130" height="45" rx="7"></rect>
+    <rect x="620" y="35" width="120" height="45" rx="7" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
   </g>
-  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
-    <text x="80" y="70">顶点/三角形</text>
-    <text x="80" y="89" font-size="10.5">模型数据</text>
-    <text x="230" y="70">变换</text>
-    <text x="230" y="89" font-size="10.5">MVP</text>
-    <text x="380" y="70">光栅化</text>
-    <text x="380" y="89" font-size="10.5">像素/插值</text>
-    <text x="530" y="70">片元着色</text>
-    <text x="530" y="89" font-size="10.5">光照/纹理</text>
-    <text x="680" y="70">帧缓冲</text>
-    <text x="680" y="89" font-size="10.5">深度/混合</text>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="85" y="62">取指</text>
+    <text x="235" y="62">译码</text>
+    <text x="385" y="62">执行</text>
+    <text x="535" y="62">访存</text>
+    <text x="680" y="62">写回</text>
   </g>
-  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs9a)">
-    <line x1="145" y1="74" x2="157" y2="74"></line>
-    <line x1="295" y1="74" x2="307" y2="74"></line>
-    <line x1="445" y1="74" x2="457" y2="74"></line>
-    <line x1="595" y1="74" x2="607" y2="74"></line>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="85" y="115">I1</text><text x="235" y="115">I2</text><text x="385" y="115">I3</text><text x="535" y="115">I4</text><text x="680" y="115">I5</text>
   </g>
-  <text x="380" y="150" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">GPU 把顶点/像素并行处理；Z-buffer 解决遮挡</text>
+  <g stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 3">
+    <line x1="85" y1="130" x2="235" y2="130"></line>
+    <line x1="235" y1="150" x2="385" y2="150"></line>
+    <line x1="385" y1="170" x2="535" y2="170"></line>
+  </g>
+  <text x="380" y="205" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">流水线让多条指令重叠执行；分支预测/乱序/多核进一步榨干并行度</text>
 </svg>
-<figcaption>图 9-1：3D 图形管线。顶点变换、光栅化、片元着色和深度/混合共同把三维场景变成屏幕像素。</figcaption>
-</figure>
-
-<figure>
-<svg viewBox="0 0 760 220" role="img" aria-label="网络分层与数据包转发" style="width:100%;height:auto;color:var(--text-soft)">
-  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="20" y="25" width="170" height="150" rx="9"></rect>
-    <rect x="210" y="25" width="170" height="150" rx="9"></rect>
-    <rect x="400" y="25" width="170" height="150" rx="9"></rect>
-    <rect x="590" y="25" width="150" height="150" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
-  </g>
-  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
-    <text x="105" y="55" font-weight="600">应用层</text>
-    <text x="105" y="80" font-size="10.5">HTTP / DNS</text>
-    <text x="105" y="100" font-size="10.5">你看到的数据</text>
-    <text x="295" y="55" font-weight="600">传输层</text>
-    <text x="295" y="80" font-size="10.5">TCP / UDP</text>
-    <text x="295" y="100" font-size="10.5">端口 / 可靠性</text>
-    <text x="485" y="55" font-weight="600">网络层</text>
-    <text x="485" y="80" font-size="10.5">IP / 路由</text>
-    <text x="485" y="100" font-size="10.5">地址 / 选路</text>
-    <text x="665" y="55" font-weight="600">链路层</text>
-    <text x="665" y="80" font-size="10.5">Ethernet / Wi-Fi</text>
-    <text x="665" y="100" font-size="10.5">帧 / MAC</text>
-  </g>
-  <text x="380" y="205" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">数据被逐层封装成包，路由器按 IP 逐跳转发，接收端逐层拆开</text>
-</svg>
-<figcaption>图 9-2：网络分层。每一层只解决自己的问题，上层不需要知道下层如何传输。</figcaption>
+<figcaption>图 9-1：五级流水线。每条指令处于不同阶段，理想情况下每个周期完成一条。</figcaption>
 </figure>
 
 <blockquote>
-<p><strong>2026 补充：</strong>实时渲染走向光线追踪、路径追踪、DLSS/FSR 等超分与降噪；图形 API 转向 Vulkan/Metal/DX12 和 WebGPU。网络侧，5G/Wi-Fi 6/7、IPv6、CDN、边缘计算和云网络让“低延迟”成为新的竞争点；QUIC/HTTP3 在 UDP 上重建可靠传输。</p>
+<p><strong>2026 补充：</strong>分支预测/推测执行带来 Spectre/Meltdown 侧信道风险；Apple M 系列的能效核/性能核、chiplet 和先进封装是新的性能路线。</p>
 </blockquote>
 
 <blockquote>
-<p><strong>本章要点：</strong>3D 图形是“顶点 → 变换 → 光栅化 → 片元 → 帧缓冲”的流水线；网络是“链路 → 网络 → 传输 → 应用”的分层；IP 负责寻址/路由，TCP/UDP 负责端到端传输；分层和并行是两者共同的工程方法。</p>
+<p><strong>本集要点：</strong>流水线/超标量/乱序/分支预测/缓存/多核是现代 CPU 的主要加速手段；RISC/CISC 是设计取向；性能与安全需要一起权衡。</p>
 </blockquote>
 
-<p style="opacity:.7;font-size:13px">对应视频：第 27-29 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=27" target="_blank" rel="noopener">B 站</a></p>
+<p style="opacity:.7;font-size:13px">对应视频：第 9 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=9" target="_blank" rel="noopener">B 站</a></p>

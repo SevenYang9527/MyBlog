@@ -3,143 +3,130 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 7 章 存储、文件系统与压缩 · 《计算机科学速成课》精要导读</title>
-<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<title>第 7 集 中央处理器 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
 <a class="hub-bar" href="../../series/">← 回到知识站</a>
 <div class="layout">
   <aside class="sidebar">
-    <div class="book-name">《计算机科学速成课》精要导读</div>
-    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
     <nav>
       <div class="nav-title">目录</div>
       <ol>
         <li><a href="index.html">封面与目录</a></li>
-      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
-      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
-      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
-      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
-      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
-      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
-      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
-      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
-      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
-      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
-      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
-      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
       </ol>
     </nav>
     <div class="side-foot">
-      《计算机科学速成课》导读<br>
-      原课程 40 集 · 2018 年 · 2026 年导读
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
   <div class="topbar">
-    <div class="chapter-no">07 · 第 7 章 存储、文件系统与压缩</div>
+    <div class="chapter-no">07 · 第 7 集 中央处理器</div>
     <div class="pager"><a href="ch-06.html">← 上一节</a><a href="ch-08.html">下一节 →</a></div>
   </div>
       <article class="content">
-<h2>存储、文件系统与压缩：数据放在哪里，怎么找回来</h2>
+<h2>第 7 集 中央处理器</h2>
 
-<p>第十九到二十一集讲“数据的家”：内存和存储的层次、文件系统如何组织持久数据、压缩如何用更少的位表示同样的信息。它们共同回答一个工程问题：数据放在哪里、怎么找、怎么省。</p>
-
-<h3>内存层次：速度、容量、成本的三角</h3>
-
-<div class="table-wrap"><table>
-<thead>
-<tr><th>层次</th><th>典型介质</th><th>特点</th></tr>
-</thead>
-<tbody>
-<tr><td>寄存器</td><td>CPU 内部</td><td>最快，数量最少</td></tr>
-<tr><td>缓存 L1/L2/L3</td><td>SRAM</td><td>靠近 CPU，利用时间/空间局部性</td></tr>
-<tr><td>主内存</td><td>DRAM</td><td>容量较大，断电丢失，需要刷新</td></tr>
-<tr><td>SSD</td><td>NAND Flash</td><td>随机访问快，有擦写寿命</td></tr>
-<tr><td>HDD</td><td>磁盘</td><td>顺序吞吐高，随机寻道慢，单位容量便宜</td></tr>
-</tbody>
-</table></div>
-
-<p>越靠近 CPU 越快越贵越小；越远离 CPU 越慢越便宜越大。程序性能很大程度取决于“能不能把常用数据留在上层”，这就是缓存、预取、数据布局和局部性优化存在的原因。</p>
-
-<h3>文件系统：把块设备变成文件</h3>
-
-<p>存储设备本质上是一堆可读写的块。文件系统在这些块上建立目录树、文件名、元数据（大小、时间、权限、块位置）和空闲空间管理。常见概念：</p>
-
-<ul>
-<li><strong>inode/文件控制块</strong>：保存文件的元数据和数据块指针。</li>
-<li><strong>目录</strong>：把名字映射到 inode/文件。</li>
-<li><strong>权限</strong>：读/写/执行，用户/组/其他。</li>
-<li><strong>日志/一致性</strong>：崩溃后通过日志恢复，避免文件系统损坏。</li>
-<li><strong>碎片/分配</strong>：连续分配、链式分配、索引分配各有取舍。</li>
-</ul>
-
-<h3>压缩：用更少的位表示同样的信息</h3>
-
-<p>压缩分两类：</p>
-
-<ul>
-<li><strong>无损</strong>：解压后完全还原。RLE（重复计数）、Huffman（变长编码）、LZ（字典/滑动窗口）是常见思路；ZIP/PNG/GZIP 都基于这些思想。</li>
-<li><strong>有损</strong>：丢弃人眼/人耳不敏感的信息。JPEG 做颜色变换、下采样和 DCT 量化；MP3/AAC 利用心理声学模型；视频用帧间预测 + 变换 + 量化。</li>
-</ul>
-
-<p>压缩的本质是“利用冗余”：重复、可预测、感知不重要的部分都可以省掉。压缩率越高，通常计算越复杂、画质/音质损失越大。</p>
+<p>CPU 的核心循环是取指—译码—执行：根据程序计数器 PC 从内存读取指令，译码器解析操作码/操作数，ALU/访存/跳转执行，最后写回并更新 PC。</p>
+<p>时钟驱动流水线；程序计数器、指令寄存器、控制单元、寄存器堆、ALU 共同协作。指令集是 CPU 的“词汇表”，汇编是机器码的可读形式。</p>
+<p>这一集把前面所有部件串起来：CPU 不是单一芯片，而是“控制 + 运算 + 存储 + 通信”的组合。</p>
 
 <figure>
-<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="内存层次与文件系统" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="CPU 取指译码执行循环" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="20" y="25" width="340" height="210" rx="10"></rect>
-    <rect x="400" y="25" width="340" height="210" rx="10"></rect>
+    <rect x="30" y="40" width="150" height="60" rx="9"></rect>
+    <rect x="230" y="40" width="150" height="60" rx="9"></rect>
+    <rect x="430" y="40" width="150" height="60" rx="9"></rect>
+    <rect x="630" y="40" width="100" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="230" y="150" width="350" height="50" rx="9"></rect>
   </g>
-  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
-    <text x="190" y="50">内存层次</text>
-    <text x="570" y="50">文件系统</text>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="105" y="66">取指 Fetch</text>
+    <text x="105" y="85" font-size="10.5">PC → 指令</text>
+    <text x="305" y="66">译码 Decode</text>
+    <text x="305" y="85" font-size="10.5">操作码 / 操作数</text>
+    <text x="505" y="66">执行 Execute</text>
+    <text x="505" y="85" font-size="10.5">ALU / 访存 / 跳转</text>
+    <text x="680" y="66">写回</text>
+    <text x="680" y="85" font-size="10.5">寄存器 / 内存</text>
+    <text x="405" y="180">更新 PC → 下一条指令（或跳转）</text>
   </g>
-  <g fill="none" stroke="currentColor" stroke-width="1.5">
-    <path d="M 80 190 L 300 190 L 250 150 L 130 150 Z"></path>
-    <path d="M 130 150 L 250 150 L 220 110 L 160 110 Z"></path>
-    <path d="M 160 110 L 220 110 L 200 75 L 180 75 Z"></path>
-    <text x="190" y="175" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">HDD/SSD：大、慢、便宜</text>
-    <text x="190" y="135" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">DRAM：主内存</text>
-    <text x="190" y="98" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">Cache</text>
-    <text x="190" y="65" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">寄存器</text>
-
-    <rect x="440" y="75" width="90" height="30" rx="3"></rect>
-    <rect x="470" y="120" width="80" height="26" rx="3"></rect>
-    <rect x="430" y="160" width="80" height="26" rx="3"></rect>
-    <rect x="520" y="160" width="80" height="26" rx="3"></rect>
-    <rect x="610" y="160" width="80" height="26" rx="3"></rect>
-    <line x1="485" y1="105" x2="500" y2="120"></line>
-    <line x1="500" y1="146" x2="470" y2="160"></line>
-    <line x1="500" y1="146" x2="560" y2="160"></line>
-    <line x1="500" y1="146" x2="650" y2="160"></line>
-    <text x="485" y="95" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">/（根）</text>
-    <text x="510" y="138" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">home</text>
-    <text x="470" y="178" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">docs</text>
-    <text x="560" y="178" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">photos</text>
-    <text x="650" y="178" fill="currentColor" font-size="10.5" text-anchor="middle" stroke="none">code</text>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs3)">
+    <line x1="180" y1="70" x2="222" y2="70"></line>
+    <line x1="380" y1="70" x2="422" y2="70"></line>
+    <line x1="580" y1="70" x2="622" y2="70"></line>
+    <path d="M 680 100 L 680 130 L 405 130 L 405 142"></path>
   </g>
 </svg></div>
-<figcaption>图 7-1：内存层次与文件系统。前者用“越近越快”的层次缓解速度差，后者用目录树/元数据把块设备组织成文件。</figcaption>
+<figcaption>图 7-1：CPU 的取指—译码—执行循环。现代 CPU 会把这条链拆成流水线，并同时执行多条指令。</figcaption>
 </figure>
 
 <blockquote>
-<p><strong>2026 补充：</strong>NVMe/PCIe 让 SSD 延迟进一步下降；云对象存储（S3 类）把“文件系统”扩展到海量对象；Zstandard、AV1/HEVC、去重和增量备份让压缩/存储更高效。持久内存（PMem）和 CXL 等新技术仍在改变“内存/存储”的边界。</p>
+<p><strong>2026 补充：</strong>现代 CPU 把取指/译码/执行拆成多级流水线，支持超标量、乱序、分支预测、推测执行、缓存和多核；性能提升更多来自并行与专用化。</p>
 </blockquote>
 
 <blockquote>
-<p><strong>本章要点：</strong>内存层次用速度/容量/成本折中；文件系统用目录、inode、权限和日志管理持久数据；压缩利用重复/可预测/感知冗余，分无损与有损；选存储方案要同时看延迟、吞吐、寿命和成本。</p>
+<p><strong>本集要点：</strong>CPU 循环：取指 → 译码 → 执行 → 写回 → 更新 PC；时钟/PC/IR/控制单元/ALU/寄存器共同工作；指令集是 CPU 的词汇表。</p>
 </blockquote>
 
-<p style="opacity:.7;font-size:13px">对应视频：第 19-21 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=19" target="_blank" rel="noopener">B 站</a></p>
+<p style="opacity:.7;font-size:13px">对应视频：第 7 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=7" target="_blank" rel="noopener">B 站</a></p>
 
   </article>
   <div class="prevnext">
-    <a href="ch-06.html"><span class="dir">← 上一节</span>第 6 章 图灵、软件工程与操作系统</a>
-    <a href="ch-08.html"><span class="dir">下一节 →</span>第 8 章 人机交互：命令行、屏幕与 GUI</a>
+    <a href="ch-06.html"><span class="dir">← 上一节</span>第 6 集 寄存器与内存</a>
+    <a href="ch-08.html"><span class="dir">下一节 →</span>第 8 集 指令与程序</a>
   </div>
   </div>
 </div>

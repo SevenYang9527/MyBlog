@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 26 集 图形用户界面 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">26 · 第 26 集 图形用户界面</div>
+    <div class="pager"><a href="ch-25.html">← 上一节</a><a href="ch-27.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 26 集 图形用户界面</h2>
+
+<p>Xerox PARC 的 GUI 把交互从“记命令”变成“指、点、拖”：窗口、图标、菜单、指针（WIMP），以及事件驱动编程。鼠标提供连续二维输入；窗口/图标让多任务和文件操作可视化；菜单让功能可发现。</p>
+<p>GUI 的核心不是“好看”，而是“降低学习成本、提高可发现性”。事件驱动让程序等待用户操作，而不是线性执行；消息循环/回调/控件树是 GUI 框架的基础。</p>
+<p>这一集把计算机从“专家工具”变成“大众产品”。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="从命令行到图形界面的交互演进" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <line x1="30" y1="120" x2="730" y2="120" stroke="currentColor" stroke-width="2" marker-end="url(#arrow-cs8)"></line>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="220" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="410" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="600" y="60" width="130" height="42" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="86">键盘/终端</text>
+    <text x="295" y="86">命令行/脚本</text>
+    <text x="485" y="86">2D 图形/鼠标</text>
+    <text x="665" y="86">GUI/WIMP</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="150">文本输入</text>
+    <text x="295" y="150">组合/自动化</text>
+    <text x="485" y="150">像素/窗口</text>
+    <text x="665" y="150">指、点、拖</text>
+  </g>
+  <text x="380" y="200" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">交互门槛下降 → 计算机从专家工具变成大众产品</text>
+</svg></div>
+<figcaption>图 26-1：交互方式的演进。命令行追求精确和可组合，GUI 追求易学和可发现，两者今天仍然并存。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>触控/语音/手势/AR/VR 和 AI 对话继续扩展交互；无障碍（键盘导航/屏幕阅读器/对比度/字幕）成为产品基本质量；暗黑模式（dark patterns）是设计伦理问题。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>GUI 用 WIMP + 事件驱动降低学习成本；可发现性/反馈/容错是关键；GUI 让计算机成为大众产品；交互继续向触控/语音/AI 扩展。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 26 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=26" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-25.html"><span class="dir">← 上一节</span>第 25 集 个人计算机革命</a>
+    <a href="ch-27.html"><span class="dir">下一节 →</span>第 27 集 3D 图形</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<h2>第 29 集 互联网</h2>
+
+<p>互联网是“网络的网络”：数据被切成包，经过路由器逐跳转发；IP 负责寻址/路由，TCP 负责可靠传输和重传，UDP 负责低延迟但不可靠；DNS 把域名解析成 IP；BGP 让不同运营商网络互相通告路由。</p>
+<p>互联网没有单一中心，靠协议和自治系统协作；海底光缆/数据中心/ISP 构成物理基础设施。延迟/带宽/丢包/路由策略决定用户体验。</p>
+<p>这一集把“局域网”扩展到“全球网络”：互联网是协议、路由和基础设施的组合。</p>
+
+<figure>
+<svg viewBox="0 0 760 200" role="img" aria-label="互联网分组路由" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-cs29" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="65" width="120" height="55" rx="8"></rect>
+    <rect x="220" y="45" width="100" height="50" rx="8"></rect>
+    <rect x="380" y="90" width="100" height="50" rx="8"></rect>
+    <rect x="540" y="45" width="100" height="50" rx="8"></rect>
+    <rect x="640" y="105" width="90" height="50" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="90" y="97">源主机</text>
+    <text x="270" y="75">路由器 A</text>
+    <text x="430" y="120">路由器 B</text>
+    <text x="590" y="75">路由器 C</text>
+    <text x="685" y="135">目标主机</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs29)" fill="none">
+    <path d="M 150 92 L 212 72"></path>
+    <path d="M 320 75 L 372 105"></path>
+    <path d="M 480 112 L 532 75"></path>
+    <path d="M 640 75 L 668 100"></path>
+  </g>
+  <text x="380" y="180" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">数据被切成包，逐跳转发；不同路径可能走不同路由器</text>
+</svg>
+<figcaption>图 29-1：互联网分组路由。数据被切成包，经过多个路由器逐跳转发到目标。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>IPv6、BGP 安全（RPKI）、QUIC/HTTP3、CDN/边缘计算和海底光缆/卫星互联网继续扩展互联网；延迟/隐私/中立性/安全是长期议题。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>互联网是网络的网络；IP 寻址/路由，TCP/UDP 端到端传输；DNS/BGP/ISP/海底光缆构成基础设施；分包/逐跳转发是核心。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 29 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=29" target="_blank" rel="noopener">B 站</a></p>

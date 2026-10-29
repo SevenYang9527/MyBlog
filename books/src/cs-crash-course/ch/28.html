@@ -1,0 +1,42 @@
+<h2>第 28 集 计算机网络</h2>
+
+<p>网络把“发送数据”拆成分层问题：物理介质、链路、网络、传输、应用。每一层只关心自己的职责，上层不需要知道下层怎么传。链路层用 Ethernet/Wi-Fi/MAC 在同一局域网传帧；网络层用 IP/路由跨网络寻址；传输层用 TCP/UDP 提供端到端可靠性/低延迟；应用层用 HTTP/DNS/SMTP 交换数据。</p>
+<p>数据被切成包，经过交换机/路由器逐跳转发；TCP 负责可靠传输和重传，UDP 负责低延迟但不可靠；DNS 把域名解析成 IP。</p>
+<p>这一集的核心是“分层 + 分包”：复杂网络通过分层和标准化协作。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="网络分层与数据包转发" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="210" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="400" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="590" y="25" width="150" height="150" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="55" font-weight="600">应用层</text>
+    <text x="105" y="80" font-size="10.5">HTTP / DNS</text>
+    <text x="105" y="100" font-size="10.5">你看到的数据</text>
+    <text x="295" y="55" font-weight="600">传输层</text>
+    <text x="295" y="80" font-size="10.5">TCP / UDP</text>
+    <text x="295" y="100" font-size="10.5">端口 / 可靠性</text>
+    <text x="485" y="55" font-weight="600">网络层</text>
+    <text x="485" y="80" font-size="10.5">IP / 路由</text>
+    <text x="485" y="100" font-size="10.5">地址 / 选路</text>
+    <text x="665" y="55" font-weight="600">链路层</text>
+    <text x="665" y="80" font-size="10.5">Ethernet / Wi-Fi</text>
+    <text x="665" y="100" font-size="10.5">帧 / MAC</text>
+  </g>
+  <text x="380" y="205" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">数据被逐层封装成包，路由器按 IP 逐跳转发，接收端逐层拆开</text>
+</svg>
+<figcaption>图 28-1：网络分层。每一层只解决自己的问题，上层不需要知道下层如何传输。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>5G/Wi-Fi 6/7、IPv6、CDN、边缘计算和云网络让低延迟/高带宽更普遍；QUIC/HTTP3 在 UDP 上重建可靠传输，成为现代 Web 的重要协议。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>网络分层：链路/网络/传输/应用；IP 寻址/路由，TCP/UDP 端到端传输；数据分包/逐跳转发；分层/标准化让复杂网络可协作。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 28 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=28" target="_blank" rel="noopener">B 站</a></p>

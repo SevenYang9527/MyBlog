@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 33 集 加密 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">33 · 第 33 集 加密</div>
+    <div class="pager"><a href="ch-32.html">← 上一节</a><a href="ch-34.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 33 集 加密</h2>
+
+<p>对称加密用同一把钥匙加解密（AES），快但需要安全地分发钥匙；非对称加密用公钥/私钥（RSA/ECC），解决密钥交换和签名；哈希把任意数据映射成固定长度指纹，用于完整性校验和密码存储（加盐 + 慢哈希）。</p>
+<p>HTTPS 把两者结合：用非对称/密钥交换建立共享密钥，再用对称加密传输数据；证书和 CA 解决“公钥属于谁”；数字签名用私钥签名、公钥验证，保证来源和完整性。</p>
+<p>这一集的核心是“信任的数学”：加密不仅保密，还解决认证、完整性和不可否认。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="HTTPS 握手与安全目标" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="250" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="480" y="30" width="250" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="55">客户端</text>
+    <text x="105" y="75" font-size="10.5">浏览器</text>
+    <text x="335" y="55">握手</text>
+    <text x="335" y="75" font-size="10.5">证书 / 密钥交换</text>
+    <text x="605" y="55">服务器</text>
+    <text x="605" y="75" font-size="10.5">私钥 / 会话密钥</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs10)">
+    <line x1="190" y1="60" x2="242" y2="60"></line>
+    <line x1="420" y1="60" x2="472" y2="60"></line>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="40" y="130">1. 验证证书，确认服务器身份</text>
+    <text x="40" y="152">2. 协商/交换会话密钥</text>
+    <text x="40" y="174">3. 用对称加密传输 HTTP 数据</text>
+    <text x="40" y="196">4. 哈希/签名保证完整性</text>
+  </g>
+  <text x="380" y="230" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">HTTPS = 身份认证 + 密钥交换 + 对称加密 + 完整性校验</text>
+</svg></div>
+<figcaption>图 33-1：HTTPS 的核心流程。证书解决“公钥属于谁”，握手建立会话密钥，之后用对称加密传输数据。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>TLS 1.3 简化握手、默认前向保密；Passkeys/WebAuthn 用公钥替代密码；后量子密码（PQC）迁移应对未来量子计算威胁。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>对称加密快、非对称解决密钥交换/签名；哈希保证完整性；HTTPS = 证书 + 密钥交换 + 对称加密 + 完整性；加密是信任的基础。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 33 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=33" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-32.html"><span class="dir">← 上一节</span>第 32 集 黑客与网络攻击</a>
+    <a href="ch-34.html"><span class="dir">下一节 →</span>第 34 集 机器学习与人工智能</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

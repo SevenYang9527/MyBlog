@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 22 集 命令行界面 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">22 · 第 22 集 命令行界面</div>
+    <div class="pager"><a href="ch-21.html">← 上一节</a><a href="ch-23.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 22 集 命令行界面</h2>
+
+<p>终端/Shell 用命令、参数、管道和脚本操作计算机。命令行的优点是精确、可组合、可自动化：<code>ls | grep .log | sort | tail</code> 把多个小工具串起来完成复杂任务。</p>
+<p>Unix 哲学强调“小工具 + 管道 + 文本流”，让复杂任务可以通过组合简单命令完成。今天命令行仍然是开发、运维和云平台的核心界面。</p>
+<p>这一集的核心是“把操作变成可组合的文本”：GUI 适合发现，CLI 适合自动化和精确控制。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 190" role="img" aria-label="命令行管道" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-cs22" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="55" width="140" height="60" rx="8"></rect>
+    <rect x="190" y="55" width="140" height="60" rx="8"></rect>
+    <rect x="360" y="55" width="140" height="60" rx="8"></rect>
+    <rect x="530" y="55" width="200" height="60" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="90" y="80">ls</text><text x="90" y="99" font-size="10.5">列出文件</text>
+    <text x="260" y="80">grep</text><text x="260" y="99" font-size="10.5">过滤</text>
+    <text x="430" y="80">sort</text><text x="430" y="99" font-size="10.5">排序</text>
+    <text x="630" y="80">tail / 脚本 / 管道</text>
+    <text x="630" y="99" font-size="10.5">组合成复杂任务</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs22)">
+    <line x1="160" y1="85" x2="182" y2="85"></line>
+    <line x1="330" y1="85" x2="352" y2="85"></line>
+    <line x1="500" y1="85" x2="522" y2="85"></line>
+  </g>
+  <text x="380" y="160" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">小工具 + 管道 + 文本流：每个命令只做一件事，组合起来很强</text>
+</svg></div>
+<figcaption>图 22-1：命令行管道。每个小工具只做一件事，通过管道组合成复杂任务。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>现代 CLI 仍然是云平台/容器/CI 的核心；PowerShell/Unix shell、SSH、包管理器、Git 和 AI 命令行工具让自动化更普遍。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>命令行用文本/管道/脚本实现精确与自动化；Unix 哲学是小工具组合；GUI 适合发现，CLI 适合自动化和精确控制。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 22 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=22" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-21.html"><span class="dir">← 上一节</span>第 21 集 压缩</a>
+    <a href="ch-23.html"><span class="dir">下一节 →</span>第 23 集 屏幕与 2D 图形显示</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

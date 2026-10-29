@@ -1,0 +1,39 @@
+<h2>第 23 集 屏幕与 2D 图形显示</h2>
+
+<p>CRT/LCD 把电信号变成像素。屏幕图像可以看成一张二维像素网格，每个像素有颜色；帧缓冲保存当前画面。图形系统要处理分辨率、色深、刷新率、光栅化（把几何图形变成像素）和合成（把多个图层叠加）。</p>
+<p>光栅显示把图像存成像素网格；矢量显示用几何描述，渲染时再转成像素。现代 GUI 通常是“矢量/文字 + 位图 + 合成”的混合。</p>
+<p>这一集把“电信号”变成“可见画面”：像素、帧缓冲、光栅化是 2D 图形的基础。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="帧缓冲与光栅化" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="30" width="320" height="160" rx="10"></rect>
+    <rect x="400" y="30" width="330" height="160" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="55">帧缓冲</text>
+    <text x="565" y="55">光栅化</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1">
+    <g>
+      <rect x="60" y="80" width="40" height="30"></rect><rect x="100" y="80" width="40" height="30"></rect><rect x="140" y="80" width="40" height="30"></rect><rect x="180" y="80" width="40" height="30"></rect><rect x="220" y="80" width="40" height="30"></rect><rect x="260" y="80" width="40" height="30"></rect>
+      <rect x="60" y="110" width="40" height="30"></rect><rect x="100" y="110" width="40" height="30"></rect><rect x="140" y="110" width="40" height="30"></rect><rect x="180" y="110" width="40" height="30"></rect><rect x="220" y="110" width="40" height="30"></rect><rect x="260" y="110" width="40" height="30"></rect>
+      <rect x="60" y="140" width="40" height="30"></rect><rect x="100" y="140" width="40" height="30"></rect><rect x="140" y="140" width="40" height="30"></rect><rect x="180" y="140" width="40" height="30"></rect><rect x="220" y="140" width="40" height="30"></rect><rect x="260" y="140" width="40" height="30"></rect>
+    </g>
+    <path d="M 460 150 L 540 70 L 650 140 Z" stroke="var(--accent)" stroke-width="2"></path>
+    <path d="M 520 150 L 560 100 L 620 140 Z" stroke="currentColor" stroke-dasharray="4 3"></path>
+  </g>
+  <text x="565" y="175" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">三角形 → 覆盖的像素 → 颜色</text>
+</svg>
+<figcaption>图 23-1：帧缓冲与光栅化。屏幕是像素网格，光栅化把几何图形变成被覆盖的像素。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>高刷新率/高分辨率/HDR/广色域成为主流；GPU 合成、硬件加速和显示管线（色彩管理）让“像素”背后的工程更复杂。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>屏幕是像素网格；帧缓冲保存画面；光栅化把几何变成像素；分辨率/色深/刷新率/合成是 2D 图形的基础。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 23 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=23" target="_blank" rel="noopener">B 站</a></p>

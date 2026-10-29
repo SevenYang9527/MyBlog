@@ -1,0 +1,39 @@
+<h2>第 36 集 自然语言处理</h2>
+
+<p>NLP 让机器处理文本/语音：分词、词性、句法、语义、情感、翻译、问答、对话。早期用规则/统计（n-gram），后来用词向量（word embeddings）和 RNN/LSTM；2017 年之后的 Transformer/注意力机制，成为大语言模型的基础。</p>
+<p>语言是离散符号，歧义/上下文/常识让 NLP 很难。评估指标（BLEU/准确率/人工评估）和数据集决定进展；偏见/幻觉/版权是现实问题。</p>
+<p>这一集把“语言”变成“可计算的序列”：token、向量、上下文、注意力是关键词。</p>
+
+<figure>
+<svg viewBox="0 0 760 190" role="img" aria-label="NLP 文本处理流水线" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="55" width="130" height="60" rx="8"></rect>
+    <rect x="180" y="55" width="130" height="60" rx="8"></rect>
+    <rect x="340" y="55" width="130" height="60" rx="8"></rect>
+    <rect x="500" y="55" width="130" height="60" rx="8"></rect>
+    <rect x="660" y="55" width="80" height="60" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="85" y="80">文本</text><text x="85" y="99" font-size="10.5">句子/语音</text>
+    <text x="245" y="80">分词</text><text x="245" y="99" font-size="10.5">token</text>
+    <text x="405" y="80">向量化</text><text x="405" y="99" font-size="10.5">embedding</text>
+    <text x="565" y="80">模型</text><text x="565" y="99" font-size="10.5">RNN/Transformer</text>
+    <text x="700" y="80">输出</text><text x="700" y="99" font-size="10.5">翻译/问答</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" fill="none">
+    <path d="M 150 85 L 172 85 M 310 85 L 332 85 M 470 85 L 492 85 M 630 85 L 652 85"></path>
+  </g>
+  <text x="380" y="155" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">文本 → token → 向量 → 上下文模型 → 输出</text>
+</svg>
+<figcaption>图 36-1：NLP 流水线。文本被分词/向量化后进入模型，输出翻译、问答、摘要或对话。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>Transformer/注意力、大语言模型、多模态、RAG、Agent 让 NLP 进入“生成式”阶段；幻觉/偏见/版权/安全对齐/评估是核心挑战。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>NLP 处理文本/语音；从规则/统计到词向量/RNN/Transformer；token/向量/上下文/注意力是关键词；大模型带来生成能力，也带来新风险。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 36 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=36" target="_blank" rel="noopener">B 站</a></p>

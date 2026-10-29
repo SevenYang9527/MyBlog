@@ -1,0 +1,35 @@
+<h2>第 18 集 操作系统</h2>
+
+<p>操作系统把硬件抽象成进程、线程、虚拟内存、文件、设备等概念：进程/线程隔离地址空间并调度 CPU；虚拟内存让每个进程以为自己独占内存；文件系统把块设备抽象成文件和目录；驱动/中断/系统调用在用户态和内核态之间切换。</p>
+<p>调度决定谁先运行；虚拟内存通过页表映射到物理内存；权限/隔离/系统调用保证安全和稳定。OS 是硬件和应用之间的“管家”。</p>
+<p>这一集的核心是“抽象 + 隔离 + 调度”：让程序不必直接面对硬件，也让多个程序可以安全共存。</p>
+
+
+
+<figure>
+<svg viewBox="0 0 760 210" role="img" aria-label="操作系统分层" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="80" y="35" width="600" height="34" rx="6"></rect>
+    <rect x="80" y="82" width="600" height="34" rx="6"></rect>
+    <rect x="80" y="129" width="600" height="34" rx="6" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="80" y="176" width="600" height="22" rx="6"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="380" y="57">应用程序 / 用户态</text>
+    <text x="380" y="104">系统调用 / 标准库</text>
+    <text x="380" y="151">内核：进程 / 虚拟内存 / 文件系统 / 驱动 / 调度</text>
+    <text x="380" y="192" font-size="10.5">硬件：CPU / RAM / 磁盘 / 网络 / 设备</text>
+  </g>
+</svg>
+<figcaption>图 18-1：操作系统分层。OS 把硬件抽象成进程、内存、文件和设备，让程序不必直接操作硬件。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>云原生/容器把 OS 的边界扩展到集群：Kubernetes 调度容器，虚拟机/沙箱隔离租户；内核漏洞、权限最小化和供应链安全成为系统设计的重要议题。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>OS 抽象出进程/线程/虚拟内存/文件/设备；调度/隔离/系统调用是核心；OS 让多程序安全共存；云原生把边界扩展到集群。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 18 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=18" target="_blank" rel="noopener">B 站</a></p>

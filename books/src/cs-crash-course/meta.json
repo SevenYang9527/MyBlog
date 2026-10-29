@@ -1,157 +1,493 @@
 {
   "slug": "cs-crash-course",
   "kind": "notes",
-  "title_en": "Crash Course Computer Science: A Guided Companion",
-  "title_zh": "《计算机科学速成课》精要导读",
-  "subtitle_zh": "以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。",
+  "title_en": "Crash Course Computer Science: An Episode-by-Episode Companion",
+  "title_zh": "《计算机科学速成课》全 40 集精读",
+  "subtitle_zh": "按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。",
   "kicker": "课程导读 · 计算机科学",
-  "foot_note": "《计算机科学速成课》导读",
+  "foot_note": "《计算机科学速成课》逐集精读",
   "source_pages_label": "原课程集数",
-  "source_line": "原课程 40 集 · 2018 年 · 2026 年导读",
+  "source_line": "原课程 40 集 · 2018 年 · 2026 年逐集精读",
   "book_label": "导读",
-  "part_label": "已整理章节",
+  "part_label": "已整理集数",
   "chapters": [
     {
       "no": 1,
-      "title_en": "From abacus to electronic computers",
-      "title_zh": "第 1 章 计算机的史前史：从算盘到电子计算机",
-      "pages": "1-2",
+      "title_en": "Early Computing",
+      "title_zh": "第 1 集 计算机早期历史",
+      "pages": "1",
       "parts": [
         {
           "id": "01",
-          "title_zh": "第 1 章 计算机的史前史：从算盘到电子计算机"
+          "title_zh": "第 1 集 计算机早期历史"
         }
       ]
     },
     {
       "no": 2,
-      "title_en": "Boolean logic, binary and the ALU",
-      "title_zh": "第 2 章 布尔逻辑、二进制与 ALU",
-      "pages": "3-5",
+      "title_en": "Electronic Computing",
+      "title_zh": "第 2 集 电子计算机",
+      "pages": "2",
       "parts": [
         {
           "id": "02",
-          "title_zh": "第 2 章 布尔逻辑、二进制与 ALU"
+          "title_zh": "第 2 集 电子计算机"
         }
       ]
     },
     {
       "no": 3,
-      "title_en": "Registers, memory and the CPU",
-      "title_zh": "第 3 章 寄存器、内存与 CPU",
-      "pages": "6-9",
+      "title_en": "Boolean Logic & Logic Gates",
+      "title_zh": "第 3 集 布尔逻辑与逻辑门",
+      "pages": "3",
       "parts": [
         {
           "id": "03",
-          "title_zh": "第 3 章 寄存器、内存与 CPU"
+          "title_zh": "第 3 集 布尔逻辑与逻辑门"
         }
       ]
     },
     {
       "no": 4,
-      "title_en": "From machine code to high-level languages",
-      "title_zh": "第 4 章 从机器码到高级语言",
-      "pages": "10-12",
+      "title_en": "Representing Numbers and Letters with Binary",
+      "title_zh": "第 4 集 二进制",
+      "pages": "4",
       "parts": [
         {
           "id": "04",
-          "title_zh": "第 4 章 从机器码到高级语言"
+          "title_zh": "第 4 集 二进制"
         }
       ]
     },
     {
       "no": 5,
-      "title_en": "Algorithms and data structures",
-      "title_zh": "第 5 章 算法与数据结构",
-      "pages": "13-14",
+      "title_en": "How Computers Calculate – the ALU",
+      "title_zh": "第 5 集 算术逻辑单元",
+      "pages": "5",
       "parts": [
         {
           "id": "05",
-          "title_zh": "第 5 章 算法与数据结构"
+          "title_zh": "第 5 集 算术逻辑单元"
         }
       ]
     },
     {
       "no": 6,
-      "title_en": "Turing, software engineering and operating systems",
-      "title_zh": "第 6 章 图灵、软件工程与操作系统",
-      "pages": "15-18",
+      "title_en": "Registers and RAM",
+      "title_zh": "第 6 集 寄存器与内存",
+      "pages": "6",
       "parts": [
         {
           "id": "06",
-          "title_zh": "第 6 章 图灵、软件工程与操作系统"
+          "title_zh": "第 6 集 寄存器与内存"
         }
       ]
     },
     {
       "no": 7,
-      "title_en": "Memory, storage, file systems and compression",
-      "title_zh": "第 7 章 存储、文件系统与压缩",
-      "pages": "19-21",
+      "title_en": "The Central Processing Unit",
+      "title_zh": "第 7 集 中央处理器",
+      "pages": "7",
       "parts": [
         {
           "id": "07",
-          "title_zh": "第 7 章 存储、文件系统与压缩"
+          "title_zh": "第 7 集 中央处理器"
         }
       ]
     },
     {
       "no": 8,
-      "title_en": "Command lines, screens and GUIs",
-      "title_zh": "第 8 章 人机交互：命令行、屏幕与 GUI",
-      "pages": "22-26",
+      "title_en": "Instructions & Programs",
+      "title_zh": "第 8 集 指令与程序",
+      "pages": "8",
       "parts": [
         {
           "id": "08",
-          "title_zh": "第 8 章 人机交互：命令行、屏幕与 GUI"
+          "title_zh": "第 8 集 指令与程序"
         }
       ]
     },
     {
       "no": 9,
-      "title_en": "3D graphics, networks and the Internet",
-      "title_zh": "第 9 章 3D 图形与计算机网络",
-      "pages": "27-29",
+      "title_en": "Advanced CPU Designs",
+      "title_zh": "第 9 集 高级 CPU 设计",
+      "pages": "9",
       "parts": [
         {
           "id": "09",
-          "title_zh": "第 9 章 3D 图形与计算机网络"
+          "title_zh": "第 9 集 高级 CPU 设计"
         }
       ]
     },
     {
       "no": 10,
-      "title_en": "The Web, security, hackers and cryptography",
-      "title_zh": "第 10 章 万维网、安全、黑客与加密",
-      "pages": "30-33",
+      "title_en": "Early Programming",
+      "title_zh": "第 10 集 早期的编程方式",
+      "pages": "10",
       "parts": [
         {
           "id": "10",
-          "title_zh": "第 10 章 万维网、安全、黑客与加密"
+          "title_zh": "第 10 集 早期的编程方式"
         }
       ]
     },
     {
       "no": 11,
-      "title_en": "Machine learning, vision and NLP",
-      "title_zh": "第 11 章 机器学习、计算机视觉与 NLP",
-      "pages": "34-36",
+      "title_en": "The First Programming Languages",
+      "title_zh": "第 11 集 编程语言发展史",
+      "pages": "11",
       "parts": [
         {
           "id": "11",
-          "title_zh": "第 11 章 机器学习、计算机视觉与 NLP"
+          "title_zh": "第 11 集 编程语言发展史"
         }
       ]
     },
     {
       "no": 12,
-      "title_en": "Robots, psychology of computing and the future",
-      "title_zh": "第 12 章 机器人、计算心理学与未来",
-      "pages": "37-40",
+      "title_en": "Programming Basics: Statements & Functions",
+      "title_zh": "第 12 集 编程原理：语句和函数",
+      "pages": "12",
       "parts": [
         {
           "id": "12",
-          "title_zh": "第 12 章 机器人、计算心理学与未来"
+          "title_zh": "第 12 集 编程原理：语句和函数"
+        }
+      ]
+    },
+    {
+      "no": 13,
+      "title_en": "Intro to Algorithms",
+      "title_zh": "第 13 集 算法入门",
+      "pages": "13",
+      "parts": [
+        {
+          "id": "13",
+          "title_zh": "第 13 集 算法入门"
+        }
+      ]
+    },
+    {
+      "no": 14,
+      "title_en": "Data Structures",
+      "title_zh": "第 14 集 数据结构",
+      "pages": "14",
+      "parts": [
+        {
+          "id": "14",
+          "title_zh": "第 14 集 数据结构"
+        }
+      ]
+    },
+    {
+      "no": 15,
+      "title_en": "Alan Turing",
+      "title_zh": "第 15 集 阿兰·图灵",
+      "pages": "15",
+      "parts": [
+        {
+          "id": "15",
+          "title_zh": "第 15 集 阿兰·图灵"
+        }
+      ]
+    },
+    {
+      "no": 16,
+      "title_en": "Software Engineering",
+      "title_zh": "第 16 集 软件工程",
+      "pages": "16",
+      "parts": [
+        {
+          "id": "16",
+          "title_zh": "第 16 集 软件工程"
+        }
+      ]
+    },
+    {
+      "no": 17,
+      "title_en": "Integrated Circuits & Moore's Law",
+      "title_zh": "第 17 集 集成电路与摩尔定律",
+      "pages": "17",
+      "parts": [
+        {
+          "id": "17",
+          "title_zh": "第 17 集 集成电路与摩尔定律"
+        }
+      ]
+    },
+    {
+      "no": 18,
+      "title_en": "Operating Systems",
+      "title_zh": "第 18 集 操作系统",
+      "pages": "18",
+      "parts": [
+        {
+          "id": "18",
+          "title_zh": "第 18 集 操作系统"
+        }
+      ]
+    },
+    {
+      "no": 19,
+      "title_en": "Memory & Storage",
+      "title_zh": "第 19 集 内存与存储介质",
+      "pages": "19",
+      "parts": [
+        {
+          "id": "19",
+          "title_zh": "第 19 集 内存与存储介质"
+        }
+      ]
+    },
+    {
+      "no": 20,
+      "title_en": "Files & File Systems",
+      "title_zh": "第 20 集 文件系统",
+      "pages": "20",
+      "parts": [
+        {
+          "id": "20",
+          "title_zh": "第 20 集 文件系统"
+        }
+      ]
+    },
+    {
+      "no": 21,
+      "title_en": "Compression",
+      "title_zh": "第 21 集 压缩",
+      "pages": "21",
+      "parts": [
+        {
+          "id": "21",
+          "title_zh": "第 21 集 压缩"
+        }
+      ]
+    },
+    {
+      "no": 22,
+      "title_en": "Keyboards & Command Line Interfaces",
+      "title_zh": "第 22 集 命令行界面",
+      "pages": "22",
+      "parts": [
+        {
+          "id": "22",
+          "title_zh": "第 22 集 命令行界面"
+        }
+      ]
+    },
+    {
+      "no": 23,
+      "title_en": "Screens & 2D Graphics",
+      "title_zh": "第 23 集 屏幕与 2D 图形显示",
+      "pages": "23",
+      "parts": [
+        {
+          "id": "23",
+          "title_zh": "第 23 集 屏幕与 2D 图形显示"
+        }
+      ]
+    },
+    {
+      "no": 24,
+      "title_en": "The Cold War and Consumerism",
+      "title_zh": "第 24 集 冷战与消费主义",
+      "pages": "24",
+      "parts": [
+        {
+          "id": "24",
+          "title_zh": "第 24 集 冷战与消费主义"
+        }
+      ]
+    },
+    {
+      "no": 25,
+      "title_en": "The Personal Computer Revolution",
+      "title_zh": "第 25 集 个人计算机革命",
+      "pages": "25",
+      "parts": [
+        {
+          "id": "25",
+          "title_zh": "第 25 集 个人计算机革命"
+        }
+      ]
+    },
+    {
+      "no": 26,
+      "title_en": "Graphical User Interfaces",
+      "title_zh": "第 26 集 图形用户界面",
+      "pages": "26",
+      "parts": [
+        {
+          "id": "26",
+          "title_zh": "第 26 集 图形用户界面"
+        }
+      ]
+    },
+    {
+      "no": 27,
+      "title_en": "3D Graphics",
+      "title_zh": "第 27 集 3D 图形",
+      "pages": "27",
+      "parts": [
+        {
+          "id": "27",
+          "title_zh": "第 27 集 3D 图形"
+        }
+      ]
+    },
+    {
+      "no": 28,
+      "title_en": "Computer Networks",
+      "title_zh": "第 28 集 计算机网络",
+      "pages": "28",
+      "parts": [
+        {
+          "id": "28",
+          "title_zh": "第 28 集 计算机网络"
+        }
+      ]
+    },
+    {
+      "no": 29,
+      "title_en": "The Internet",
+      "title_zh": "第 29 集 互联网",
+      "pages": "29",
+      "parts": [
+        {
+          "id": "29",
+          "title_zh": "第 29 集 互联网"
+        }
+      ]
+    },
+    {
+      "no": 30,
+      "title_en": "The World Wide Web",
+      "title_zh": "第 30 集 万维网",
+      "pages": "30",
+      "parts": [
+        {
+          "id": "30",
+          "title_zh": "第 30 集 万维网"
+        }
+      ]
+    },
+    {
+      "no": 31,
+      "title_en": "Cybersecurity",
+      "title_zh": "第 31 集 计算机安全",
+      "pages": "31",
+      "parts": [
+        {
+          "id": "31",
+          "title_zh": "第 31 集 计算机安全"
+        }
+      ]
+    },
+    {
+      "no": 32,
+      "title_en": "Hackers & Cyber Attacks",
+      "title_zh": "第 32 集 黑客与网络攻击",
+      "pages": "32",
+      "parts": [
+        {
+          "id": "32",
+          "title_zh": "第 32 集 黑客与网络攻击"
+        }
+      ]
+    },
+    {
+      "no": 33,
+      "title_en": "Cryptography",
+      "title_zh": "第 33 集 加密",
+      "pages": "33",
+      "parts": [
+        {
+          "id": "33",
+          "title_zh": "第 33 集 加密"
+        }
+      ]
+    },
+    {
+      "no": 34,
+      "title_en": "Machine Learning & Artificial Intelligence",
+      "title_zh": "第 34 集 机器学习与人工智能",
+      "pages": "34",
+      "parts": [
+        {
+          "id": "34",
+          "title_zh": "第 34 集 机器学习与人工智能"
+        }
+      ]
+    },
+    {
+      "no": 35,
+      "title_en": "Computer Vision",
+      "title_zh": "第 35 集 计算机视觉",
+      "pages": "35",
+      "parts": [
+        {
+          "id": "35",
+          "title_zh": "第 35 集 计算机视觉"
+        }
+      ]
+    },
+    {
+      "no": 36,
+      "title_en": "Natural Language Processing",
+      "title_zh": "第 36 集 自然语言处理",
+      "pages": "36",
+      "parts": [
+        {
+          "id": "36",
+          "title_zh": "第 36 集 自然语言处理"
+        }
+      ]
+    },
+    {
+      "no": 37,
+      "title_en": "Robots",
+      "title_zh": "第 37 集 机器人",
+      "pages": "37",
+      "parts": [
+        {
+          "id": "37",
+          "title_zh": "第 37 集 机器人"
+        }
+      ]
+    },
+    {
+      "no": 38,
+      "title_en": "Psychology of Computing",
+      "title_zh": "第 38 集 计算心理学",
+      "pages": "38",
+      "parts": [
+        {
+          "id": "38",
+          "title_zh": "第 38 集 计算心理学"
+        }
+      ]
+    },
+    {
+      "no": 39,
+      "title_en": "Educational Technology",
+      "title_zh": "第 39 集 教育科技",
+      "pages": "39",
+      "parts": [
+        {
+          "id": "39",
+          "title_zh": "第 39 集 教育科技"
+        }
+      ]
+    },
+    {
+      "no": 40,
+      "title_en": "The Singularity, Skynet, and the Future of Computing",
+      "title_zh": "第 40 集 奇点、天网与未来",
+      "pages": "40",
+      "parts": [
+        {
+          "id": "40",
+          "title_zh": "第 40 集 奇点、天网与未来"
         }
       ]
     }

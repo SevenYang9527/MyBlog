@@ -3,126 +3,122 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 12 章 机器人、计算心理学与未来 · 《计算机科学速成课》精要导读</title>
-<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<title>第 12 集 编程原理：语句和函数 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
 <a class="hub-bar" href="../../series/">← 回到知识站</a>
 <div class="layout">
   <aside class="sidebar">
-    <div class="book-name">《计算机科学速成课》精要导读</div>
-    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
     <nav>
       <div class="nav-title">目录</div>
       <ol>
         <li><a href="index.html">封面与目录</a></li>
-      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
-      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
-      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
-      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
-      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
-      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
-      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
-      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
-      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
-      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
-      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
-      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
       </ol>
     </nav>
     <div class="side-foot">
-      《计算机科学速成课》导读<br>
-      原课程 40 集 · 2018 年 · 2026 年导读
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
   <div class="topbar">
-    <div class="chapter-no">12 · 第 12 章 机器人、计算心理学与未来</div>
-    <div class="pager"><a href="ch-11.html">← 上一节</a></div>
+    <div class="chapter-no">12 · 第 12 集 编程原理：语句和函数</div>
+    <div class="pager"><a href="ch-11.html">← 上一节</a><a href="ch-13.html">下一节 →</a></div>
   </div>
       <article class="content">
-<h2>机器人、计算心理学与未来：技术最终要回到人</h2>
+<h2>第 12 集 编程原理：语句和函数</h2>
 
-<p>第三十七到四十集把视角拉回“技术与人”：机器人要感知环境、规划动作、控制执行；计算心理学研究人如何理解/信任/被界面影响；教育科技尝试用技术改善学习；最后讨论奇点、AGI 和未来风险。它们共同提醒：计算机科学不只是算力和算法，也包括人、社会与责任。</p>
+<p>这一集讲编程的基本构件：变量与类型、语句与控制流、函数/过程、递归、库/API。变量给值起名字；类型约定能做什么运算；控制流让程序有分支和循环；函数把逻辑封装起来，接收参数、返回值。</p>
+<p>递归用基准条件收敛；库/API 让开发者复用别人写好的能力，而不是从零造轮子。抽象让程序可以被人理解、拆分和复用。</p>
+<p>这些概念看似简单，但所有语言、框架和系统都建立在它们之上。</p>
 
-<h3>机器人：感知—规划—执行</h3>
 
-<p>机器人是“能感知环境并作用于环境”的机器。典型循环：</p>
-
-<ol>
-<li><strong>感知</strong>：摄像头、激光雷达、IMU、触觉等传感器获取环境信息。</li>
-<li><strong>定位/建图</strong>：知道自己在哪里，环境长什么样（SLAM）。</li>
-<li><strong>规划</strong>：路径规划、任务规划、避障。</li>
-<li><strong>控制</strong>：把计划变成电机/舵机的具体指令（PID、模型预测控制）。</li>
-</ol>
-
-<p>工业机器人擅长结构化环境中的重复任务；自动驾驶/无人机/人形机器人面对开放环境，难度高得多。仿真、强化学习和大规模数据正在改变机器人训练方式。</p>
-
-<h3>计算心理学：界面背后的人</h3>
-
-<p>人不是“理性的信息处理器”。注意力有限、记忆有限、会被默认选项和反馈影响。好的界面要降低认知负荷、提供清晰反馈、容错、可撤销，并考虑无障碍和不同文化背景。暗黑模式（dark patterns）则利用人的弱点，是设计伦理问题。</p>
-
-<h3>教育科技：技术能改变学习吗</h3>
-
-<p>在线课程、自适应练习、仿真实验、游戏化、AI 辅导都可以扩大教育覆盖面，但“有技术”不等于“有效学习”。关键仍然是：明确目标、及时反馈、主动练习、间隔重复、动机与社会互动。</p>
-
-<h3>未来：奇点、AGI 与风险</h3>
-
-<p>“奇点”假设技术增长会快到超出人类理解；“AGI”指能跨领域完成大多数认知任务的通用人工智能。它们目前仍是目标和争论，不是已发生的事实。需要同时讨论：算力/能源约束、就业、隐私、偏见、安全对齐、监管和地缘竞争。</p>
 
 <figure>
-<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="机器人的感知规划执行循环与未来议题" style="width:100%;height:auto;color:var(--text-soft)">
-  <defs>
-    <marker id="arrow-cs12" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-    </marker>
-  </defs>
+<div class="figure-scroll"><svg viewBox="0 0 760 200" role="img" aria-label="编程基础构件" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-cs12b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="30" y="35" width="150" height="60" rx="9"></rect>
-    <rect x="220" y="35" width="150" height="60" rx="9"></rect>
-    <rect x="410" y="35" width="150" height="60" rx="9"></rect>
-    <rect x="600" y="35" width="130" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="20" y="55" width="150" height="60" rx="8"></rect>
+    <rect x="200" y="55" width="150" height="60" rx="8"></rect>
+    <rect x="380" y="55" width="150" height="60" rx="8"></rect>
+    <rect x="560" y="55" width="170" height="60" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
   </g>
-  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
-    <text x="105" y="60">感知</text>
-    <text x="105" y="80" font-size="10.5">摄像头/雷达/IMU</text>
-    <text x="295" y="60">定位/建图</text>
-    <text x="295" y="80" font-size="10.5">SLAM</text>
-    <text x="485" y="60">规划</text>
-    <text x="485" y="80" font-size="10.5">路径/任务/避障</text>
-    <text x="665" y="60">控制</text>
-    <text x="665" y="80" font-size="10.5">电机/舵机</text>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="95" y="80">顺序</text><text x="95" y="99" font-size="10.5">语句</text>
+    <text x="275" y="80">分支</text><text x="275" y="99" font-size="10.5">if / else</text>
+    <text x="455" y="80">循环</text><text x="455" y="99" font-size="10.5">for / while</text>
+    <text x="645" y="80">函数 / 递归</text><text x="645" y="99" font-size="10.5">参数 / 返回 / 调用</text>
   </g>
-  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs12)">
-    <line x1="180" y1="65" x2="212" y2="65"></line>
-    <line x1="370" y1="65" x2="402" y2="65"></line>
-    <line x1="560" y1="65" x2="592" y2="65"></line>
-    <path d="M 665 95 L 665 125 L 105 125 L 105 102"></path>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs12b)">
+    <line x1="170" y1="85" x2="192" y2="85"></line>
+    <line x1="350" y1="85" x2="372" y2="85"></line>
+    <line x1="530" y1="85" x2="552" y2="85"></line>
   </g>
-  <text x="380" y="160" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">感知 → 定位/建图 → 规划 → 控制 → 再感知（闭环）</text>
-  <text x="380" y="200" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">未来议题：AGI、算力/能源、就业、隐私、偏见、安全对齐、监管</text>
-  <text x="380" y="225" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">技术越强，越需要明确“为谁、为何、边界在哪”</text>
+  <text x="380" y="160" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">控制流 + 函数 + 库/API：把逻辑拆成可理解、可复用的块</text>
 </svg></div>
-<figcaption>图 12-1：机器人的感知—规划—执行闭环，以及未来技术必须同时回答的人与社会问题。</figcaption>
+<figcaption>图 12-1：编程基础构件。顺序/分支/循环/函数/递归是跨语言的共同骨架。</figcaption>
 </figure>
 
 <blockquote>
-<p><strong>2026 补充：</strong>机器人开始尝试“基础模型 + 仿真 + 强化学习”的通用操作能力；AI 监管（如欧盟 AI Act）、模型评估、内容溯源和水印、能源消耗成为公共议题。对个人来说，最重要的能力不是记住某个模型，而是理解系统、验证信息、判断风险。</p>
+<p><strong>2026 补充：</strong>现代语言更强调类型安全、不可变数据、异步/并发和模块化；AI 生成代码降低了“写”的门槛，但理解控制流、边界条件和测试仍然不可替代。</p>
 </blockquote>
 
 <blockquote>
-<p><strong>本章要点：</strong>机器人是感知—规划—执行的闭环；计算心理学提醒界面要降低认知负荷、尊重注意力；教育科技的有效性取决于学习设计；AGI/奇点仍是目标而非事实，技术发展必须同时考虑安全、伦理和监管。</p>
+<p><strong>本集要点：</strong>变量/类型、控制流、函数、递归、库/API 是编程的共同骨架；抽象让程序可理解/可复用；基础概念跨语言通用。</p>
 </blockquote>
 
-<p style="opacity:.7;font-size:13px">对应视频：第 37-40 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=37" target="_blank" rel="noopener">B 站</a></p>
+<p style="opacity:.7;font-size:13px">对应视频：第 12 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=12" target="_blank" rel="noopener">B 站</a></p>
 
   </article>
   <div class="prevnext">
-    <a href="ch-11.html"><span class="dir">← 上一节</span>第 11 章 机器学习、计算机视觉与 NLP</a>
-    <span class="empty"></span>
+    <a href="ch-11.html"><span class="dir">← 上一节</span>第 11 集 编程语言发展史</a>
+    <a href="ch-13.html"><span class="dir">下一节 →</span>第 13 集 算法入门</a>
   </div>
   </div>
 </div>

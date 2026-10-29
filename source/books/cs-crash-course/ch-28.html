@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 28 集 计算机网络 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">28 · 第 28 集 计算机网络</div>
+    <div class="pager"><a href="ch-27.html">← 上一节</a><a href="ch-29.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 28 集 计算机网络</h2>
+
+<p>网络把“发送数据”拆成分层问题：物理介质、链路、网络、传输、应用。每一层只关心自己的职责，上层不需要知道下层怎么传。链路层用 Ethernet/Wi-Fi/MAC 在同一局域网传帧；网络层用 IP/路由跨网络寻址；传输层用 TCP/UDP 提供端到端可靠性/低延迟；应用层用 HTTP/DNS/SMTP 交换数据。</p>
+<p>数据被切成包，经过交换机/路由器逐跳转发；TCP 负责可靠传输和重传，UDP 负责低延迟但不可靠；DNS 把域名解析成 IP。</p>
+<p>这一集的核心是“分层 + 分包”：复杂网络通过分层和标准化协作。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 220" role="img" aria-label="网络分层与数据包转发" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="210" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="400" y="25" width="170" height="150" rx="9"></rect>
+    <rect x="590" y="25" width="150" height="150" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="55" font-weight="600">应用层</text>
+    <text x="105" y="80" font-size="10.5">HTTP / DNS</text>
+    <text x="105" y="100" font-size="10.5">你看到的数据</text>
+    <text x="295" y="55" font-weight="600">传输层</text>
+    <text x="295" y="80" font-size="10.5">TCP / UDP</text>
+    <text x="295" y="100" font-size="10.5">端口 / 可靠性</text>
+    <text x="485" y="55" font-weight="600">网络层</text>
+    <text x="485" y="80" font-size="10.5">IP / 路由</text>
+    <text x="485" y="100" font-size="10.5">地址 / 选路</text>
+    <text x="665" y="55" font-weight="600">链路层</text>
+    <text x="665" y="80" font-size="10.5">Ethernet / Wi-Fi</text>
+    <text x="665" y="100" font-size="10.5">帧 / MAC</text>
+  </g>
+  <text x="380" y="205" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">数据被逐层封装成包，路由器按 IP 逐跳转发，接收端逐层拆开</text>
+</svg></div>
+<figcaption>图 28-1：网络分层。每一层只解决自己的问题，上层不需要知道下层如何传输。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>5G/Wi-Fi 6/7、IPv6、CDN、边缘计算和云网络让低延迟/高带宽更普遍；QUIC/HTTP3 在 UDP 上重建可靠传输，成为现代 Web 的重要协议。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>网络分层：链路/网络/传输/应用；IP 寻址/路由，TCP/UDP 端到端传输；数据分包/逐跳转发；分层/标准化让复杂网络可协作。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 28 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=28" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-27.html"><span class="dir">← 上一节</span>第 27 集 3D 图形</a>
+    <a href="ch-29.html"><span class="dir">下一节 →</span>第 29 集 互联网</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

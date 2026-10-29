@@ -1,0 +1,52 @@
+<h2>第 27 集 3D 图形</h2>
+
+<p>3D 场景通常由顶点、三角形/多边形和材质组成。渲染管线大致是：顶点从模型空间变换到世界/观察/裁剪空间；光栅化找出三角形覆盖的像素并插值属性；片元着色采样纹理、计算光照/阴影/反射；深度/混合决定可见性和最终颜色。</p>
+<p>Z-buffer 用每个像素的深度解决遮挡；纹理映射把 2D 图片贴到 3D 表面；光照模型决定明暗。GPU 把大量顶点/像素并行处理，是现代游戏和实时渲染的核心。</p>
+<p>这一集把“3D 世界”投影成“2D 像素”：变换、光栅化、着色、深度是四个关键词。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="3D 图形管线" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs9a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="15" y="45" width="130" height="58" rx="8"></rect>
+    <rect x="165" y="45" width="130" height="58" rx="8"></rect>
+    <rect x="315" y="45" width="130" height="58" rx="8"></rect>
+    <rect x="465" y="45" width="130" height="58" rx="8"></rect>
+    <rect x="615" y="45" width="130" height="58" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="80" y="70">顶点/三角形</text>
+    <text x="80" y="89" font-size="10.5">模型数据</text>
+    <text x="230" y="70">变换</text>
+    <text x="230" y="89" font-size="10.5">MVP</text>
+    <text x="380" y="70">光栅化</text>
+    <text x="380" y="89" font-size="10.5">像素/插值</text>
+    <text x="530" y="70">片元着色</text>
+    <text x="530" y="89" font-size="10.5">光照/纹理</text>
+    <text x="680" y="70">帧缓冲</text>
+    <text x="680" y="89" font-size="10.5">深度/混合</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs9a)">
+    <line x1="145" y1="74" x2="157" y2="74"></line>
+    <line x1="295" y1="74" x2="307" y2="74"></line>
+    <line x1="445" y1="74" x2="457" y2="74"></line>
+    <line x1="595" y1="74" x2="607" y2="74"></line>
+  </g>
+  <text x="380" y="150" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">GPU 把顶点/像素并行处理；Z-buffer 解决遮挡</text>
+</svg>
+<figcaption>图 27-1：3D 图形管线。顶点变换、光栅化、片元着色和深度/混合共同把三维场景变成屏幕像素。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>光线追踪/路径追踪、DLSS/FSR 超分与降噪、Vulkan/Metal/DX12/WebGPU 正在改变实时渲染；GPU 的并行能力和专用光追单元越来越重要。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本集要点：</strong>3D 管线：顶点 → 变换 → 光栅化 → 片元着色 → 深度/混合；Z-buffer 解决遮挡；纹理/光照/GPU 并行是核心；实时渲染走向光追/超分。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 27 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=27" target="_blank" rel="noopener">B 站</a></p>

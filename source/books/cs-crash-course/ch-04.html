@@ -3,131 +3,123 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 4 章 从机器码到高级语言 · 《计算机科学速成课》精要导读</title>
-<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<title>第 4 集 二进制 · 《计算机科学速成课》全 40 集精读</title>
+<meta name="description" content="按 40 集顺序逐集重讲计算机历史、硬件、软件、数据、网络、安全与 AI；配原创 SVG 图解与 2026 年补充；不复制视频字幕/画面。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
 <a class="hub-bar" href="../../series/">← 回到知识站</a>
 <div class="layout">
   <aside class="sidebar">
-    <div class="book-name">《计算机科学速成课》精要导读</div>
-    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <div class="book-name">《计算机科学速成课》全 40 集精读</div>
+    <div class="book-en">Crash Course Computer Science: An Episode-by-Episode Companion</div>
     <nav>
       <div class="nav-title">目录</div>
       <ol>
         <li><a href="index.html">封面与目录</a></li>
-      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
-      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
-      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
-      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
-      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
-      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
-      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
-      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
-      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
-      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
-      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
-      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      <li><a href="ch-01.html">第 1 集 计算机早期历史</a></li>
+      <li><a href="ch-02.html">第 2 集 电子计算机</a></li>
+      <li><a href="ch-03.html">第 3 集 布尔逻辑与逻辑门</a></li>
+      <li><a href="ch-04.html">第 4 集 二进制</a></li>
+      <li><a href="ch-05.html">第 5 集 算术逻辑单元</a></li>
+      <li><a href="ch-06.html">第 6 集 寄存器与内存</a></li>
+      <li><a href="ch-07.html">第 7 集 中央处理器</a></li>
+      <li><a href="ch-08.html">第 8 集 指令与程序</a></li>
+      <li><a href="ch-09.html">第 9 集 高级 CPU 设计</a></li>
+      <li><a href="ch-10.html">第 10 集 早期的编程方式</a></li>
+      <li><a href="ch-11.html">第 11 集 编程语言发展史</a></li>
+      <li><a href="ch-12.html">第 12 集 编程原理：语句和函数</a></li>
+      <li><a href="ch-13.html">第 13 集 算法入门</a></li>
+      <li><a href="ch-14.html">第 14 集 数据结构</a></li>
+      <li><a href="ch-15.html">第 15 集 阿兰·图灵</a></li>
+      <li><a href="ch-16.html">第 16 集 软件工程</a></li>
+      <li><a href="ch-17.html">第 17 集 集成电路与摩尔定律</a></li>
+      <li><a href="ch-18.html">第 18 集 操作系统</a></li>
+      <li><a href="ch-19.html">第 19 集 内存与存储介质</a></li>
+      <li><a href="ch-20.html">第 20 集 文件系统</a></li>
+      <li><a href="ch-21.html">第 21 集 压缩</a></li>
+      <li><a href="ch-22.html">第 22 集 命令行界面</a></li>
+      <li><a href="ch-23.html">第 23 集 屏幕与 2D 图形显示</a></li>
+      <li><a href="ch-24.html">第 24 集 冷战与消费主义</a></li>
+      <li><a href="ch-25.html">第 25 集 个人计算机革命</a></li>
+      <li><a href="ch-26.html">第 26 集 图形用户界面</a></li>
+      <li><a href="ch-27.html">第 27 集 3D 图形</a></li>
+      <li><a href="ch-28.html">第 28 集 计算机网络</a></li>
+      <li><a href="ch-29.html">第 29 集 互联网</a></li>
+      <li><a href="ch-30.html">第 30 集 万维网</a></li>
+      <li><a href="ch-31.html">第 31 集 计算机安全</a></li>
+      <li><a href="ch-32.html">第 32 集 黑客与网络攻击</a></li>
+      <li><a href="ch-33.html">第 33 集 加密</a></li>
+      <li><a href="ch-34.html">第 34 集 机器学习与人工智能</a></li>
+      <li><a href="ch-35.html">第 35 集 计算机视觉</a></li>
+      <li><a href="ch-36.html">第 36 集 自然语言处理</a></li>
+      <li><a href="ch-37.html">第 37 集 机器人</a></li>
+      <li><a href="ch-38.html">第 38 集 计算心理学</a></li>
+      <li><a href="ch-39.html">第 39 集 教育科技</a></li>
+      <li><a href="ch-40.html">第 40 集 奇点、天网与未来</a></li>
       </ol>
     </nav>
     <div class="side-foot">
-      《计算机科学速成课》导读<br>
-      原课程 40 集 · 2018 年 · 2026 年导读
+      《计算机科学速成课》逐集精读<br>
+      原课程 40 集 · 2018 年 · 2026 年逐集精读
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
   <div class="topbar">
-    <div class="chapter-no">04 · 第 4 章 从机器码到高级语言</div>
+    <div class="chapter-no">04 · 第 4 集 二进制</div>
     <div class="pager"><a href="ch-03.html">← 上一节</a><a href="ch-05.html">下一节 →</a></div>
   </div>
       <article class="content">
-<h2>从机器码到高级语言：让人类写得起程序</h2>
+<h2>第 4 集 二进制</h2>
 
-<p>第十到十二集讲“编程方式”的演化：早期程序员要直接拨开关、打孔卡、写机器码；后来有了汇编器、编译器和高级语言，程序才从“专家手工艺”变成可以规模化的工程。最后，变量、语句、函数、控制流这些基础概念，构成了今天所有语言的共同骨架。</p>
-
-<h3>机器码、汇编与高级语言</h3>
-
-<div class="table-wrap"><table>
-<thead>
-<tr><th>层次</th><th>形式</th><th>优点</th><th>缺点</th></tr>
-</thead>
-<tbody>
-<tr><td>机器码</td><td>CPU 直接执行的 0/1 指令</td><td>最快、最直接</td><td>难写、难读、不可移植</td></tr>
-<tr><td>汇编</td><td>用助记符表示指令和寄存器</td><td>可读性提高，仍贴近硬件</td><td>与指令集绑定，开发效率低</td></tr>
-<tr><td>高级语言</td><td>C/C++/Java/Python 等</td><td>抽象层次高，可移植，工程化</td><td>需要编译器/运行时，可能有性能开销</td></tr>
-</tbody>
-</table></div>
-
-<p>汇编器把汇编翻译成机器码；编译器把高级语言翻译成机器码/中间表示；解释器则逐行/逐字节码执行。今天的语言常常混合多种方式：Java/C# 先编译成字节码，再由 JIT 编译；Python 解释执行字节码；JavaScript 引擎用 JIT 热路径优化。</p>
-
-<h3>早期语言的设计取向</h3>
-
-<ul>
-<li><strong>Fortran</strong>：面向科学计算，证明高级语言可以接近手写汇编的性能。</li>
-<li><strong>COBOL</strong>：面向商业数据处理，强调可读性和记录结构。</li>
-<li><strong>Lisp</strong>：面向符号计算/AI，代码即数据，影响后来的函数式语言。</li>
-<li><strong>ALGOL</strong>：推动结构化编程、块作用域和语法规范。</li>
-<li><strong>BASIC</strong>：面向教学和个人计算机，降低入门门槛。</li>
-</ul>
-
-<h3>编程的基本构件</h3>
-
-<p>不管语言怎么变，基础构件大致相同：</p>
-
-<ul>
-<li><strong>变量与类型</strong>：给值起名字，并约定它能做什么运算。</li>
-<li><strong>语句与控制流</strong>：顺序、分支（if/else）、循环（for/while）。</li>
-<li><strong>函数/过程</strong>：把一段逻辑封装起来，接收参数、返回值。</li>
-<li><strong>递归</strong>：函数调用自身，用基准条件收敛。</li>
-<li><strong>库/API</strong>：复用别人写好的能力，而不是从零造轮子。</li>
-</ul>
+<p>十进制有 0-9 十个数码，二进制只有 0/1。一个二进制数的每一位对应 2 的幂：<code>1011₂ = 8 + 2 + 1 = 11₁₀</code>。8 位组成一个字节，可以表示 0-255；十六进制用 0-9/A-F 表示 4 位二进制，写地址和颜色更方便。</p>
+<p>字符用编码表表示：ASCII 覆盖英文和常见符号，Unicode 覆盖全球文字和 emoji。负数用补码表示，让减法可以复用加法器；小数用 IEEE 754 浮点数表示，能表示很大/很小的范围，但有精度误差。</p>
+<p>这一集提醒：计算机里没有“真正的数字”，只有“用位表示的约定”。</p>
 
 <figure>
-<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="从机器码到高级语言的抽象阶梯" style="width:100%;height:auto;color:var(--text-soft)">
-  <defs>
-    <marker id="arrow-cs4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
-    </marker>
-  </defs>
+<div class="figure-scroll"><svg viewBox="0 0 760 200" role="img" aria-label="二进制位权" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
-    <rect x="30" y="150" width="150" height="50" rx="8"></rect>
-    <rect x="220" y="110" width="150" height="50" rx="8"></rect>
-    <rect x="410" y="70" width="150" height="50" rx="8"></rect>
-    <rect x="600" y="30" width="130" height="50" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="40" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="130" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="220" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="310" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="400" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="490" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="580" y="45" width="70" height="50" rx="6"></rect>
+    <rect x="670" y="45" width="70" height="50" rx="6"></rect>
   </g>
-  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
-    <text x="105" y="180">机器码</text>
-    <text x="295" y="140">汇编</text>
-    <text x="485" y="100">高级语言</text>
-    <text x="665" y="60">库 / 框架 / API</text>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="75" y="65">128</text><text x="75" y="85">1</text>
+    <text x="165" y="65">64</text><text x="165" y="85">0</text>
+    <text x="255" y="65">32</text><text x="255" y="85">1</text>
+    <text x="345" y="65">16</text><text x="345" y="85">1</text>
+    <text x="435" y="65">8</text><text x="435" y="85">0</text>
+    <text x="525" y="65">4</text><text x="525" y="85">1</text>
+    <text x="615" y="65">2</text><text x="615" y="85">0</text>
+    <text x="705" y="65">1</text><text x="705" y="85">1</text>
   </g>
-  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs4)">
-    <line x1="180" y1="170" x2="212" y2="145"></line>
-    <line x1="370" y1="130" x2="402" y2="105"></line>
-    <line x1="560" y1="90" x2="592" y2="65"></line>
-  </g>
-  <text x="380" y="215" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">抽象越高，开发越快；代价是编译/运行时和可控性</text>
+  <text x="380" y="140" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">128 + 32 + 16 + 4 + 1 = 181</text>
+  <text x="380" y="170" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">每一位是 2 的幂；字节、补码、浮点都是在此基础上做约定</text>
 </svg></div>
-<figcaption>图 4-1：编程抽象阶梯。机器码贴近硬件，高级语言提高开发效率，库/框架再把常用能力封装起来。</figcaption>
+<figcaption>图 4-1：二进制位权。每一位的权重是 2 的幂，字节/补码/浮点都是在此基础上做约定。</figcaption>
 </figure>
 
 <blockquote>
-<p><strong>2026 补充：</strong>今天的语言生态更强调安全与工程化：Rust 的所有权/借用检查、Go 的轻量并发、TypeScript 的类型系统、WebAssembly 的跨平台运行时。AI 辅助编程（代码补全/生成）降低了“写”的门槛，但理解抽象、调试和验证仍然不可替代。</p>
+<p><strong>2026 补充：</strong>Unicode/emoji、64 位整数、FP16/BF16/FP8 等不同精度，都是“用位表示世界”的不同约定；精度和范围要按场景取舍。</p>
 </blockquote>
 
 <blockquote>
-<p><strong>本章要点：</strong>机器码 → 汇编 → 高级语言是抽象阶梯；编译器/解释器/JIT 负责翻译；Fortran/COBOL/Lisp/ALGOL/BASIC 代表不同设计取向；变量、控制流、函数、递归、库是编程的共同骨架。</p>
+<p><strong>本集要点：</strong>二进制用位置表示大小；字节/十六进制是常用分组；ASCII/Unicode 表示字符；补码让减法复用加法器；浮点数有精度误差。</p>
 </blockquote>
 
-<p style="opacity:.7;font-size:13px">对应视频：第 10-12 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=10" target="_blank" rel="noopener">B 站</a></p>
+<p style="opacity:.7;font-size:13px">对应视频：第 4 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=4" target="_blank" rel="noopener">B 站</a></p>
 
   </article>
   <div class="prevnext">
-    <a href="ch-03.html"><span class="dir">← 上一节</span>第 3 章 寄存器、内存与 CPU</a>
-    <a href="ch-05.html"><span class="dir">下一节 →</span>第 5 章 算法与数据结构</a>
+    <a href="ch-03.html"><span class="dir">← 上一节</span>第 3 集 布尔逻辑与逻辑门</a>
+    <a href="ch-05.html"><span class="dir">下一节 →</span>第 5 集 算术逻辑单元</a>
   </div>
   </div>
 </div>
