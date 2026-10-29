@@ -203,6 +203,13 @@ a:hover { text-decoration: underline; }
     min-width: 560px;
   }
 }
+
+@media (max-width: 480px) {
+  .content figure:has(.figure-scroll) figcaption::after {
+    content: "（图可左右滑动）";
+    color: var(--text-faint);
+  }
+}
 .content hr { margin: 32px 0; border: 0; border-top: 1px solid var(--line); }
 
 /* 书籍首页 */

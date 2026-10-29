@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 8 章 人机交互：命令行、屏幕与 GUI · 《计算机科学速成课》精要导读</title>
+<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》精要导读</div>
+    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
+      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
+      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
+      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
+      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
+      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
+      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
+      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
+      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
+      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
+      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
+      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》导读<br>
+      原课程 40 集 · 2018 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">08 · 第 8 章 人机交互：命令行、屏幕与 GUI</div>
+    <div class="pager"><a href="ch-07.html">← 上一节</a><a href="ch-09.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>人机交互：从命令行到图形界面</h2>
+
+<p>第二十二到二十六集讲“人怎么和计算机打交道”：键盘/终端/命令行、屏幕与 2D 图形、冷战与消费主义推动的个人计算机、以及 Xerox PARC 的 GUI。它们共同说明：计算机的普及不只是算力变便宜，更是“交互方式”变得普通人能用。</p>
+
+<h3>命令行：把操作变成文本</h3>
+
+<p>终端/Shell 用命令、参数、管道和脚本操作计算机。它的优点是精确、可组合、可自动化：</p>
+
+<pre><code>ls -la | grep ".log" | sort -k5 -n | tail -n 10</code></pre>
+
+<p>Unix 哲学强调“小工具 + 管道 + 文本流”，让复杂任务可以通过组合简单命令完成。今天命令行仍然是开发、运维和云平台的核心界面。</p>
+
+<h3>屏幕与 2D 图形</h3>
+
+<p>CRT/LCD 把电信号变成像素。屏幕图像可以看成一张二维像素网格，每个像素有颜色；帧缓冲保存当前画面。图形系统要处理分辨率、色深、刷新率、光栅化（把几何图形变成像素）和合成（把多个图层叠加）。</p>
+
+<h3>个人计算机与 GUI</h3>
+
+<p>冷战时期的 SAGE、ARPANET 等项目推动了实时交互和网络；集成电路让计算机从机房走向个人。Altair、Apple II、IBM PC 和兼容机生态，把“个人计算机”变成产业。Xerox PARC 的 GUI 把交互从“记命令”变成“指、点、拖”：窗口、图标、菜单、指针（WIMP），以及事件驱动编程。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="从命令行到图形界面的交互演进" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <line x1="30" y1="120" x2="730" y2="120" stroke="currentColor" stroke-width="2" marker-end="url(#arrow-cs8)"></line>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="220" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="410" y="60" width="150" height="42" rx="8"></rect>
+    <rect x="600" y="60" width="130" height="42" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="86">键盘/终端</text>
+    <text x="295" y="86">命令行/脚本</text>
+    <text x="485" y="86">2D 图形/鼠标</text>
+    <text x="665" y="86">GUI/WIMP</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="150">文本输入</text>
+    <text x="295" y="150">组合/自动化</text>
+    <text x="485" y="150">像素/窗口</text>
+    <text x="665" y="150">指、点、拖</text>
+  </g>
+  <text x="380" y="200" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">交互门槛下降 → 计算机从专家工具变成大众产品</text>
+</svg></div>
+<figcaption>图 8-1：交互方式的演进。命令行追求精确和可组合，GUI 追求易学和可发现，两者今天仍然并存。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>交互继续向触控、语音、手势、AR/VR 和 AI 对话扩展；移动端/网页应用成为主要分发方式。无障碍设计（键盘导航、屏幕阅读器、对比度、字幕）不再是可选项，而是产品的基本质量。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>命令行用文本/管道/脚本实现精确与自动化；屏幕把画面变成像素/帧缓冲；个人计算机依赖 IC、消费市场和兼容机生态；GUI 用 WIMP 和事件驱动降低使用门槛；交互方式决定计算机能被多少人使用。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 22-26 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=22" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-07.html"><span class="dir">← 上一节</span>第 7 章 存储、文件系统与压缩</a>
+    <a href="ch-09.html"><span class="dir">下一节 →</span>第 9 章 3D 图形与计算机网络</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

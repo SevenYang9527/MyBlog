@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 章 图灵、软件工程与操作系统 · 《计算机科学速成课》精要导读</title>
+<meta name="description" content="以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《计算机科学速成课》精要导读</div>
+    <div class="book-en">Crash Course Computer Science: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 计算机的史前史：从算盘到电子计算机</a></li>
+      <li><a href="ch-02.html">第 2 章 布尔逻辑、二进制与 ALU</a></li>
+      <li><a href="ch-03.html">第 3 章 寄存器、内存与 CPU</a></li>
+      <li><a href="ch-04.html">第 4 章 从机器码到高级语言</a></li>
+      <li><a href="ch-05.html">第 5 章 算法与数据结构</a></li>
+      <li><a href="ch-06.html">第 6 章 图灵、软件工程与操作系统</a></li>
+      <li><a href="ch-07.html">第 7 章 存储、文件系统与压缩</a></li>
+      <li><a href="ch-08.html">第 8 章 人机交互：命令行、屏幕与 GUI</a></li>
+      <li><a href="ch-09.html">第 9 章 3D 图形与计算机网络</a></li>
+      <li><a href="ch-10.html">第 10 章 万维网、安全、黑客与加密</a></li>
+      <li><a href="ch-11.html">第 11 章 机器学习、计算机视觉与 NLP</a></li>
+      <li><a href="ch-12.html">第 12 章 机器人、计算心理学与未来</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《计算机科学速成课》导读<br>
+      原课程 40 集 · 2018 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">06 · 第 6 章 图灵、软件工程与操作系统</div>
+    <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>图灵、软件工程与操作系统：从“能算”到“可靠地算”</h2>
+
+<p>第十五到十八集把视角从单台机器抬到“计算的边界”和“系统的组织”：图灵机定义了什么叫可计算，软件工程解决“多人写大程序”的问题，集成电路/Moore 定律推动硬件规模，操作系统则把 CPU、内存、文件和设备管理起来，让程序不必直接面对硬件。</p>
+
+<h3>图灵机与计算的边界</h3>
+
+<p>图灵机用一条无限长的纸带、一个读写头和一张状态转移表描述计算。它看起来极简，却能模拟任何“有效可计算”的过程。由此得到两个重要结论：</p>
+
+<ul>
+<li><strong>通用性</strong>：一台通用图灵机可以模拟其他图灵机；这就是“存储程序”计算机的理论原型。</li>
+<li><strong>不可判定性</strong>：停机问题不存在通用算法能判断任意程序是否最终停止；计算有边界。</li>
+</ul>
+
+<p>图灵测试则是另一个方向：它不定义“智能是什么”，而是用对话行为来判断机器是否表现出类似人的智能。今天的大模型让这个讨论重新变热，但“通过测试”不等于“拥有意识”。</p>
+
+<h3>软件工程：把个人技巧变成团队工程</h3>
+
+<p>程序变大后，问题不再是“会不会写”，而是“能不能维护”。软件工程的核心手段：需求拆解、模块化、接口、版本控制、代码评审、自动化测试、持续集成、文档和迭代。敏捷/Scrum 只是组织方式，不是银弹；真正的底线是“可理解、可修改、可验证”。</p>
+
+<h3>集成电路与 Moore 定律</h3>
+
+<p>集成电路把大量晶体管做在同一块芯片上，光刻工艺决定线宽。Moore 定律观察到“单位面积晶体管数量约每两年翻倍”，推动了半个世纪的性能/成本进步。但它不是物理定律，随着漏电、发热、光刻极限和成本上升，行业转向多核、专用加速器和先进封装。</p>
+
+<h3>操作系统：硬件的“管家”</h3>
+
+<p>操作系统把硬件抽象成进程、线程、虚拟内存、文件、设备等概念：</p>
+
+<ul>
+<li><strong>进程/线程</strong>：隔离地址空间，调度 CPU 时间。</li>
+<li><strong>虚拟内存</strong>：让每个进程以为自己独占内存，通过页表映射到物理内存。</li>
+<li><strong>文件系统</strong>：把块设备抽象成文件和目录。</li>
+<li><strong>驱动/中断/系统调用</strong>：在用户态和内核态之间切换，访问硬件。</li>
+</ul>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="图灵机与操作系统分层" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="210" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="210" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="50">图灵机：计算的模型</text>
+    <text x="570" y="50">操作系统：硬件的抽象</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="50" y="80" width="280" height="40" rx="4"></rect>
+    <line x1="50" y1="100" x2="330" y2="100" stroke-dasharray="4 4"></line>
+    <g stroke="currentColor" stroke-width="1">
+      <line x1="90" y1="80" x2="90" y2="120"></line>
+      <line x1="130" y1="80" x2="130" y2="120"></line>
+      <line x1="170" y1="80" x2="170" y2="120"></line>
+      <line x1="210" y1="80" x2="210" y2="120"></line>
+      <line x1="250" y1="80" x2="250" y2="120"></line>
+      <line x1="290" y1="80" x2="290" y2="120"></line>
+    </g>
+    <circle cx="170" cy="60" r="6" fill="var(--accent)" stroke="none"></circle>
+    <line x1="170" y1="66" x2="170" y2="80" stroke="var(--accent)" stroke-width="2"></line>
+    <text x="190" y="155" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">纸带 + 读写头 + 状态表</text>
+    <text x="190" y="180" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">可计算性 / 停机问题</text>
+
+    <rect x="430" y="80" width="280" height="30" rx="3"></rect>
+    <rect x="430" y="118" width="280" height="30" rx="3"></rect>
+    <rect x="430" y="156" width="280" height="30" rx="3"></rect>
+    <rect x="430" y="194" width="280" height="24" rx="3"></rect>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="570" y="100">应用程序 / 用户态</text>
+    <text x="570" y="138">系统调用 / 库</text>
+    <text x="570" y="176">内核：进程 / 内存 / 文件 / 驱动</text>
+    <text x="570" y="211" font-size="10.5">硬件：CPU / RAM / 磁盘 / 设备</text>
+  </g>
+</svg></div>
+<figcaption>图 6-1：图灵机定义“可计算”，操作系统把硬件抽象成进程、内存、文件和设备，让程序不必直接操作硬件。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>云计算/容器把“操作系统”的边界扩展到集群：Kubernetes 调度容器，虚拟机/沙箱隔离租户；供应链安全、内核漏洞和权限最小化成为系统设计的重要议题。硬件侧，EUV 光刻、chiplet 和先进封装延续了“更多晶体管”的路线，但不再只靠单核频率。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>图灵机定义可计算性与停机问题；软件工程让大程序可维护；IC/Moore 定律推动硬件规模；操作系统用进程、虚拟内存、文件系统和驱动把硬件抽象给程序。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 15-18 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=15" target="_blank" rel="noopener">B 站</a></p>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05.html"><span class="dir">← 上一节</span>第 5 章 算法与数据结构</a>
+    <a href="ch-07.html"><span class="dir">下一节 →</span>第 7 章 存储、文件系统与压缩</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

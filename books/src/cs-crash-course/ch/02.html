@@ -1,0 +1,86 @@
+<h2>用开关思考：布尔逻辑、二进制与 ALU</h2>
+
+<p>第三到五集把“计算机为什么能用电路算数”讲清楚了：先有布尔逻辑，把真假命题变成 0/1；再用逻辑门实现与或非；最后用二进制表示数字，用加法器和 ALU 做算术。理解这三步，你就理解了 CPU 最底层的“算”是怎么发生的。</p>
+
+<h3>布尔逻辑：把推理变成运算</h3>
+
+<p>乔治·布尔把“真/假”抽象成两个值，并定义了与、或、非等运算。今天计算机里的 1 和 0 不是“数字”，而是“电平/真假”的表示。最基本的逻辑门：</p>
+
+<table>
+<thead>
+<tr><th>门</th><th>规则</th><th>直觉</th></tr>
+</thead>
+<tbody>
+<tr><td>NOT</td><td>输入取反</td><td>“不是”</td></tr>
+<tr><td>AND</td><td>全 1 才输出 1</td><td>“并且”</td></tr>
+<tr><td>OR</td><td>有 1 就输出 1</td><td>“或者”</td></tr>
+<tr><td>XOR</td><td>不同才输出 1</td><td>“要么…要么…”</td></tr>
+<tr><td>NAND</td><td>AND 再取反</td><td>万能门，可以组合出其他门</td></tr>
+</tbody>
+</table>
+
+<p>逻辑门可以用继电器、真空管或晶体管实现。晶体管像电控开关：栅极电压控制源漏之间是否导通。把开关串/并联，就能得到 AND/OR；再组合，就能得到任意逻辑函数。</p>
+
+<h3>二进制：用位置表示大小</h3>
+
+<p>十进制有 0-9 十个数码，二进制只有 0/1。一个二进制数的每一位对应 2 的幂：</p>
+
+<pre><code>1011₂ = 1×2³ + 0×2² + 1×2¹ + 1×2⁰ = 8 + 0 + 2 + 1 = 11₁₀</code></pre>
+
+<p>8 位组成一个字节，可以表示 0-255；十六进制用 0-9/A-F 表示 4 位二进制，写地址和颜色更方便。字符用编码表表示：ASCII 覆盖英文和常见符号，Unicode 覆盖全球文字和 emoji。</p>
+
+<h3>负数与小数</h3>
+
+<ul>
+<li><strong>符号-数值</strong>：最高位当符号位，简单但有 +0/-0 两个零，加减法麻烦。</li>
+<li><strong>补码</strong>：负数用“取反加一”表示，让减法可以复用加法器；现代整数普遍用补码。</li>
+<li><strong>浮点数</strong>：用符号位、指数、尾数表示小数，遵循 IEEE 754；能表示很大/很小的范围，但有精度误差（0.1 + 0.2 不等于 0.3 就是典型例子）。</li>
+</ul>
+
+<h3>ALU：算术逻辑单元</h3>
+
+<p>ALU 负责加减、与或非、比较、移位等操作。最基础的加法器是半加器：两个输入位相加，输出“和”和“进位”；两个半加器加一个 OR 门组成全加器，可以接收低位进位。把多个全加器串起来，就是行波进位加法器。</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="半加器、全加器与 ALU" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="55" width="160" height="70" rx="9"></rect>
+    <rect x="250" y="55" width="180" height="70" rx="9"></rect>
+    <rect x="490" y="55" width="230" height="70" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="110" y="82">逻辑门</text>
+    <text x="110" y="102" font-size="10.5">NOT / AND / OR / XOR</text>
+    <text x="340" y="82">全加器</text>
+    <text x="340" y="102" font-size="10.5">A + B + Cin → Sum, Cout</text>
+    <text x="605" y="82">ALU</text>
+    <text x="605" y="102" font-size="10.5">加减 / 逻辑 / 比较 / 移位</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs2)">
+    <line x1="190" y1="90" x2="242" y2="90"></line>
+    <line x1="430" y1="90" x2="482" y2="90"></line>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="110" y="165">0/1 表示真假</text>
+    <text x="340" y="165">多个全加器串联 → 多位加法</text>
+    <text x="605" y="165">由控制信号选择操作</text>
+  </g>
+  <text x="380" y="215" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">补码让减法 = 加法；ALU 是 CPU 的“算术大脑”</text>
+</svg>
+<figcaption>图 2-1：从逻辑门到全加器再到 ALU。二进制补码把减法变成加法，ALU 用控制信号选择不同运算。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>今天的 CPU 普遍是 64 位，但“位宽”不是唯一指标：SIMD 向量指令、GPU 的并行 ALU、AI 加速器的矩阵乘加单元，都是把“算术”做得更宽、更专用。浮点精度也从 FP32/FP64 扩展到 FP16/BF16/FP8，用于推理和训练。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>布尔逻辑把真假变成 0/1；逻辑门由晶体管开关组合而成；二进制用位置表示大小；补码让减法复用加法器；ALU 用控制信号选择运算，是 CPU 的算术核心。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 3-5 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=3" target="_blank" rel="noopener">B 站</a></p>

@@ -1,0 +1,90 @@
+<h2>万维网、安全、黑客与加密：连接之后，如何信任</h2>
+
+<p>第三十到三十三集讲“互联网之上”的世界：万维网让信息可以互相链接，安全/黑客/加密则回答“怎么防止别人偷看、篡改、冒充”。这一章的主线是：连接带来便利，也带来攻击面；信任需要机制，而不是口号。</p>
+
+<h3>万维网：超文本 + 浏览器</h3>
+
+<p>万维网的核心是“超文本”：文档之间用链接互相引用。URL 定位资源，HTTP 传输请求/响应，HTML 描述结构，浏览器负责解析、渲染和交互。搜索引擎用爬虫、索引和排序算法，把“找网页”变成“搜关键词”。</p>
+
+<table>
+<thead>
+<tr><th>概念</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td>URL</td><td>定位资源（协议 + 域名 + 路径 + 查询）</td></tr>
+<tr><td>HTTP</td><td>请求方法、状态码、头、正文</td></tr>
+<tr><td>HTML/CSS/JS</td><td>结构、样式、行为</td></tr>
+<tr><td>Cookie/Session</td><td>在无状态 HTTP 上维持登录状态</td></tr>
+</tbody>
+</table>
+
+<h3>安全的基本目标</h3>
+
+<ul>
+<li><strong>机密性</strong>：别人看不到内容（加密）。</li>
+<li><strong>完整性</strong>：内容没被篡改（哈希/签名/MAC）。</li>
+<li><strong>认证</strong>：确认对方是谁（密码、证书、多因素、生物识别）。</li>
+<li><strong>授权</strong>：确认对方能做什么（权限、最小权限原则）。</li>
+<li><strong>可用性</strong>：服务在攻击/故障下仍可用（备份、限流、DDoS 防护）。</li>
+</ul>
+
+<h3>常见攻击</h3>
+
+<ul>
+<li><strong>恶意软件</strong>：病毒、蠕虫、木马、勒索软件。</li>
+<li><strong>网络攻击</strong>：DDoS、中间人、DNS 劫持、ARP 欺骗。</li>
+<li><strong>Web 攻击</strong>：SQL 注入、XSS、CSRF、路径遍历。</li>
+<li><strong>社会工程</strong>：钓鱼、冒充、诱导授权。</li>
+<li><strong>漏洞利用</strong>：缓冲区溢出、零日、供应链投毒。</li>
+</ul>
+
+<h3>加密：对称、非对称与哈希</h3>
+
+<p>对称加密用同一把钥匙加解密（AES），快但需要安全地分发钥匙；非对称加密用公钥/私钥（RSA/ECC），解决密钥交换和签名；哈希把任意数据映射成固定长度指纹，用于完整性校验和密码存储（加盐 + 慢哈希）。</p>
+
+<p>HTTPS 把两者结合：用非对称/密钥交换建立共享密钥，再用对称加密传输数据；证书和 CA 解决“公钥属于谁”的问题。数字签名则用私钥签名、公钥验证，保证来源和完整性。</p>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="HTTPS 握手与安全目标" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs10" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="250" y="30" width="170" height="60" rx="9"></rect>
+    <rect x="480" y="30" width="250" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="55">客户端</text>
+    <text x="105" y="75" font-size="10.5">浏览器</text>
+    <text x="335" y="55">握手</text>
+    <text x="335" y="75" font-size="10.5">证书 / 密钥交换</text>
+    <text x="605" y="55">服务器</text>
+    <text x="605" y="75" font-size="10.5">私钥 / 会话密钥</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-cs10)">
+    <line x1="190" y1="60" x2="242" y2="60"></line>
+    <line x1="420" y1="60" x2="472" y2="60"></line>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="40" y="130">1. 验证证书，确认服务器身份</text>
+    <text x="40" y="152">2. 协商/交换会话密钥</text>
+    <text x="40" y="174">3. 用对称加密传输 HTTP 数据</text>
+    <text x="40" y="196">4. 哈希/签名保证完整性</text>
+  </g>
+  <text x="380" y="230" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">HTTPS = 身份认证 + 密钥交换 + 对称加密 + 完整性校验</text>
+</svg>
+<figcaption>图 10-1：HTTPS 的核心流程。证书解决“公钥属于谁”，握手建立会话密钥，之后用对称加密传输数据。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>TLS 1.3 简化握手、默认前向保密；Passkeys/WebAuthn 用公钥替代密码，降低钓鱼风险；零信任架构强调“永不默认信任、持续验证”。同时，后量子密码（PQC）迁移、供应链攻击和 AI 生成钓鱼成为新的安全议题。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>万维网 = 超文本 + URL + HTTP + 浏览器；安全目标是机密性/完整性/认证/授权/可用性；攻击面覆盖恶意软件、网络、Web、社会工程和供应链；HTTPS 用证书、密钥交换、对称加密和哈希建立信任。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 30-33 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=30" target="_blank" rel="noopener">B 站</a></p>

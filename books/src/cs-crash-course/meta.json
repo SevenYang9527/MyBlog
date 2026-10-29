@@ -1,0 +1,160 @@
+{
+  "slug": "cs-crash-course",
+  "kind": "notes",
+  "title_en": "Crash Course Computer Science: A Guided Companion",
+  "title_zh": "《计算机科学速成课》精要导读",
+  "subtitle_zh": "以 Crash Course Computer Science 的 40 集结构为线索，用原创表述重讲计算机历史、硬件、软件、数据、网络、安全与 AI；图示为本站重绘，不复制视频字幕/画面，并补充 2026 年视角。",
+  "kicker": "课程导读 · 计算机科学",
+  "foot_note": "《计算机科学速成课》导读",
+  "source_pages_label": "原课程集数",
+  "source_line": "原课程 40 集 · 2018 年 · 2026 年导读",
+  "book_label": "导读",
+  "part_label": "已整理章节",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "From abacus to electronic computers",
+      "title_zh": "第 1 章 计算机的史前史：从算盘到电子计算机",
+      "pages": "1-2",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "第 1 章 计算机的史前史：从算盘到电子计算机"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Boolean logic, binary and the ALU",
+      "title_zh": "第 2 章 布尔逻辑、二进制与 ALU",
+      "pages": "3-5",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "第 2 章 布尔逻辑、二进制与 ALU"
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "Registers, memory and the CPU",
+      "title_zh": "第 3 章 寄存器、内存与 CPU",
+      "pages": "6-9",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "第 3 章 寄存器、内存与 CPU"
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "From machine code to high-level languages",
+      "title_zh": "第 4 章 从机器码到高级语言",
+      "pages": "10-12",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "第 4 章 从机器码到高级语言"
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Algorithms and data structures",
+      "title_zh": "第 5 章 算法与数据结构",
+      "pages": "13-14",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "第 5 章 算法与数据结构"
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Turing, software engineering and operating systems",
+      "title_zh": "第 6 章 图灵、软件工程与操作系统",
+      "pages": "15-18",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "第 6 章 图灵、软件工程与操作系统"
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Memory, storage, file systems and compression",
+      "title_zh": "第 7 章 存储、文件系统与压缩",
+      "pages": "19-21",
+      "parts": [
+        {
+          "id": "07",
+          "title_zh": "第 7 章 存储、文件系统与压缩"
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Command lines, screens and GUIs",
+      "title_zh": "第 8 章 人机交互：命令行、屏幕与 GUI",
+      "pages": "22-26",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "第 8 章 人机交互：命令行、屏幕与 GUI"
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "3D graphics, networks and the Internet",
+      "title_zh": "第 9 章 3D 图形与计算机网络",
+      "pages": "27-29",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "第 9 章 3D 图形与计算机网络"
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "The Web, security, hackers and cryptography",
+      "title_zh": "第 10 章 万维网、安全、黑客与加密",
+      "pages": "30-33",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "第 10 章 万维网、安全、黑客与加密"
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Machine learning, vision and NLP",
+      "title_zh": "第 11 章 机器学习、计算机视觉与 NLP",
+      "pages": "34-36",
+      "parts": [
+        {
+          "id": "11",
+          "title_zh": "第 11 章 机器学习、计算机视觉与 NLP"
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Robots, psychology of computing and the future",
+      "title_zh": "第 12 章 机器人、计算心理学与未来",
+      "pages": "37-40",
+      "parts": [
+        {
+          "id": "12",
+          "title_zh": "第 12 章 机器人、计算心理学与未来"
+        }
+      ]
+    }
+  ],
+  "book_pages": 40
+}

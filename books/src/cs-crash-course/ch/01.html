@@ -1,0 +1,81 @@
+<h2>计算机不是魔法：从算盘到电子计算机</h2>
+
+<p>Crash Course 的第一、二集讲的是“计算机之前发生过什么”。它想回答一个问题：为什么人类会需要一台能自动处理信息的机器？答案不是“因为有了电”，而是因为人类社会先有了大量重复的计算、记录和排序需求，然后才一步步把“表示信息”和“执行步骤”拆出来，交给机器。</p>
+
+<blockquote>
+<p><strong>说明：</strong>本导读是原创学习笔记，不是视频字幕转录；不复制原视频画面。章节按知识点重写，图由本站重绘；需要看原片请访问 B 站《计算机科学速成课》系列。</p>
+</blockquote>
+
+<h3>从“辅助计算”到“自动执行”</h3>
+
+<p>早期计算工具的核心是“把人的计算过程外化”：算盘用珠子表示数位，算筹/滑尺把乘法转成加法，机械计算器用齿轮完成进位。它们已经包含两个重要想法：</p>
+
+<ul>
+<li><strong>表示</strong>：用有限的符号/位置表示任意大的数。</li>
+<li><strong>规则</strong>：把“怎么算”拆成可以重复执行的步骤。</li>
+</ul>
+
+<p>莱布尼茨的步进计算器、帕斯卡的加法器，都是把进位规则机械化。真正把“通用计算”往前推的是查尔斯·巴贝奇：差分机想自动算多项式表，分析机则更进一步，用“存储 + 运算 + 指令”的结构描述一台通用计算机。阿达·洛芙莱斯为分析机写下的算法笔记，说明了“机器不仅能算数，还能按规则处理符号”。</p>
+
+<h3>穿孔卡片与数据处理的规模化</h3>
+
+<p>雅卡尔织布机用穿孔卡片控制花纹，赫尔曼·霍勒里思把穿孔卡片用于美国人口普查，后来成立了 IBM。这里的飞跃不是“算得更快”，而是“把信息编码成机器能读的格式，并批量处理”。穿孔卡片是早期程序和数据共用的载体，也是后来“输入设备/存储介质”的雏形。</p>
+
+<h3>电子计算机的三次关键跃迁</h3>
+
+<table>
+<thead>
+<tr><th>阶段</th><th>关键器件</th><th>意义</th></tr>
+</thead>
+<tbody>
+<tr><td>机电/继电器</td><td>继电器、机械开关</td><td>用电路控制逻辑，但速度受机械动作限制。</td></tr>
+<tr><td>真空管</td><td>电子管</td><td>速度大幅提升；Colossus、ENIAC 等早期电子计算机出现。</td></tr>
+<tr><td>晶体管/集成电路</td><td>晶体管、IC</td><td>更小、更可靠、更便宜，计算机开始从实验室走向社会。</td></tr>
+</tbody>
+</table>
+
+<p>ENIAC 的意义不只是“大”：它用电子开关实现通用计算，但“重新接线”仍然很麻烦。冯·诺依曼等人的“存储程序”思想把指令和数据放进同一套存储器，程序可以像数据一样被读取和修改，这才让计算机真正变成通用工具。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="从算盘到集成电路的时间线" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-cs1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <line x1="30" y1="120" x2="730" y2="120" stroke="currentColor" stroke-width="2" marker-end="url(#arrow-cs1)"></line>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="60" width="100" height="42" rx="8"></rect>
+    <rect x="165" y="60" width="100" height="42" rx="8"></rect>
+    <rect x="300" y="60" width="100" height="42" rx="8"></rect>
+    <rect x="435" y="60" width="100" height="42" rx="8"></rect>
+    <rect x="570" y="60" width="100" height="42" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="80" y="86">算盘/机械</text>
+    <text x="215" y="86">巴贝奇</text>
+    <text x="350" y="86">穿孔卡片</text>
+    <text x="485" y="86">ENIAC</text>
+    <text x="620" y="86">晶体管/IC</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="80" y="145">表示与规则</text>
+    <text x="215" y="145">通用计算设想</text>
+    <text x="350" y="145">数据规模化</text>
+    <text x="485" y="145">电子通用计算</text>
+    <text x="620" y="145">小型化/普及</text>
+  </g>
+  <text x="380" y="195" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">主线：表示信息 → 自动执行 → 可编程 → 更小更便宜</text>
+</svg>
+<figcaption>图 1-1：从辅助计算到电子计算机的主线。真正关键的不是“算得快”，而是“可表示、可编程、可规模化”。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 补充：</strong>摩尔定律正在放缓，单靠“更小”已经不够。今天的算力增长更多来自专用加速器（GPU/NPU/TPU）、chiplet/先进封装、并行计算和云规模部署；量子计算仍处于早期，适合作为“未来可能改变某些问题”的方向，而不是已经替代经典计算机。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>计算机的历史是“表示信息 + 执行规则”的历史；巴贝奇/洛芙莱斯提出通用计算，穿孔卡片把数据规模化，电子管/晶体管/IC 让计算真正普及；存储程序是把计算机变成通用工具的关键。</p>
+</blockquote>
+
+<p style="opacity:.7;font-size:13px">对应视频：第 1-2 集 · <a href="https://www.bilibili.com/video/BV1EW411u7th?p=1" target="_blank" rel="noopener">B 站</a></p>
