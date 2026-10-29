@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 16 章 Unity 中的渲染优化技术 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">17 · 第 16 章 Unity 中的渲染优化技术</div>
+    <div class="pager"><a href="ch-16.html">← 上一节</a><a href="ch-18.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>渲染优化：先找瓶颈，再谈技巧</h2>
+
+<p>原书第 16 章讲 Unity 中的渲染优化。它先讲移动平台的特点，再讲影响性能的因素，然后用 Unity 的分析工具定位问题，最后按“Draw Call、顶点、片元、带宽、Shader 复杂度”逐项给策略。这一章的价值不是背技巧，而是建立“瓶颈分类”的意识。</p>
+
+<h3>移动平台的特点</h3>
+
+<ul>
+<li><strong>TBDR（Tile-Based Deferred Rendering）</strong>：很多移动 GPU 把屏幕分块，先在片上内存做深度/颜色，再写回主存。Overdraw 和带宽的影响与桌面不同。</li>
+<li><strong>带宽敏感</strong>：纹理采样、RenderTexture 切换、全屏后处理都会吃带宽。</li>
+<li><strong>填充率有限</strong>：大面积半透明、全屏特效、过度绘制容易先撞 GPU。</li>
+<li><strong>精度/发热</strong>：长时间高负载会降频；不要只看峰值帧率。</li>
+</ul>
+
+<h3>影响性能的因素</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>因素</th><th>典型症状</th><th>优先动作</th></tr>
+</thead>
+<tbody>
+<tr><td>Draw Call 太多</td><td>CPU 提交高，Profiler 里 <code>Render</code> 或批处理耗时高</td><td>共享材质、静态/动态批处理、GPU Instancing、SRP Batcher。</td></tr>
+<tr><td>顶点太多</td><td>顶点处理/几何阶段高</td><td>减面、LOD、遮挡剔除、合并网格。</td></tr>
+<tr><td>片元/填充率太高</td><td>GPU 时间高，Overdraw 严重</td><td>减少全屏半透明、控制绘制顺序、降低分辨率/后处理。</td></tr>
+<tr><td>带宽太高</td><td>纹理采样/RT 切换多，移动端发热</td><td>压缩纹理、减小纹理、减少 RT、合并 Pass。</td></tr>
+<tr><td>Shader 太复杂</td><td>ALU/采样/分支多</td><td>简化光照、减少采样、用 LOD/变体、避免动态分支。</td></tr>
+</tbody>
+</table></div>
+
+<h3>减少 Draw Call</h3>
+
+<ul>
+<li><strong>动态批处理</strong>：小网格、同材质可以自动合批；有顶点数/缩放限制。</li>
+<li><strong>静态批处理</strong>：不动的物体合并成大网格；会增加内存，失去视锥剔除粒度。</li>
+<li><strong>共享材质</strong>：不同材质实例会打断批处理；尽量共用材质/纹理。</li>
+<li><strong>GPU Instancing / SRP Batcher</strong>：现代管线的重要批处理方式；需要兼容的 Shader/材质。</li>
+</ul>
+
+<h3>减少顶点</h3>
+
+<ul>
+<li>优化几何体：减面、合并、去掉看不见的面。</li>
+<li>LOD：远距离用低模。</li>
+<li>遮挡剔除：被挡住的对象不提交。</li>
+<li>控制骨骼/蒙皮/顶点动画的成本。</li>
+</ul>
+
+<h3>减少片元</h3>
+
+<ul>
+<li>控制绘制顺序：先画不透明，再画透明；减少 Overdraw。</li>
+<li>警惕全屏透明/粒子/后处理。</li>
+<li>减少实时光照和阴影：烘焙、光照贴图、Light Probe。</li>
+<li>用 <code>RenderQueue</code>/<code>SortingOrder</code> 控制透明排序，避免无谓重绘。</li>
+</ul>
+
+<h3>节省带宽</h3>
+
+<ul>
+<li>减小纹理尺寸，使用压缩格式（ASTC/ETC2）。</li>
+<li>关闭不必要的 Mipmap/Read-Write，控制图集大小。</li>
+<li>降低 RenderTexture 分辨率，减少全屏 Pass。</li>
+<li>避免频繁的 RT 切换和 <code>Graphics.Blit</code> 链。</li>
+</ul>
+
+<h3>降低 Shader 复杂度</h3>
+
+<ul>
+<li>用 <code>Shader LOD</code> 或质量档位切换简化版本。</li>
+<li>减少纹理采样、<code>pow</code>、<code>normalize</code>、动态分支。</li>
+<li>把逐像素计算移到逐顶点（如果视觉允许）。</li>
+<li>按硬件条件缩放：分辨率、阴影距离、特效质量。</li>
+</ul>
+
+<h3>工具</h3>
+
+<ul>
+<li>Rendering Statistics 窗口：Draw Call、三角形、顶点、SetPass。</li>
+<li>Profiler：CPU/GPU、渲染模块、GC。</li>
+<li>Frame Debugger：逐 DrawCall 看状态、Shader、纹理。</li>
+<li>平台 GPU 工具：RenderDoc、Xcode GPU Capture、Arm Mobile Studio 等。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP/HDRP 下优先看 SRP Batcher、GPU Instancing、Render Graph、Renderer Feature 的 Pass 数；移动端仍然要关注 Overdraw、带宽和发热。原书的批处理限制（如动态批处理顶点数）在新版本可能变化，以文档为准。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>先定位 CPU/GPU/带宽，再选技巧；Draw Call、顶点、片元、带宽、Shader 复杂度是五条线；批处理不是越多越好，静态批处理会增加内存；移动端要特别关注 Overdraw 和发热。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-16.html"><span class="dir">← 上一节</span>第 15 章 使用噪声</a>
+    <a href="ch-18.html"><span class="dir">下一节 →</span>第 17 章 Unity 的表面着色器探秘</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -72,3 +72,12 @@
     - 原讲义 34 页
     - 逐条考据 + 代码
   url: /books/ugui-notes/
+
+- tag: 书籍导读 · Shader
+  title: 《Unity Shader 入门精要》精要导读
+  intro: 以冯乐乐原书的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化，并标注内置管线到 URP 的迁移差异。
+  stats:
+    - 21 章
+    - 原书 389 页
+    - 原创导读 + 代码
+  url: /books/shader-notes/

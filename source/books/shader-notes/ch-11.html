@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 10 章 高级纹理 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">11 · 第 10 章 高级纹理</div>
+    <div class="pager"><a href="ch-10.html">← 上一节</a><a href="ch-12.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>高级纹理：立方体纹理、渲染纹理与程序纹理</h2>
+
+<p>原书第 10 章把纹理从 2D 扩展到“环境”和“屏幕”：立方体纹理做反射/折射，渲染纹理做镜子/玻璃，程序纹理用代码生成图案。它们共同说明：纹理不只是颜色贴图，也可以是方向查找表、屏幕快照或数学函数。</p>
+
+<h3>立方体纹理（Cubemap）</h3>
+
+<p>立方体纹理由六个面组成，用方向向量采样。常见用途：天空盒、环境反射、折射、菲涅耳效果。</p>
+
+<pre><code>samplerCUBE _CubeMap;
+
+float3 worldNormal = UnityObjectToWorldNormal(v.normal);
+float3 worldViewDir = normalize(_WorldSpaceCameraPos - worldPos);
+float3 reflectDir = reflect(-worldViewDir, worldNormal);
+float3 reflection = texCUBE(_CubeMap, reflectDir).rgb;</code></pre>
+
+<p>反射越强，物体越像金属/镜面；折射则用 <code>refract</code>，并通常按折射率混合。菲涅耳（Fresnel）用视角和法线的点积控制“边缘更亮”的反射：</p>
+
+<pre><code>float fresnel = pow(1.0 - saturate(dot(worldNormal, worldViewDir)), _FresnelPower);
+float3 color = lerp(refraction, reflection, fresnel);</code></pre>
+
+<h3>渲染纹理与 GrabPass</h3>
+
+<p>内置管线里，<code>GrabPass</code> 可以把当前屏幕抓成一张纹理，用来做镜子、玻璃、热扰动：</p>
+
+<pre><code>GrabPass { "_GrabTexture" }
+
+sampler2D _GrabTexture;
+
+fixed4 frag (v2f i) : SV_Target
+{
+    float2 uv = i.screenPos.xy / i.screenPos.w;
+    fixed4 screenColor = tex2D(_GrabTexture, uv);
+    return screenColor * _Tint;
+}</code></pre>
+
+<p>也可以手动用 <code>RenderTexture</code> + 额外相机渲染场景，再把结果贴到物体上。镜子通常就是“从镜面视角再渲染一次场景”。</p>
+
+<h3>程序纹理</h3>
+
+<p>程序纹理不依赖美术贴图，用数学函数在 Shader 里生成图案：条纹、格子、噪声、渐变。优点是可控、可无限分辨率；缺点是不能直接用美术绘制，复杂图案的代码成本高。</p>
+
+<pre><code>float checker(float2 uv, float scale)
+{
+    float2 c = floor(uv * scale);
+    return fmod(c.x + c.y, 2.0);
+}
+
+fixed4 frag (v2f i) : SV_Target
+{
+    float c = checker(i.uv, 8.0);
+    return lerp(_ColorA, _ColorB, c);
+}</code></pre>
+
+<h3>反射探针与天空盒</h3>
+
+<p>Unity 的 Reflection Probe 会把周围环境渲染成立方体纹理，供材质采样。天空盒本身也是一个 Cubemap。用反射探针时要注意：探针的位置、混合范围、HDR/线性空间设置都会影响反射结果。</p>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP/HDRP 不支持内置管线的 <code>GrabPass</code>；抓屏要用 <code>_CameraOpaqueTexture</code>、<code>_CameraColorTexture</code> 或 Renderer Feature。反射探针仍然存在，但 Shader 采样方式、包含文件和光照宏不同。屏幕空间反射（SSR）是另一条路线。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>Cubemap 用方向采样，适合环境反射/折射/天空盒；GrabPass/RenderTexture 适合镜面和屏幕效果；程序纹理用数学换灵活；反射探针负责环境反射；SRP 下抓屏方式完全不同。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-10.html"><span class="dir">← 上一节</span>第 9 章 更复杂的光照</a>
+    <a href="ch-12.html"><span class="dir">下一节 →</span>第 11 章 让画面动起来</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

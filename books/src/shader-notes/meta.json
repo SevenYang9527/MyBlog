@@ -1,0 +1,268 @@
+{
+  "slug": "shader-notes",
+  "kind": "notes",
+  "title_en": "Unity Shader Essentials: A Guided Companion",
+  "title_zh": "《Unity Shader 入门精要》精要导读",
+  "subtitle_zh": "以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。",
+  "kicker": "书籍导读 · Shader",
+  "foot_note": "《Unity Shader 入门精要》导读",
+  "source_pages_label": "原书页数",
+  "source_line": "原书 389 页 · 2016 年 · 2026 年导读",
+  "book_label": "导读",
+  "part_label": "已整理章节",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "How to read this companion",
+      "title_zh": "导读：这本书怎么读，以及今天的版本差异",
+      "pages": "1-18",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "导读：这本书怎么读，以及今天的版本差异"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Welcome to the world of shaders",
+      "title_zh": "第 1 章 欢迎来到 Shader 的世界",
+      "pages": "2-4",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "第 1 章 欢迎来到 Shader 的世界"
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "The rendering pipeline",
+      "title_zh": "第 2 章 渲染流水线",
+      "pages": "5-23",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "第 2 章 渲染流水线"
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Unity Shader fundamentals",
+      "title_zh": "第 3 章 Unity Shader 基础",
+      "pages": "24-38",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "第 3 章 Unity Shader 基础"
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "The math you need",
+      "title_zh": "第 4 章 学习 Shader 所需的数学基础",
+      "pages": "39-99",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "第 4 章 学习 Shader 所需的数学基础"
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Starting the Unity Shader journey",
+      "title_zh": "第 5 章 开始 Unity Shader 学习之旅",
+      "pages": "100-120",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "第 5 章 开始 Unity Shader 学习之旅"
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Basic lighting in Unity",
+      "title_zh": "第 6 章 Unity 中的基础光照",
+      "pages": "121-138",
+      "parts": [
+        {
+          "id": "07",
+          "title_zh": "第 6 章 Unity 中的基础光照"
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Basic textures",
+      "title_zh": "第 7 章 基础纹理",
+      "pages": "139-161",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "第 7 章 基础纹理"
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "Transparency",
+      "title_zh": "第 8 章 透明效果",
+      "pages": "162-179",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "第 8 章 透明效果"
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "More complex lighting",
+      "title_zh": "第 9 章 更复杂的光照",
+      "pages": "180-209",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "第 9 章 更复杂的光照"
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Advanced textures",
+      "title_zh": "第 10 章 高级纹理",
+      "pages": "210-229",
+      "parts": [
+        {
+          "id": "11",
+          "title_zh": "第 10 章 高级纹理"
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Making the picture move",
+      "title_zh": "第 11 章 让画面动起来",
+      "pages": "230-243",
+      "parts": [
+        {
+          "id": "12",
+          "title_zh": "第 11 章 让画面动起来"
+        }
+      ]
+    },
+    {
+      "no": 13,
+      "title_en": "Screen post-processing effects",
+      "title_zh": "第 12 章 屏幕后处理效果",
+      "pages": "244-266",
+      "parts": [
+        {
+          "id": "13",
+          "title_zh": "第 12 章 屏幕后处理效果"
+        }
+      ]
+    },
+    {
+      "no": 14,
+      "title_en": "Depth and normal textures",
+      "title_zh": "第 13 章 使用深度和法线纹理",
+      "pages": "267-287",
+      "parts": [
+        {
+          "id": "14",
+          "title_zh": "第 13 章 使用深度和法线纹理"
+        }
+      ]
+    },
+    {
+      "no": 15,
+      "title_en": "Non-photorealistic rendering",
+      "title_zh": "第 14 章 非真实感渲染",
+      "pages": "288-297",
+      "parts": [
+        {
+          "id": "15",
+          "title_zh": "第 14 章 非真实感渲染"
+        }
+      ]
+    },
+    {
+      "no": 16,
+      "title_en": "Using noise",
+      "title_zh": "第 15 章 使用噪声",
+      "pages": "298-309",
+      "parts": [
+        {
+          "id": "16",
+          "title_zh": "第 15 章 使用噪声"
+        }
+      ]
+    },
+    {
+      "no": 17,
+      "title_en": "Rendering optimization in Unity",
+      "title_zh": "第 16 章 Unity 中的渲染优化技术",
+      "pages": "310-327",
+      "parts": [
+        {
+          "id": "17",
+          "title_zh": "第 16 章 Unity 中的渲染优化技术"
+        }
+      ]
+    },
+    {
+      "no": 18,
+      "title_en": "Surface shaders under the hood",
+      "title_zh": "第 17 章 Unity 的表面着色器探秘",
+      "pages": "328-341",
+      "parts": [
+        {
+          "id": "18",
+          "title_zh": "第 17 章 Unity 的表面着色器探秘"
+        }
+      ]
+    },
+    {
+      "no": 19,
+      "title_en": "Physically based rendering",
+      "title_zh": "第 18 章 基于物理的渲染",
+      "pages": "342-364",
+      "parts": [
+        {
+          "id": "19",
+          "title_zh": "第 18 章 基于物理的渲染"
+        }
+      ]
+    },
+    {
+      "no": 20,
+      "title_en": "What Unity 5 changed",
+      "title_zh": "第 19 章 Unity 5 更新了什么",
+      "pages": "365-367",
+      "parts": [
+        {
+          "id": "20",
+          "title_zh": "第 19 章 Unity 5 更新了什么"
+        }
+      ]
+    },
+    {
+      "no": 21,
+      "title_en": "There is more to learn",
+      "title_zh": "第 20 章 还有更多内容吗 + 延伸阅读",
+      "pages": "368-389",
+      "parts": [
+        {
+          "id": "21",
+          "title_zh": "第 20 章 还有更多内容吗 + 延伸阅读"
+        }
+      ]
+    }
+  ],
+  "book_pages": 389
+}

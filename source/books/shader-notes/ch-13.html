@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 12 章 屏幕后处理效果 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">13 · 第 12 章 屏幕后处理效果</div>
+    <div class="pager"><a href="ch-12.html">← 上一节</a><a href="ch-14.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>屏幕后处理：把整帧当成一张图</h2>
+
+<p>原书第 12 章讲屏幕后处理（Post-Processing）。思路是：场景先渲染到一张 RenderTexture，再用一个全屏 Pass 对这张图做颜色调整、边缘检测、模糊、Bloom、运动模糊，最后输出到屏幕。它把 Shader 从“物体表面”扩展到了“整帧图像”。</p>
+
+<h3>最基本的后处理脚本</h3>
+
+<pre><code>using UnityEngine;
+
+[ExecuteAlways]
+[RequireComponent(typeof(Camera))]
+public class PostEffect : MonoBehaviour
+{
+    public Shader shader;
+    Material material;
+
+    Material Material
+    {
+        get
+        {
+            if (material == null)
+                material = new Material(shader) { hideFlags = HideFlags.HideAndDontSave };
+            return material;
+        }
+    }
+
+    void OnRenderImage(RenderTexture src, RenderTexture dest)
+    {
+        if (Material != null)
+            Graphics.Blit(src, dest, Material);
+        else
+            Graphics.Blit(src, dest);
+    }
+
+    void OnDisable()
+    {
+        if (material != null)
+            DestroyImmediate(material);
+    }
+}</code></pre>
+
+<p>Shader 只需要一个全屏顶点/片元 Pass，片元里用 <code>i.uv</code> 采样 <code>_MainTex</code>。Unity 会提供全屏四边形。</p>
+
+<h3>亮度、饱和度、对比度</h3>
+
+<pre><code>float _Brightness;
+float _Saturation;
+float _Contrast;
+
+fixed4 frag (v2f i) : SV_Target
+{
+    fixed4 color = tex2D(_MainTex, i.uv);
+    color.rgb *= _Brightness;
+
+    float luminance = dot(color.rgb, float3(0.2126, 0.7152, 0.0722));
+    color.rgb = lerp(luminance.xxx, color.rgb, _Saturation);
+
+    color.rgb = (color.rgb - 0.5) * _Contrast + 0.5;
+    return color;
+}</code></pre>
+
+<h3>边缘检测</h3>
+
+<p>边缘检测用卷积核对邻域像素做加权求和，常用 Sobel 算子。核心是把亮度/颜色梯度变成边缘强度：</p>
+
+<pre><code>float luminance(float3 c) { return dot(c, float3(0.2126, 0.7152, 0.0722)); }
+
+float4 frag (v2f i) : SV_Target
+{
+    float2 texel = _MainTex_TexelSize.xy;
+    float l = luminance(tex2D(_MainTex, i.uv + float2(-texel.x, 0)).rgb);
+    float r = luminance(tex2D(_MainTex, i.uv + float2( texel.x, 0)).rgb);
+    float b = luminance(tex2D(_MainTex, i.uv + float2(0, -texel.y)).rgb);
+    float t = luminance(tex2D(_MainTex, i.uv + float2(0,  texel.y)).rgb);
+
+    float edge = abs(l - r) + abs(b - t);
+    return lerp(_BackgroundColor, _EdgeColor, saturate(edge));
+}</code></pre>
+
+<h3>高斯模糊</h3>
+
+<p>高斯模糊通常拆成水平/垂直两 Pass，降低采样数。权重按高斯分布取 3×3、5×5 或更大核，采样步长用 <code>_MainTex_TexelSize</code> 控制。</p>
+
+<pre><code>// 水平 Pass（垂直同理，交换 x/y）
+float2 texel = _MainTex_TexelSize.xy * _BlurSize;
+fixed4 color = tex2D(_MainTex, i.uv) * 0.227027;
+color += tex2D(_MainTex, i.uv + float2(texel.x, 0)) * 0.316216;
+color += tex2D(_MainTex, i.uv - float2(texel.x, 0)) * 0.316216;
+color += tex2D(_MainTex, i.uv + float2(texel.x * 2, 0)) * 0.070270;
+color += tex2D(_MainTex, i.uv - float2(texel.x * 2, 0)) * 0.070270;
+return color;</code></pre>
+
+<h3>Bloom 与运动模糊</h3>
+
+<ul>
+<li><strong>Bloom</strong>：先提取高亮区域，再模糊，最后和原图叠加。高亮阈值、模糊半径、强度是三个主要参数。</li>
+<li><strong>运动模糊</strong>：把当前帧和上一帧按速度/权重混合；需要保存上一帧的 RenderTexture，或使用速度缓冲。</li>
+</ul>
+
+<pre><code>// 简单的帧混合式运动模糊
+fixed4 current = tex2D(_MainTex, i.uv);
+fixed4 previous = tex2D(_PreviousFrame, i.uv);
+return lerp(current, previous, _BlurAmount);</code></pre>
+
+<h3>后处理的性能</h3>
+
+<ul>
+<li>全屏 Pass 的填充率很高，移动端要控制分辨率/Pass 数。</li>
+<li>模糊、Bloom 通常用降采样 + 多 Pass；不要在原分辨率上做大核模糊。</li>
+<li><code>Graphics.Blit</code> 会产生额外的 RenderTexture 切换和带宽开销。</li>
+<li>用 Frame Debugger/GPU Profiler 确认是带宽、采样还是 ALU 瓶颈。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP/HDRP 不调用 <code>OnRenderImage</code>；后处理要用 Renderer Feature、Volume、Full Screen Pass Renderer Feature 或自定义 RenderPass。抓屏/采样接口是 <code>RTHandle</code>/<code>Blitter</code> 等，和内置管线不同。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>后处理 = 场景渲染到 RT + 全屏 Pass；亮度/饱和度/对比度是颜色变换；边缘检测用卷积；高斯模糊拆两 Pass；Bloom 是高亮+模糊+叠加；移动端先算填充率和带宽。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-12.html"><span class="dir">← 上一节</span>第 11 章 让画面动起来</a>
+    <a href="ch-14.html"><span class="dir">下一节 →</span>第 13 章 使用深度和法线纹理</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

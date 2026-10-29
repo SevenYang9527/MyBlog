@@ -1,0 +1,100 @@
+<h2>Shader 需要的数学：向量、矩阵与坐标空间</h2>
+
+<p>原书第 4 章用“农场游戏”做引子，把 Shader 常用的数学压缩成几块：笛卡儿坐标系、点和矢量、矩阵、齐次坐标、基础变换、坐标空间、法线变换。它不追求数学系的完备性，目标是让你看懂并写出 <code>UnityObjectToClipPos</code> 背后的东西。</p>
+
+<h3>点和矢量</h3>
+
+<p>点是位置，矢量是方向和长度。两者在代码里都写成 <code>float3</code>/<code>float4</code>，但语义不同：点可以做平移，矢量通常不做平移；法线、切线、视线方向都是矢量。</p>
+
+<table>
+<thead>
+<tr><th>运算</th><th>公式/写法</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>加减</td><td><code>a + b</code>、<code>a - b</code></td><td>求方向、相对位置。</td></tr>
+<tr><td>数乘</td><td><code>a * s</code></td><td>缩放长度。</td></tr>
+<tr><td>点积</td><td><code>dot(a, b) = |a||b|cosθ</code></td><td>夹角、光照 <code>N·L</code>、投影。</td></tr>
+<tr><td>叉积</td><td><code>cross(a, b)</code></td><td>求法线/切线、判断左右。</td></tr>
+<tr><td>归一化</td><td><code>normalize(a)</code></td><td>只保留方向。</td></tr>
+<tr><td>长度</td><td><code>length(a)</code></td><td>距离、衰减。</td></tr>
+</tbody>
+</table>
+
+<p>光照里最常见的两个点积是 <code>dot(N, L)</code>（法线和光照方向）和 <code>dot(N, V)</code>（法线和视线）。点积为负通常意味着背光/背面，需要 <code>saturate</code> 截到 0。</p>
+
+<h3>矩阵与齐次坐标</h3>
+
+<p>3×3 矩阵可以表示旋转和缩放，但不能表示平移；用 4×4 矩阵 + 齐次坐标（<code>float4</code>，<code>w=1</code> 表示点，<code>w=0</code> 表示矢量）就能把平移、旋转、缩放统一成矩阵乘法。</p>
+
+<pre><code>// 平移矩阵（列向量写法）
+float4x4 T = float4x4(
+    1, 0, 0, tx,
+    0, 1, 0, ty,
+    0, 0, 1, tz,
+    0, 0, 0, 1
+);
+
+// 复合变换：先缩放，再旋转，再平移
+float4x4 M = T * R * S;
+float4 clipPos = mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, v.vertex));</code></pre>
+
+<p>矩阵乘法不满足交换律，顺序很重要。Unity 的 C# 矩阵和 Shader 矩阵在存储/乘法顺序上有约定，写 Shader 时最稳的办法是用 Unity 提供的函数和宏，而不是自己拼矩阵。</p>
+
+<h3>MVP 与坐标空间</h3>
+
+<p>一个顶点从模型空间到屏幕，通常经历：</p>
+
+<pre><code>模型空间 --(M)--> 世界空间 --(V)--> 观察空间 --(P)--> 裁剪空间 --(视口)--> 屏幕空间</code></pre>
+
+<p>MVP 就是 Model × View × Projection。Unity 里最常用的封装是 <code>UnityObjectToClipPos(v.vertex)</code>，它等价于把模型空间顶点变换到裁剪空间，并处理不同平台的差异。老代码里的 <code>mul(UNITY_MATRIX_MVP, v.vertex)</code> 在新版本中不推荐直接使用。</p>
+
+<table>
+<thead>
+<tr><th>空间</th><th>常用矩阵/函数</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>模型 → 世界</td><td><code>unity_ObjectToWorld</code>、<code>UnityObjectToWorldNormal</code></td><td>法线要用逆转置矩阵，不能直接乘模型矩阵。</td></tr>
+<tr><td>世界 → 观察</td><td><code>UNITY_MATRIX_V</code>、<code>UnityWorldSpaceViewDir</code></td><td>视线方向、观察空间光照。</td></tr>
+<tr><td>观察 → 裁剪</td><td><code>UNITY_MATRIX_P</code>、<code>UNITY_MATRIX_VP</code></td><td>投影、裁剪空间。</td></tr>
+<tr><td>模型 → 裁剪</td><td><code>UnityObjectToClipPos</code></td><td>最常用的顶点变换。</td></tr>
+<tr><td>屏幕</td><td><code>ComputeScreenPos</code>、<code>_ScreenParams</code></td><td>屏幕坐标、后处理采样。</td></tr>
+</tbody>
+</table>
+
+<h3>法线变换</h3>
+
+<p>法线不能直接乘模型矩阵，尤其是存在非均匀缩放时。正确做法是乘模型矩阵的逆转置矩阵；Unity 的 <code>UnityObjectToWorldNormal</code> 已经处理了这件事。切线通常也要用类似方式变换，并在需要时重新正交化。</p>
+
+<pre><code>float3 worldNormal = UnityObjectToWorldNormal(v.normal);
+float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+float3 worldViewDir = normalize(_WorldSpaceCameraPos - worldPos);</code></pre>
+
+<h3>内置变量（数学篇）</h3>
+
+<table>
+<thead>
+<tr><th>变量/函数</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>unity_ObjectToWorld</code></td><td>模型空间到世界空间。</td></tr>
+<tr><td><code>unity_WorldToObject</code></td><td>世界空间到模型空间。</td></tr>
+<tr><td><code>UNITY_MATRIX_V</code></td><td>世界空间到观察空间。</td></tr>
+<tr><td><code>UNITY_MATRIX_P</code></td><td>观察空间到裁剪空间。</td></tr>
+<tr><td><code>UNITY_MATRIX_VP</code></td><td>世界空间到裁剪空间。</td></tr>
+<tr><td><code>_WorldSpaceCameraPos</code></td><td>相机世界坐标。</td></tr>
+<tr><td><code>_ScreenParams</code></td><td>屏幕宽高、1/宽、1/高。</td></tr>
+<tr><td><code>_ProjectionParams</code></td><td>近裁剪面、远裁剪面等。</td></tr>
+</tbody>
+</table>
+
+<h3>3×3 还是 4×4</h3>
+
+<p>只做方向变换（法线、切线、视线）时，3×3 足够；需要平移时用 4×4。Unity 的矩阵函数通常返回 4×4，你可以用 <code>(float3x3)</code> 截取左上角，但要注意非均匀缩放和平台差异。最稳的做法仍是使用 Unity 提供的 <code>UnityObjectToWorldNormal</code> 等封装。</p>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP/HDRP 里仍然有 <code>TransformObjectToWorld</code>、<code>TransformObjectToHClip</code>、<code>TransformObjectToWorldNormal</code> 等函数，命名和包含文件不同，但数学一致。不要混用内置管线的 <code>UnityObjectToClipPos</code> 和 URP 的包含文件。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>点是位置，矢量是方向；点积管夹角/光照，叉积管法线/切线；4×4 + 齐次坐标统一变换；MVP 把模型送到裁剪空间；法线要用逆转置；优先用 Unity 的变换函数。</p>
+</blockquote>

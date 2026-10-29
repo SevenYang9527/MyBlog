@@ -1,0 +1,97 @@
+<h2>基础光照：从 Lambert 到 Blinn-Phong</h2>
+
+<p>原书第 6 章从“我们如何看到这个世界”讲起：光源、吸收与散射、着色、BRDF，然后落到 Unity 的标准光照模型：环境光 + 自发光 + 漫反射 + 高光反射。它分别实现了逐顶点和逐像素的 Lambert、Half-Lambert、Phong 和 Blinn-Phong。</p>
+
+<h3>标准光照模型</h3>
+
+<pre><code>最终颜色 = 环境光 + 自发光 + 漫反射 + 高光反射</code></pre>
+
+<table>
+<thead>
+<tr><th>项</th><th>作用</th><th>常见实现</th></tr>
+</thead>
+<tbody>
+<tr><td>环境光 Ambient</td><td>模拟全局间接光，避免背光全黑</td><td><code>UNITY_LIGHTMODEL_AMBIENT</code> 或自定义颜色</td></tr>
+<tr><td>自发光 Emissive</td><td>物体自身发出的光</td><td>直接加一个颜色/纹理</td></tr>
+<tr><td>漫反射 Diffuse</td><td>粗糙表面的方向性反射</td><td>Lambert / Half-Lambert</td></tr>
+<tr><td>高光 Specular</td><td>光滑表面的镜面反射</td><td>Phong / Blinn-Phong</td></tr>
+</tbody>
+</table>
+
+<h3>漫反射</h3>
+
+<p>Lambert 模型用 <code>N·L</code> 表示表面朝向和光照方向的一致性：</p>
+
+<pre><code>float3 N = normalize(worldNormal);
+float3 L = normalize(_WorldSpaceLightPos0.xyz);
+float NdotL = saturate(dot(N, L));
+float3 diffuse = _LightColor0.rgb * _DiffuseColor.rgb * NdotL;</code></pre>
+
+<p>Half-Lambert 把 <code>N·L</code> 从 <code>[-1,1]</code> 映射到 <code>[0,1]</code>，让背光面也有渐变，常用于卡通/柔和风格：</p>
+
+<pre><code>float halfLambert = dot(N, L) * 0.5 + 0.5;
+float3 diffuse = _LightColor0.rgb * _DiffuseColor.rgb * halfLambert;</code></pre>
+
+<h3>高光反射</h3>
+
+<p>Phong 模型用反射方向 <code>R</code> 和视线 <code>V</code> 的点积：</p>
+
+<pre><code>float3 R = reflect(-L, N);
+float spec = pow(saturate(dot(R, V)), _Gloss);
+float3 specular = _LightColor0.rgb * _SpecularColor.rgb * spec;</code></pre>
+
+<p>Blinn-Phong 用半程向量 <code>H = normalize(L + V)</code>，少一次 <code>reflect</code>，高光形状略有不同，通常更便宜：</p>
+
+<pre><code>float3 H = normalize(L + V);
+float spec = pow(saturate(dot(N, H)), _Gloss);
+float3 specular = _LightColor0.rgb * _SpecularColor.rgb * spec;</code></pre>
+
+<h3>逐顶点还是逐像素</h3>
+
+<table>
+<thead>
+<tr><th>方式</th><th>计算位置</th><th>优点</th><th>缺点</th></tr>
+</thead>
+<tbody>
+<tr><td>逐顶点</td><td>顶点着色器算光照，插值颜色</td><td>便宜，适合低端设备/细分较多的模型</td><td>高光/边缘容易失真，大三角形上尤其明显</td></tr>
+<tr><td>逐像素</td><td>片元着色器算光照</td><td>高光细腻，效果稳定</td><td>片元计算更贵</td></tr>
+</tbody>
+</table>
+
+<p>原书用“逐顶点/逐像素”的对比说明：光照模型一样，计算频率不同，结果和成本都不同。现代项目通常优先逐像素；移动端低端机可以用逐顶点或简化模型。</p>
+
+<h3>Unity 内置函数</h3>
+
+<p>内置管线提供了一些光照函数，例如 <code>LightingLambert</code>、<code>LightingBlinnPhong</code>，以及 <code>_LightColor0</code>、<code>_WorldSpaceLightPos0</code>、<code>UNITY_LIGHTMODEL_AMBIENT</code>。它们适合快速验证，但自定义效果通常手写更可控。</p>
+
+<pre><code>// 内置管线中常见的光照变量
+float4 _LightColor0;              // 当前光源颜色
+float4 _WorldSpaceLightPos0;      // 平行光方向或点光位置
+float4 UNITY_LIGHTMODEL_AMBIENT;  // 环境光</code></pre>
+
+<h3>一个逐像素 Blinn-Phong 的片元函数</h3>
+
+<pre><code>fixed4 frag (v2f i) : SV_Target
+{
+    float3 N = normalize(i.worldNormal);
+    float3 L = normalize(_WorldSpaceLightPos0.xyz);
+    float3 V = normalize(_WorldSpaceCameraPos - i.worldPos);
+    float3 H = normalize(L + V);
+
+    float NdotL = saturate(dot(N, L));
+    float NdotH = saturate(dot(N, H));
+
+    float3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb * _DiffuseColor.rgb;
+    float3 diffuse = _LightColor0.rgb * _DiffuseColor.rgb * NdotL;
+    float3 specular = _LightColor0.rgb * _SpecularColor.rgb * pow(NdotH, _Gloss);
+
+    return fixed4(ambient + diffuse + specular, 1.0);
+}</code></pre>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 的光照宏、<code>Light</code> 结构、阴影/衰减函数与内置管线不同；<code>_LightColor0</code> 在 URP 中仍可能出现，但不能直接套用内置管线的 <code>ForwardBase</code> 写法。Shader Graph 里对应的是 Lighting 节点和 Custom Function。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>标准光照 = 环境 + 自发光 + 漫反射 + 高光；Lambert 用 <code>N·L</code>，Half-Lambert 做柔和过渡；Phong 用 <code>R·V</code>，Blinn-Phong 用 <code>N·H</code>；逐像素更细腻，逐顶点更便宜；内置函数适合验证，自定义效果手写更可控。</p>
+</blockquote>

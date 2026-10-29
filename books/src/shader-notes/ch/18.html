@@ -1,0 +1,97 @@
+<h2>表面着色器：Unity 帮你写了什么</h2>
+
+<p>原书第 17 章专门拆表面着色器（Surface Shader）。表面着色器是内置管线的一种“高层写法”：你只写表面属性（albedo、normal、emission、alpha、smoothness、metallic），Unity 自动生成顶点/片元着色器、光照循环和阴影 Pass。代码短，但黑盒多。</p>
+
+<h3>一个表面着色器</h3>
+
+<pre><code>Shader "Custom/SurfaceDemo"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1,1,1,1)
+        _MainTex ("Albedo", 2D) = "white" {}
+        _Glossiness ("Smoothness", Range(0,1)) = 0.5
+        _Metallic ("Metallic", Range(0,1)) = 0.0
+    }
+
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" }
+        LOD 200
+
+        CGPROGRAM
+        #pragma surface surf Standard fullforwardshadows
+        #pragma target 3.0
+
+        sampler2D _MainTex;
+        fixed4 _Color;
+        half _Glossiness;
+        half _Metallic;
+
+        struct Input
+        {
+            float2 uv_MainTex;
+        };
+
+        void surf (Input IN, inout SurfaceOutputStandard o)
+        {
+            fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * _Color;
+            o.Albedo = c.rgb;
+            o.Metallic = _Metallic;
+            o.Smoothness = _Glossiness;
+            o.Alpha = c.a;
+        }
+        ENDCG
+    }
+    Fallback "Diffuse"
+}</code></pre>
+
+<h3>编译指令</h3>
+
+<table>
+<thead>
+<tr><th>指令</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>#pragma surface surf Standard</code></td><td>指定表面函数和光照模型（Standard/Lambert/BlinnPhong 等）。</td></tr>
+<tr><td><code>fullforwardshadows</code></td><td>前向渲染中支持所有阴影类型。</td></tr>
+<tr><td><code>alpha</code></td><td>启用透明，生成 alpha 混合 Pass。</td></tr>
+<tr><td><code>alpha:auto</code></td><td>根据输出自动选择 alpha 测试/混合。</td></tr>
+<tr><td><code>vertex:vert</code></td><td>自定义顶点函数。</td></tr>
+<tr><td><code>finalcolor:color</code></td><td>自定义最终颜色函数。</td></tr>
+<tr><td><code>addshadow</code></td><td>为自定义顶点动画生成匹配的阴影 Pass。</td></tr>
+</tbody>
+</table>
+
+<h3>两个结构体</h3>
+
+<ul>
+<li><strong>Input</strong>：你声明需要的输入，例如 <code>uv_MainTex</code>、<code>worldNormal</code>、<code>worldPos</code>、<code>viewDir</code>；Unity 会帮你填充。</li>
+<li><strong>SurfaceOutput / SurfaceOutputStandard</strong>：你输出 Albedo、Normal、Emission、Alpha、Metallic、Smoothness、Occlusion 等；Unity 根据光照模型生成后续计算。</li>
+</ul>
+
+<h3>Unity 背后做了什么</h3>
+
+<p>表面着色器会被编译成多个 Pass：前向基础 Pass、前向附加 Pass、阴影 Pass，以及可能的延迟 Pass。Unity 会插入光照循环、阴影采样、雾、光照贴图等代码。你可以用“Show Generated Code”查看展开结果，理解为什么表面着色器方便但也难调。</p>
+
+<h3>优点与缺点</h3>
+
+<table>
+<thead>
+<tr><th>优点</th><th>缺点</th></tr>
+</thead>
+<tbody>
+<tr><td>代码短，光照/阴影自动处理。</td><td>黑盒多，出问题难定位。</td></tr>
+<tr><td>适合快速做 Standard 风格材质。</td><td>只支持内置管线，URP/HDRP 不可用。</td></tr>
+<tr><td>自动生成多 Pass/变体。</td><td>变体多、编译慢、包体大。</td></tr>
+<tr><td>容易接入光照贴图/探针。</td><td>对特殊效果/自定义光照控制力有限。</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>表面着色器是内置管线的历史；URP/HDRP 不使用 <code>#pragma surface</code>。新项目应使用 Shader Graph 或手写 HLSL；如果维护老项目，理解表面着色器生成的 Pass 仍然有助于排查阴影/光照问题。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>表面着色器 = 表面函数 + 光照模型 + 自动生成的 Pass；Input 接数据，SurfaceOutput 出属性；优点是短，缺点是黑盒/变体多/只限内置管线；新项目用 Shader Graph/HLSL。</p>
+</blockquote>

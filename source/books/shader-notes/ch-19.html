@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 18 章 基于物理的渲染 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">19 · 第 18 章 基于物理的渲染</div>
+    <div class="pager"><a href="ch-18.html">← 上一节</a><a href="ch-20.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>基于物理的渲染：从“像”到“可信”</h2>
+
+<p>原书第 18 章讲 PBR（Physically Based Rendering）。它先讲光、BRDF、漫反射/高光反射、菲涅耳，再讲 Unity 的 Standard Shader、反射探针、线性空间、HDR。PBR 的目标不是“照片级”，而是让材质在不同光照下有一致、可预测的表现。</p>
+
+<h3>BRDF</h3>
+
+<p>BRDF（Bidirectional Reflectance Distribution Function）描述“从某个入射方向来的光，有多少反射到某个观察方向”。它满足能量守恒：反射出去的能量不能超过入射能量。实时 PBR 通常把 BRDF 拆成漫反射项和高光项。</p>
+
+<pre><code>// 简化的反射方程（概念）
+Lo = ∫ Li * f(l, v) * (N·L) dω</code></pre>
+
+<h3>漫反射与高光</h3>
+
+<p>漫反射常用 Lambert：</p>
+
+<pre><code>diffuse = albedo / PI * NdotL;</code></pre>
+
+<p>高光常用微表面模型（Cook-Torrance）：</p>
+
+<pre><code>specular = D * G * F / (4 * NdotL * NdotV);</code></pre>
+
+<ul>
+<li><strong>D</strong>：法线分布函数（常用 GGX/Trowbridge-Reitz）。</li>
+<li><strong>G</strong>：几何遮蔽函数（Smith 等）。</li>
+<li><strong>F</strong>：菲涅耳项（Schlick 近似）。</li>
+</ul>
+
+<p>菲涅耳项描述“视角越掠射，反射越强”：</p>
+
+<pre><code>F = F0 + (1 - F0) * pow(1 - NdotV, 5);</code></pre>
+
+<p><code>F0</code> 是垂直入射时的反射率。金属的 F0 来自 albedo，非金属通常约 0.04。</p>
+
+<h3>Metallic / Smoothness 工作流</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>贴图/参数</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td>Albedo</td><td>基础颜色；金属的 albedo 同时作为反射颜色。</td></tr>
+<tr><td>Metallic</td><td>0 = 非金属，1 = 金属；控制漫反射/高光的分配。</td></tr>
+<tr><td>Smoothness / Roughness</td><td>表面光滑度；越光滑，高光越集中。</td></tr>
+<tr><td>Normal</td><td>表面细节。</td></tr>
+<tr><td>Occlusion</td><td>环境光遮蔽，压暗缝隙。</td></tr>
+<tr><td>Emission</td><td>自发光。</td></tr>
+</tbody>
+</table></div>
+
+<h3>Unity Standard Shader</h3>
+
+<p>内置管线的 Standard Shader 实现了这套工作流，支持金属/非金属、法线、高度、遮挡、自发光、细节贴图等。它依赖反射探针、光照贴图、Light Probe 来提供环境反射/间接光；在线性空间 + HDR 下效果更稳定。</p>
+
+<h3>线性空间、Gamma 与 HDR</h3>
+
+<ul>
+<li><strong>Gamma 空间</strong>：颜色在 sRGB 空间直接计算，简单但不物理。</li>
+<li><strong>线性空间</strong>：光照在线性空间计算，最后再转 sRGB；更符合物理，颜色过渡更自然。</li>
+<li><strong>HDR</strong>：颜色值可以超过 1，保留高光/光源强度，配合 Bloom/Tone Mapping 使用。</li>
+</ul>
+
+<p>如果颜色发灰、发暗、反射不对，先检查项目的 Color Space、纹理 sRGB、光照贴图/探针设置，再怀疑 Shader。</p>
+
+<h3>PBR 适合什么游戏</h3>
+
+<p>PBR 适合写实、次世代、需要一致材质表现的项目；风格化项目也可以用 PBR 作为基础，再叠加卡通/手绘效果。它不是“开了就好看”，材质作者需要理解金属度、粗糙度、反射探针和光照环境。</p>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 的 Lit Shader、HDRP 的 Lit/StackLit 都是 PBR 工作流；Shader Graph 有 Metallic/Roughness 节点。反射探针、Light Probe、光照贴图仍然重要；不同管线的 BRDF/环境光实现不同，不要直接套内置 Standard 的参数。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>PBR = 能量守恒 + BRDF + 菲涅耳 + 金属度/粗糙度；漫反射用 Lambert，高光用微表面模型；Standard Shader 是内置管线的实现；线性空间/HDR/反射探针决定最终可信度；PBR 需要材质和光照环境配合。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-18.html"><span class="dir">← 上一节</span>第 17 章 Unity 的表面着色器探秘</a>
+    <a href="ch-20.html"><span class="dir">下一节 →</span>第 19 章 Unity 5 更新了什么</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 章 欢迎来到 Shader 的世界 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">02 · 第 1 章 欢迎来到 Shader 的世界</div>
+    <div class="pager"><a href="ch-01.html">← 上一节</a><a href="ch-03.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>Shader 不是魔法，是 GPU 上的一段程序</h2>
+
+<p>原书第 1 章没有讲代码，而是先回答“Shader 是什么、为什么难、该怎么学”。它把 Shader 放进游戏程序员的技能树里：图形学、编译原理、操作系统常被戏称为“程序员的三大浪漫”，而 Shader 正好横跨图形学和编译原理——你写的是一段程序，但它最终要在 GPU 的并行架构上执行。</p>
+
+<h3>Shader 在做什么</h3>
+
+<p>从最粗的层面看，Shader 描述两件事：</p>
+
+<ul>
+<li><strong>顶点怎么变</strong>：把模型空间的顶点变换到裁剪空间，计算法线、切线、纹理坐标等插值数据。</li>
+<li><strong>像素怎么上色</strong>：根据插值后的数据、纹理、光照和材质参数，算出每个片元的颜色。</li>
+</ul>
+
+<p>它不是“给模型贴一张图”的同义词。一个 Shader 可以只做纯色、可以做光照、可以做描边、可以做水波、可以做屏幕后处理；共同点是它运行在 GPU 上，输入输出由渲染管线规定。</p>
+
+<h3>为什么 Shader 看起来难</h3>
+
+<p>难的地方通常不在语法，而在三件事：</p>
+
+<ol>
+<li><strong>看不到中间结果</strong>：CPU 代码可以断点、打印；Shader 里不能随便 <code>print</code>，只能靠假彩色、Frame Debugger、RenderDoc 等工具。</li>
+<li><strong>并行思维</strong>：顶点着色器和片元着色器是对大量数据同时执行的，不能依赖“上一行代码先执行、下一行后执行”的全局状态。</li>
+<li><strong>数学和管线耦合</strong>：坐标空间、矩阵、法线变换、光照模型、阴影宏，任何一环理解错，结果都会“看起来差不多但就是不对”。</li>
+</ol>
+
+<p>原书的建议是：先把渲染流水线和数学补起来，再写效果；不要一上来就抄一个复杂的 Shader，然后靠改参数碰运气。</p>
+
+<h3>学习路径</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>阶段</th><th>目标</th><th>对应章节</th></tr>
+</thead>
+<tbody>
+<tr><td>看懂一帧</td><td>知道 CPU/GPU 怎么通信，顶点经历了哪些空间，片元经历了哪些测试。</td><td>第 2 章</td></tr>
+<tr><td>写出第一个 Shader</td><td>理解 ShaderLab 结构、Properties、SubShader、Pass、语义。</td><td>第 3、5 章</td></tr>
+<tr><td>补数学</td><td>向量、矩阵、齐次坐标、MVP、法线变换。</td><td>第 4 章</td></tr>
+<tr><td>做基础效果</td><td>漫反射、高光、纹理、法线贴图、透明。</td><td>第 6-8 章</td></tr>
+<tr><td>做进阶效果</td><td>多光源、阴影、立方体纹理、渲染纹理、动画、后处理。</td><td>第 9-13 章</td></tr>
+<tr><td>做风格化和优化</td><td>卡通、素描、噪声、批处理、LOD、带宽。</td><td>第 14-16 章</td></tr>
+</tbody>
+</table></div>
+
+<h3>先建立三个习惯</h3>
+
+<ul>
+<li><strong>先画管线，再写代码</strong>：在纸上写出“模型空间 → 世界空间 → 观察空间 → 裁剪空间 → 屏幕空间”，标出每一步用什么矩阵。</li>
+<li><strong>先最小可运行，再堆效果</strong>：先让一个纯色 Shader 跑起来，再加纹理、再加光照、再加阴影；每加一层都能单独验证。</li>
+<li><strong>用工具看，不要猜</strong>：Frame Debugger 看 DrawCall 和状态，Scene 视图看 Overdraw，假彩色看数值范围，RenderDoc 看纹理和缓冲。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>原书的学习路径仍然成立，但今天多了 Shader Graph 和 URP/HDRP。Shader Graph 适合快速做效果，但理解顶点/片元阶段、坐标空间和光照模型仍然是底层能力；否则你只能拖节点，出了问题不知道从哪查。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>Shader 是 GPU 程序，不是贴图工具；难点在不可见、并行和数学耦合；学习顺序是管线 → 结构 → 数学 → 基础效果 → 进阶效果 → 优化。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-01.html"><span class="dir">← 上一节</span>导读：这本书怎么读，以及今天的版本差异</a>
+    <a href="ch-03.html"><span class="dir">下一节 →</span>第 2 章 渲染流水线</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 7 章 基础纹理 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">08 · 第 7 章 基础纹理</div>
+    <div class="pager"><a href="ch-07.html">← 上一节</a><a href="ch-09.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>基础纹理：单张纹理、法线贴图、渐变与遮罩</h2>
+
+<p>原书第 7 章把纹理分成四类：单张纹理、凹凸映射（高度纹理/法线纹理）、渐变纹理、遮罩纹理。它们看起来都是“采样一张图”，但背后解决的问题不同：颜色、表面细节、风格化色调、以及按通道控制效果。</p>
+
+<h3>单张纹理</h3>
+
+<pre><code>Properties
+{
+    _MainTex ("Texture", 2D) = "white" {}
+    _Color ("Tint", Color) = (1,1,1,1)
+}
+
+sampler2D _MainTex;
+float4 _MainTex_ST;
+fixed4 _Color;
+
+v2f vert (appdata v)
+{
+    v2f o;
+    o.pos = UnityObjectToClipPos(v.vertex);
+    o.uv = TRANSFORM_TEX(v.uv, _MainTex);
+    return o;
+}
+
+fixed4 frag (v2f i) : SV_Target
+{
+    return tex2D(_MainTex, i.uv) * _Color;
+}</code></pre>
+
+<p>纹理导入设置会影响结果：Wrap Mode（Repeat/Clamp）、Filter Mode（Point/Bilinear/Trilinear）、sRGB、压缩、Mipmap。UI 和像素风通常用 Point + Clamp；3D 表面常用 Bilinear + Repeat。</p>
+
+<h3>凹凸映射：高度纹理与法线纹理</h3>
+
+<p>高度纹理存“高度”，法线纹理存“法线方向”。实时渲染更常用法线纹理：它直接给出切线空间法线，片元阶段用 <code>UnpackNormal</code> 解包，再和光照方向计算。</p>
+
+<pre><code>sampler2D _BumpMap;
+float4 _BumpMap_ST;
+float _BumpScale;
+
+struct v2f
+{
+    float4 pos : SV_POSITION;
+    float2 uv : TEXCOORD0;
+    float3 worldNormal : TEXCOORD1;
+    float3 worldPos : TEXCOORD2;
+    float3 tangent : TEXCOORD3;
+    float3 bitangent : TEXCOORD4;
+};
+
+fixed4 frag (v2f i) : SV_Target
+{
+    float3 normal = UnpackNormal(tex2D(_BumpMap, i.uv));
+    normal.xy *= _BumpScale;
+    normal.z = sqrt(1.0 - saturate(dot(normal.xy, normal.xy)));
+
+    float3 N = normalize(
+        i.tangent * normal.x +
+        i.bitangent * normal.y +
+        i.worldNormal * normal.z
+    );
+
+    // 用 N 参与光照计算...
+    return fixed4(N * 0.5 + 0.5, 1.0);
+}</code></pre>
+
+<p>法线纹理通常有两类：切线空间（Tangent Space）和模型空间（Object Space）。切线空间法线贴图可以复用在不同模型上，更常见；模型空间法线贴图适合特殊风格或不需要变形的物体。</p>
+
+<h3>渐变纹理</h3>
+
+<p>渐变纹理把光照结果映射到一条颜色带上，常用于卡通/风格化渲染。做法是用 Lambert/Half-Lambert 得到一个 0~1 的值，再用它采样一张 1D 渐变纹理：</p>
+
+<pre><code>sampler2D _RampTex;
+float _RampOffset;
+
+float halfLambert = dot(N, L) * 0.5 + 0.5;
+float3 rampColor = tex2D(_RampTex, float2(halfLambert + _RampOffset, 0.5)).rgb;
+float3 diffuse = _LightColor0.rgb * _DiffuseColor.rgb * rampColor;</code></pre>
+
+<p>渐变纹理的 Wrap Mode 通常设为 Clamp，避免采样到边缘外的颜色。</p>
+
+<h3>遮罩纹理</h3>
+
+<p>遮罩纹理用通道控制不同效果：R 通道控制高光强度、G 通道控制自发光、B 通道控制某些细节。它比在 Shader 里写很多 <code>if</code> 更灵活，也更适合美术调整。</p>
+
+<pre><code>sampler2D _MaskTex;
+
+fixed4 frag (v2f i) : SV_Target
+{
+    fixed4 mask = tex2D(_MaskTex, i.uv);
+    float specMask = mask.r;
+    float emissionMask = mask.g;
+
+    float3 specular = _LightColor0.rgb * _SpecularColor.rgb
+                    * pow(saturate(dot(N, H)), _Gloss) * specMask;
+    float3 emission = _EmissionColor.rgb * emissionMask;
+
+    return fixed4(diffuse + specular + emission, 1.0);
+}</code></pre>
+
+<h3>纹理采样的常见坑</h3>
+
+<ul>
+<li><strong>UV 没做 ST 变换</strong>：Tiling/Offset 不生效，或者和材质面板不一致。</li>
+<li><strong>法线贴图没解包</strong>：直接把 0~1 的纹理值当法线，光照会明显不对。</li>
+<li><strong>切线空间基向量没归一化/正交化</strong>：法线贴图方向会偏。</li>
+<li><strong>纹理 sRGB/Linear 设置不对</strong>：颜色发灰/过亮，尤其是线性空间项目。</li>
+<li><strong>压缩伪影</strong>：法线贴图用错压缩格式，边缘会出现块状噪声。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 里法线贴图同样用切线空间，但解包函数/宏可能不同；<code>UnpackNormalScale</code> 可以同时处理缩放。纹理的 sRGB、压缩、Mipmap 设置比 Shader 代码更容易被忽略，排查时先看导入设置。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>单张纹理解决颜色；法线纹理解决表面细节；渐变纹理解决风格化色调；遮罩纹理用通道控制效果。纹理的 ST、解包、切线空间、sRGB/压缩设置，决定了“代码对了但画面不对”的大部分问题。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-07.html"><span class="dir">← 上一节</span>第 6 章 Unity 中的基础光照</a>
+    <a href="ch-09.html"><span class="dir">下一节 →</span>第 8 章 透明效果</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

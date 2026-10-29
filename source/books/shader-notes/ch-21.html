@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 20 章 还有更多内容吗 + 延伸阅读 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">21 · 第 20 章 还有更多内容吗 + 延伸阅读</div>
+    <div class="pager"><a href="ch-20.html">← 上一节</a></div>
+  </div>
+      <article class="content">
+<h2>还有更多内容：从这本书走向更大的渲染世界</h2>
+
+<p>原书第 20 章很短，讲“还有更多内容”：如果想深入渲染，可以看哪些书、论文、博客；世界很大，Shader 只是入口。本站把这一章扩展成一份“继续学习 + 常用宏/迁移表”的附录，方便读完前 19 章后继续查。</p>
+
+<h3>继续学习的方向</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>方向</th><th>可以学什么</th><th>和本书的关系</th></tr>
+</thead>
+<tbody>
+<tr><td>图形学基础</td><td>线性代数、光栅化、光照、纹理、阴影、全局光照</td><td>补足第 2、4、6、9 章背后的理论。</td></tr>
+<tr><td>实时渲染</td><td>PBR、IBL、阴影、后处理、抗锯齿、GPU 架构</td><td>接第 12-19 章。</td></tr>
+<tr><td>引擎/管线</td><td>URP/HDRP、Render Graph、Shader Graph、Compute Shader</td><td>把内置管线知识迁移到现代管线。</td></tr>
+<tr><td>工具/调试</td><td>RenderDoc、Frame Debugger、GPU Profiler、平台工具</td><td>把“看起来不对”变成可定位的问题。</td></tr>
+<tr><td>美术/风格</td><td>色彩、构图、材质、光照设计</td><td>Shader 最终服务于画面。</td></tr>
+</tbody>
+</table></div>
+
+<h3>常用内置变量/宏速查</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>名称</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td><code>UnityObjectToClipPos(v.vertex)</code></td><td>模型空间 → 裁剪空间。</td></tr>
+<tr><td><code>UnityObjectToWorldNormal(v.normal)</code></td><td>模型空间法线 → 世界空间（含逆转置）。</td></tr>
+<tr><td><code>UnityWorldSpaceViewDir(worldPos)</code></td><td>世界空间视线方向。</td></tr>
+<tr><td><code>TRANSFORM_TEX(uv, _MainTex)</code></td><td>应用 Tiling/Offset。</td></tr>
+<tr><td><code>_Time</code> / <code>_SinTime</code></td><td>Shader 动画时间。</td></tr>
+<tr><td><code>_WorldSpaceLightPos0</code> / <code>_LightColor0</code></td><td>内置管线主光源方向/颜色。</td></tr>
+<tr><td><code>SHADOW_COORDS</code> / <code>TRANSFER_SHADOW</code></td><td>内置管线阴影坐标/传递。</td></tr>
+<tr><td><code>UNITY_LIGHT_ATTENUATION</code></td><td>内置管线光照衰减/阴影。</td></tr>
+<tr><td><code>ComputeScreenPos</code></td><td>裁剪空间 → 屏幕 UV。</td></tr>
+<tr><td><code>LinearEyeDepth</code> / <code>Linear01Depth</code></td><td>深度线性化。</td></tr>
+</tbody>
+</table></div>
+
+<h3>内置管线 → URP 迁移速查</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>内置管线</th><th>URP</th></tr>
+</thead>
+<tbody>
+<tr><td><code>UnityObjectToClipPos</code></td><td><code>TransformObjectToHClip</code></td></tr>
+<tr><td><code>UnityObjectToWorldNormal</code></td><td><code>TransformObjectToWorldNormal</code></td></tr>
+<tr><td><code>ForwardBase</code> / <code>ForwardAdd</code></td><td><code>UniversalForward</code> / <code>UniversalForwardOnly</code> 等</td></tr>
+<tr><td><code>AutoLight.cginc</code></td><td><code>Lighting.hlsl</code> / <code>Shadows.hlsl</code></td></tr>
+<tr><td><code>GrabPass</code></td><td><code>_CameraOpaqueTexture</code> / Renderer Feature</td></tr>
+<tr><td><code>OnRenderImage</code></td><td>Renderer Feature / Volume / Full Screen Pass</td></tr>
+<tr><td>表面着色器</td><td>Shader Graph / HLSL</td></tr>
+<tr><td><code>UNITY_MATRIX_MVP</code></td><td><code>TransformObjectToHClip</code></td></tr>
+</tbody>
+</table></div>
+
+<h3>调试清单</h3>
+
+<ul>
+<li>颜色不对：先看 Color Space、纹理 sRGB、光照贴图/探针、材质参数。</li>
+<li>光照不对：先看渲染路径、光源类型、法线空间、阴影宏。</li>
+<li>透明不对：先看 Queue、ZWrite、Blend、排序。</li>
+<li>后处理不对：先看 RenderTexture 格式、采样 UV、平台翻转、Pass 顺序。</li>
+<li>性能不对：先看 Draw Call、顶点、片元、带宽、Shader 复杂度，再决定优化。</li>
+</ul>
+
+<h3>参考资料</h3>
+
+<ul>
+<li>原书：冯乐乐，《Unity Shader 入门精要》，人民邮电出版社，2016。</li>
+<li>Unity Manual：Shaders、ShaderLab、Built-in Render Pipeline、URP、Shader Graph。</li>
+<li>Unity Scripting API：Shader、Material、Graphics、RenderTexture。</li>
+<li>实时渲染经典：Real-Time Rendering、Physically Based Rendering（PBRT）。</li>
+<li>GPU/图形学：RenderDoc、GPU Gems、GDC/Unite 分享。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>这本书的代码是内置管线的“语法教材”，不是现代项目的模板。读完后，建议用 URP + Shader Graph 重做其中 2-3 个效果（例如 Blinn-Phong、法线贴图、边缘检测），再回来看内置管线代码，迁移会非常快。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>Shader 只是入口；继续学图形学、实时渲染、管线和工具；记住常用宏和迁移表；调试先分类再动手；用现代管线重做几个效果，比死记 API 更有效。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-20.html"><span class="dir">← 上一节</span>第 19 章 Unity 5 更新了什么</a>
+    <span class="empty"></span>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

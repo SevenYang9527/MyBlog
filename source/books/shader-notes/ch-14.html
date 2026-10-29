@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 13 章 使用深度和法线纹理 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">14 · 第 13 章 使用深度和法线纹理</div>
+    <div class="pager"><a href="ch-13.html">← 上一节</a><a href="ch-15.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>深度与法线纹理：让后处理知道“前后”和“朝向”</h2>
+
+<p>原书第 13 章把后处理从“二维颜色”推进到“三维信息”：深度纹理告诉你每个像素离相机多远，法线纹理告诉你表面朝向。有了它们，才能做运动模糊、全局雾、边缘检测、景深、SSAO 等效果。</p>
+
+<h3>深度纹理</h3>
+
+<p>内置管线可以通过 <code>_CameraDepthTexture</code> 获取深度。它通常是非线性的（受投影矩阵影响），需要转换：</p>
+
+<pre><code>sampler2D _CameraDepthTexture;
+
+float depth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
+float linearEyeDepth = LinearEyeDepth(depth);   // 观察空间深度
+float linear01Depth = Linear01Depth(depth);     // 0~1 深度</code></pre>
+
+<p><code>LinearEyeDepth</code> 返回的是“离相机的实际距离”，<code>Linear01Depth</code> 返回的是按近/远裁剪面归一化的值。做雾、景深、边缘检测时，先想清楚你需要哪一种。</p>
+
+<h3>重建世界坐标</h3>
+
+<p>只有深度还不够，要重建世界坐标，通常需要相机参数和视锥角。常见做法：</p>
+
+<pre><code>// 用原始深度和逆投影重建观察空间，再转到世界空间
+float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, i.uv);
+float2 ndc = i.uv * 2 - 1;
+float4 clipPos = float4(ndc, rawDepth, 1);
+float4 viewPos = mul(unity_CameraInvProjection, clipPos);
+viewPos /= viewPos.w;
+float3 worldPos = mul(unity_CameraToWorld, float4(viewPos.xyz, 1)).xyz;</code></pre>
+
+<p>不同平台/投影矩阵的符号不同，实际实现还要处理 <code>_ProjectionParams.x</code> 的翻转；最稳的做法是使用当前管线提供的重建函数（URP 的 <code>ComputeWorldSpacePosition</code> 等）。</p>
+
+<h3>法线纹理</h3>
+
+<p><code>_CameraNormalsTexture</code> 保存相机视角的法线（通常是观察空间）。它可以用来做边缘检测、SSAO、描边：</p>
+
+<pre><code>sampler2D _CameraNormalsTexture;
+
+float3 viewNormal = tex2D(_CameraNormalsTexture, i.uv).rgb * 2 - 1;
+float3 worldNormal = mul((float3x3)unity_CameraToWorld, viewNormal);</code></pre>
+
+<p>深度 + 法线可以做“Roberts 边缘检测”：深度差大或法线差大，就认为是边缘。比纯颜色边缘更稳定，不会把纹理细节误判成轮廓。</p>
+
+<h3>运动模糊</h3>
+
+<p>基于深度的运动模糊可以用“当前像素的世界坐标 → 上一帧屏幕坐标”的差来计算速度。没有速度缓冲时，也可以用相机运动/深度近似。原书给了一个简化版本，重点是理解“深度把像素从 2D 变回 3D”。</p>
+
+<h3>全局雾</h3>
+
+<p>用深度计算雾浓度：离相机越远，雾越浓。常见公式：</p>
+
+<pre><code>float fogDensity = saturate((linearEyeDepth - _FogStart) / (_FogEnd - _FogStart));
+float3 finalColor = lerp(sceneColor, _FogColor.rgb, fogDensity * _FogIntensity);</code></pre>
+
+<p>基于高度的雾还会用世界坐标 Y 值，做出“低处更浓”的效果。</p>
+
+<h3>边缘检测的两种思路</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>方式</th><th>输入</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>颜色边缘</td><td>颜色/亮度</td><td>简单，但会把纹理细节当成边缘。</td></tr>
+<tr><td>深度/法线边缘</td><td>深度、法线</td><td>更接近几何轮廓，适合描边/卡通。</td></tr>
+</tbody>
+</table></div>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 需要显式开启 Depth Texture；<code>_CameraNormalsTexture</code> 需要 Depth Normals Pass。URP 的深度/法线获取、重建函数和内置管线不同，通常用 <code>SampleSceneDepth</code>、<code>SampleSceneNormals</code>、<code>ComputeWorldSpacePosition</code> 等。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>深度纹理要线性化；<code>LinearEyeDepth</code> 是距离，<code>Linear01Depth</code> 是归一化值；法线纹理通常在观察空间；深度+法线做边缘比颜色更稳；重建世界坐标要小心平台符号。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-13.html"><span class="dir">← 上一节</span>第 12 章 屏幕后处理效果</a>
+    <a href="ch-15.html"><span class="dir">下一节 →</span>第 14 章 非真实感渲染</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

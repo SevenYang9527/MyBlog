@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 章 更复杂的光照 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">10 · 第 9 章 更复杂的光照</div>
+    <div class="pager"><a href="ch-09.html">← 上一节</a><a href="ch-11.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>更复杂的光照：多光源、衰减与阴影</h2>
+
+<p>原书第 9 章把“单光源 Blinn-Phong”扩展到真实项目：Unity 的渲染路径、光源类型、光照衰减、阴影，以及如何写一个能处理多光源和阴影的 Standard Shader。这一章是内置管线光照的分水岭。</p>
+
+<h3>Unity 的渲染路径</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>路径</th><th>思路</th><th>适用</th></tr>
+</thead>
+<tbody>
+<tr><td>Forward（前向）</td><td>每个物体对每个光源执行一次光照 Pass；多光源时 Pass 数增加。</td><td>光源不多、需要自定义光照、移动端常见。</td></tr>
+<tr><td>Vertex Lit（顶点照明）</td><td>光照在顶点阶段算，便宜但效果粗糙。</td><td>低端设备、简单物体。</td></tr>
+<tr><td>Deferred（延迟）</td><td>先写 G-Buffer（法线/颜色/深度等），再统一做光照。</td><td>光源多、桌面端；对透明/自定义 Shader 有限制。</td></tr>
+</tbody>
+</table></div>
+
+<p>渲染路径不是 Shader 里随便选的，而是由 Camera 的 Rendering Path 和项目设置决定。Shader 通过 <code>LightMode</code> 标签声明自己属于哪个 Pass。</p>
+
+<h3>光源类型与 Pass 标签</h3>
+
+<ul>
+<li><code>ForwardBase</code>：处理环境光、主方向光、光照贴图、阴影。</li>
+<li><code>ForwardAdd</code>：处理额外的逐像素光源，通常每个光源一个 Pass。</li>
+<li><code>ShadowCaster</code>：渲染阴影贴图。</li>
+<li><code>Vertex</code> / <code>VertexLMRGBM</code> / <code>VertexLM</code>：顶点照明/光照贴图。</li>
+</ul>
+
+<h3>光照衰减</h3>
+
+<p>点光源和聚光灯的强度随距离衰减。内置管线可以用光照纹理（<code>_LightTexture0</code>）或数学公式计算衰减：</p>
+
+<pre><code>// 内置管线中常见的衰减宏
+UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
+float3 lighting = (diffuse + specular) * atten;</code></pre>
+
+<p>平行光通常没有距离衰减，但可能有阴影衰减。点光/聚光的衰减纹理由 Unity 根据光源范围生成，直接采样比手写公式更接近内置结果。</p>
+
+<h3>阴影</h3>
+
+<p>实时阴影的核心是 shadow map：从光源视角渲染深度，再在相机视角比较深度。内置管线用 <code>AutoLight.cginc</code> 的宏封装了大部分细节：</p>
+
+<pre><code>#pragma multi_compile_fwdbase
+#include "AutoLight.cginc"
+
+struct v2f
+{
+    float4 pos : SV_POSITION;
+    float3 worldPos : TEXCOORD0;
+    float3 worldNormal : TEXCOORD1;
+    SHADOW_COORDS(2)
+};
+
+v2f vert (appdata v)
+{
+    v2f o;
+    o.pos = UnityObjectToClipPos(v.vertex);
+    o.worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
+    o.worldNormal = UnityObjectToWorldNormal(v.normal);
+    TRANSFER_SHADOW(o);
+    return o;
+}
+
+fixed4 frag (v2f i) : SV_Target
+{
+    float3 N = normalize(i.worldNormal);
+    float3 L = normalize(_WorldSpaceLightPos0.xyz);
+    float3 V = normalize(_WorldSpaceCameraPos - i.worldPos);
+    float3 H = normalize(L + V);
+
+    float3 diffuse = _LightColor0.rgb * _DiffuseColor.rgb * saturate(dot(N, L));
+    float3 specular = _LightColor0.rgb * _SpecularColor.rgb
+                    * pow(saturate(dot(N, H)), _Gloss);
+
+    UNITY_LIGHT_ATTENUATION(atten, i, i.worldPos);
+    return fixed4((diffuse + specular) * atten, 1.0);
+}</code></pre>
+
+<p>阴影 Pass 还需要 <code>ShadowCaster</code>：很多内置 Shader 通过 Fallback 提供，手写 Shader 常用 <code>UsePass "Legacy Shaders/VertexLit/SHADOWCASTER"</code> 引用内置 Pass，或者自己写一个。原书会带你看 <code>AutoLight.cginc</code> 里的宏展开，理解“为什么加几行宏就能接收阴影”。</p>
+
+<h3>多光源的成本</h3>
+
+<p>前向渲染中，每个逐像素光源通常对应一个 <code>ForwardAdd</code> Pass，也就是额外的 Draw Call 和光照计算。光源越多，成本越高；移动端要限制逐像素光源数量，或者用顶点光/光照贴图/烘焙。</p>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 的光照、阴影、Pass 标签和宏与内置管线完全不同；URP 使用 <code>Lighting.hlsl</code>、<code>Shadows.hlsl</code>、<code>UniversalForward</code> 等。不要在 URP 里直接使用 <code>ForwardBase</code>/<code>ForwardAdd</code> 的内置宏。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>前向/延迟/顶点照明各有取舍；<code>ForwardBase</code> 管主光和环境，<code>ForwardAdd</code> 管额外光源；衰减和阴影靠宏/纹理；多光源 = 多 Pass = 多成本；移动端要控制逐像素光源。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-09.html"><span class="dir">← 上一节</span>第 8 章 透明效果</a>
+    <a href="ch-11.html"><span class="dir">下一节 →</span>第 10 章 高级纹理</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 3 章 Unity Shader 基础 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">04 · 第 3 章 Unity Shader 基础</div>
+    <div class="pager"><a href="ch-03.html">← 上一节</a><a href="ch-05.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>Unity Shader 的文件结构与 ShaderLab</h2>
+
+<p>原书第 3 章讲的是“Unity 里的 Shader 长什么样”。它先区分材质（Material）和 Shader：材质是参数集合，Shader 是渲染程序；然后介绍 ShaderLab——Unity 用来描述 Shader 的外层语言，以及 Properties、SubShader、Pass、Fallback 这些结构。</p>
+
+<h3>材质和 Shader 的关系</h3>
+
+<p>Shader 定义“怎么算”，材质保存“用什么参数算”。同一个 Shader 可以有很多材质：红色塑料、蓝色金属、带纹理的木头，都是同一段 Shader 配不同的颜色、纹理、光滑度。运行时改材质参数，不需要重新编译 Shader。</p>
+
+<pre><code>// 材质上的参数会传给 Shader 的 Properties
+material.SetColor("_Color", Color.red);
+material.SetFloat("_Glossiness", 0.8f);
+material.SetTexture("_MainTex", texture);</code></pre>
+
+<h3>一个最小的 ShaderLab 结构</h3>
+
+<pre><code>Shader "Custom/SimpleColor"
+{
+    Properties
+    {
+        _Color ("Color", Color) = (1, 1, 1, 1)
+    }
+
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" "Queue" = "Geometry" }
+
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            fixed4 _Color;
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+            };
+
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+            };
+
+            v2f vert (appdata v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                return o;
+            }
+
+            fixed4 frag (v2f i) : SV_Target
+            {
+                return _Color;
+            }
+            ENDCG
+        }
+    }
+
+    Fallback "Diffuse"
+}</code></pre>
+
+<h3>Properties：材质面板的接口</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>类型</th><th>示例</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>Color</td><td><code>_Color ("Color", Color) = (1,1,1,1)</code></td><td>颜色，包含 alpha。</td></tr>
+<tr><td>Vector</td><td><code>_Offset ("Offset", Vector) = (0,0,0,0)</code></td><td>四分量向量。</td></tr>
+<tr><td>Float / Range</td><td><code>_Gloss ("Gloss", Range(0,1)) = 0.5</code></td><td>标量；Range 会在 Inspector 里显示滑条。</td></tr>
+<tr><td>2D</td><td><code>_MainTex ("Texture", 2D) = "white" {}</code></td><td>2D 纹理；默认值可以是 "white"/"black"/"gray"。</td></tr>
+<tr><td>Cube</td><td><code>_Cube ("Cubemap", Cube) = "" {}</code></td><td>立方体纹理。</td></tr>
+</tbody>
+</table></div>
+
+<p>纹理属性会自动带一个 <code>_MainTex_ST</code> 变量，<code>ST</code> 是 Scale 和 Translation 的缩写。用 <code>TRANSFORM_TEX(uv, _MainTex)</code> 可以把 Tiling/Offset 应用到 UV 上。</p>
+
+<h3>SubShader、Pass 与 Tags</h3>
+
+<p>一个 Shader 可以有多个 SubShader，Unity 会按顺序选择当前平台能用的第一个。每个 SubShader 可以包含多个 Pass；每个 Pass 是一次绘制，拥有自己的渲染状态和 Shader 代码。</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>标签/状态</th><th>常见值</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Queue</code></td><td>Background / Geometry / AlphaTest / Transparent / Overlay</td><td>决定渲染顺序；透明物体通常用 Transparent。</td></tr>
+<tr><td><code>RenderType</code></td><td>Opaque / Transparent / TransparentCutout</td><td>用于替换/后处理识别，也影响某些管线行为。</td></tr>
+<tr><td><code>LightMode</code></td><td>ForwardBase / ForwardAdd / ShadowCaster</td><td>内置管线中标记 Pass 的用途。</td></tr>
+<tr><td><code>Cull</code></td><td>Back / Front / Off</td><td>剔除背面/正面/不剔除；双面渲染用 Off。</td></tr>
+<tr><td><code>ZWrite</code></td><td>On / Off</td><td>是否写入深度；透明通常 Off。</td></tr>
+<tr><td><code>ZTest</code></td><td>LEqual / Always 等</td><td>深度比较方式。</td></tr>
+<tr><td><code>Blend</code></td><td>SrcAlpha OneMinusSrcAlpha 等</td><td>混合方式；透明/叠加效果用。</td></tr>
+</tbody>
+</table></div>
+
+<h3>Unity Shader 的三种形式</h3>
+
+<ul>
+<li><strong>表面着色器（Surface Shader）</strong>：用 <code>#pragma surface</code> 写，Unity 帮你生成光照/阴影 Pass；代码短，但控制力有限，只属于内置管线。</li>
+<li><strong>顶点/片元着色器（Vertex/Fragment Shader）</strong>：手写 <code>vert</code> 和 <code>frag</code>，控制最直接，是学习重点。</li>
+<li><strong>固定函数着色器</strong>：早期写法，现代项目基本不用；原书也建议选择前两种。</li>
+</ul>
+
+<pre><code>// 表面着色器的最小形态（仅内置管线）
+Shader "Custom/SurfaceDemo"
+{
+    Properties { _Color ("Color", Color) = (1,1,1,1) }
+    SubShader
+    {
+        Tags { "RenderType" = "Opaque" }
+        CGPROGRAM
+        #pragma surface surf Lambert
+        fixed4 _Color;
+        struct Input { float2 uv_MainTex; };
+        void surf (Input IN, inout SurfaceOutput o)
+        {
+            o.Albedo = _Color.rgb;
+            o.Alpha = _Color.a;
+        }
+        ENDCG
+    }
+    Fallback "Diffuse"
+}</code></pre>
+
+<h3>Unity Shader 不等于“真正的 Shader”</h3>
+
+<p>Unity Shader 文件是一个“包装”：外层是 ShaderLab，里面可以写 CG/HLSL 代码，最终由 Unity 编译成目标平台的着色器。它和 HLSL/GLSL 的关系，类似“工程配置 + 源码”与“最终二进制”的关系。你可以在 Unity 里写 GLSL，但需要特定的写法，而且跨平台限制更多。</p>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>表面着色器和固定函数着色器都属于内置管线的历史；URP/HDRP 使用 HLSL + Shader Graph。ShaderLab 的 Properties/SubShader/Pass 结构在 SRP 中仍然存在，但 <code>LightMode</code>、光照宏、后处理方式都变了。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>材质存参数，Shader 存逻辑；ShaderLab 负责结构，CG/HLSL 负责计算；Properties 是材质面板接口；SubShader/Pass 决定平台和绘制；Queue/Cull/ZWrite/ZTest/Blend 是渲染状态的核心。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-03.html"><span class="dir">← 上一节</span>第 2 章 渲染流水线</a>
+    <a href="ch-05.html"><span class="dir">下一节 →</span>第 4 章 学习 Shader 所需的数学基础</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

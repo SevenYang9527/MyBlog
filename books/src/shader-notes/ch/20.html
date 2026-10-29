@@ -1,0 +1,42 @@
+<h2>Unity 5 更新了什么：从固定管线到 PBR</h2>
+
+<p>原书第 19 章是一段“版本说明”。Unity 5 带来了线性空间、HDR、反射探针、Standard Shader、PBR 等变化，也逐步淘汰了固定函数着色器。对今天的读者来说，这一章更像“历史背景”：理解它，能明白为什么现代 Unity 的材质/光照默认长这样。</p>
+
+<h3>场景“更亮了”</h3>
+
+<p>Unity 5 的 Standard Shader + 线性空间 + HDR + 反射探针，让场景的光照和反射更自然。以前靠手调颜色/假高光的效果，现在可以通过材质和光照环境获得更一致的结果。代价是材质作者要理解金属度、粗糙度、反射探针和光照贴图。</p>
+
+<h3>表面着色器更容易“报错”</h3>
+
+<p>Unity 5 改进了表面着色器的编译/错误提示，让开发者更容易发现语法/语义问题。但表面着色器仍然是“高层封装”，黑盒问题依然存在；真正的调试还是要看生成的代码和 Frame Debugger。</p>
+
+<h3>自己控制非统一缩放的网格</h3>
+
+<p>非均匀缩放会影响法线变换；Unity 5 允许更灵活地控制网格/法线。写 Shader 时，法线要用 <code>UnityObjectToWorldNormal</code>（逆转置），不要直接乘模型矩阵。</p>
+
+<h3>固定管线着色器逐渐退出舞台</h3>
+
+<p>固定函数着色器（Fixed Function）在 Unity 5 后逐渐被可编程 Shader 取代。今天新项目基本不再使用；理解它主要是为了读老项目/老教程。</p>
+
+<h3>从 Unity 5 到今天</h3>
+
+<table>
+<thead>
+<tr><th>Unity 5 时代</th><th>今天</th></tr>
+</thead>
+<tbody>
+<tr><td>内置管线 + Standard Shader</td><td>URP/HDRP + Lit/Shader Graph</td></tr>
+<tr><td>表面着色器</td><td>顶点/片元 HLSL、Shader Graph</td></tr>
+<tr><td>GrabPass / OnRenderImage</td><td>Renderer Feature / Render Graph / Volume</td></tr>
+<tr><td>固定函数着色器</td><td>基本退出历史舞台</td></tr>
+<tr><td>传统光照贴图/探针</td><td>仍在使用，但管线配置更复杂</td></tr>
+</tbody>
+</table>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>这一章的内容主要是历史背景；不要把 Unity 5 的具体 API 当作今天的写法。理解“为什么从固定管线走向可编程/PBR”，比记住某个版本号更有价值。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>Unity 5 的关键词是线性空间、HDR、PBR、Standard Shader、反射探针；固定管线退场，可编程 Shader 成为主流；今天的 URP/HDRP 是这条路线的延续。</p>
+</blockquote>

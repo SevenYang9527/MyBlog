@@ -1,0 +1,68 @@
+<h2>让画面动起来：时间、纹理动画与顶点动画</h2>
+
+<p>原书第 11 章讲“Shader 里的动画”。它不依赖 Animator，而是用时间变量在 Shader 里改 UV 或顶点：序列帧、滚动背景、流动的河流、广告牌。核心是 <code>_Time</code> 和顶点/UV 的数学。</p>
+
+<h3>时间变量</h3>
+
+<table>
+<thead>
+<tr><th>变量</th><th>含义</th></tr>
+</thead>
+<tbody>
+<tr><td><code>_Time</code></td><td><code>(t/20, t, t*2, t*3)</code>，常用于缓慢/快速动画。</td></tr>
+<tr><td><code>_SinTime</code></td><td><code>(sin(t/8), sin(t/4), sin(t/2), sin(t))</code>。</td></tr>
+<tr><td><code>_CosTime</code></td><td>对应的余弦版本。</td></tr>
+<tr><td><code>unity_DeltaTime</code></td><td><code>(dt, 1/dt, smoothDt, 1/smoothDt)</code>。</td></tr>
+</tbody>
+</table>
+
+<h3>纹理动画</h3>
+
+<p>序列帧动画：把多帧拼成一张图集，按时间改 UV 的偏移和缩放。</p>
+
+<pre><code>float2 uv = i.uv;
+float index = floor(_Time.y * _Speed);
+float row = floor(index / _Columns);
+float col = index - row * _Columns;
+uv = uv * float2(1.0 / _Columns, 1.0 / _Rows)
+   + float2(col / _Columns, 1.0 - (row + 1) / _Rows);
+fixed4 color = tex2D(_MainTex, uv);</code></pre>
+
+<p>滚动背景：直接给 UV 加时间偏移，或用两张纹理以不同速度滚动，做出视差。</p>
+
+<pre><code>float2 uv1 = i.uv + _Time.y * _Speed1;
+float2 uv2 = i.uv + _Time.y * _Speed2;
+fixed4 c1 = tex2D(_MainTex1, uv1);
+fixed4 c2 = tex2D(_MainTex2, uv2);</code></pre>
+
+<h3>顶点动画</h3>
+
+<p>流动的河流：在顶点着色器里按正弦波改高度，或按 UV/时间偏移顶点。</p>
+
+<pre><code>float4 offset = tex2Dlod(_NoiseTex, float4(v.uv + _Time.y * _Speed, 0, 0));
+v.vertex.xyz += v.normal * offset.r * _Amplitude;</code></pre>
+
+<p>广告牌（Billboard）：让面片始终朝向相机。常见做法是用相机的右/上方向重建顶点位置：</p>
+
+<pre><code>float3 center = mul(unity_ObjectToWorld, float4(0,0,0,1)).xyz;
+float3 cameraRight = normalize(UNITY_MATRIX_V[0].xyz);
+float3 cameraUp = normalize(UNITY_MATRIX_V[1].xyz);
+float3 worldPos = center + cameraRight * v.vertex.x + cameraUp * v.vertex.y;
+o.pos = mul(UNITY_MATRIX_VP, float4(worldPos, 1.0));</code></pre>
+
+<h3>注意事项</h3>
+
+<ul>
+<li><strong>法线也要动</strong>：顶点位移后，法线可能不再正确；需要重新计算或接受近似。</li>
+<li><strong>阴影</strong>：顶点动画的物体，阴影 Pass 也要用同样的位移，否则影子会对不上。</li>
+<li><strong>批处理</strong>：顶点动画会改变包围盒/位置，可能影响静态批处理；移动端要测试。</li>
+<li><strong>时间缩放</strong>：<code>_Time</code> 受 <code>Time.timeScale</code> 影响；暂停时动画会停。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>Shader Graph 里可以用 Time 节点做同类效果；URP 的顶点动画要注意 SRP Batcher/GPU Instancing 的兼容性。复杂的骨骼/粒子动画通常交给 Animator/VFX Graph，不要全塞进 Shader。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong><code>_Time</code> 是 Shader 动画的时钟；UV 偏移/图集索引做纹理动画；顶点位移做流动/波动；广告牌用相机右/上重建面片；阴影、法线、批处理是顶点动画的常见坑。</p>
+</blockquote>

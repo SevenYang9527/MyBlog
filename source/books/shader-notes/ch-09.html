@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 8 章 透明效果 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">09 · 第 8 章 透明效果</div>
+    <div class="pager"><a href="ch-08.html">← 上一节</a><a href="ch-10.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>透明效果：渲染顺序、透明度测试与混合</h2>
+
+<p>原书第 8 章讲透明。透明看起来只是“让颜色带 alpha”，实际要处理渲染顺序、深度写入、混合方程和双面渲染。核心问题只有一个：<strong>不透明物体可以靠深度缓冲解决遮挡，透明物体不能</strong>。</p>
+
+<h3>为什么渲染顺序很重要</h3>
+
+<p>不透明物体通常先渲染，开启 <code>ZWrite On</code> 和 <code>ZTest LEqual</code>，后面的片元被深度测试挡住。透明物体如果也写深度，会挡住它后面的透明物体；如果不写深度，又需要从远到近排序，才能让混合结果正确。</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>队列</th><th>典型值</th><th>用途</th></tr>
+</thead>
+<tbody>
+<tr><td>Background</td><td>1000</td><td>天空盒、背景</td></tr>
+<tr><td>Geometry</td><td>2000</td><td>不透明物体</td></tr>
+<tr><td>AlphaTest</td><td>2450</td><td>透明度测试</td></tr>
+<tr><td>Transparent</td><td>3000</td><td>透明混合</td></tr>
+<tr><td>Overlay</td><td>4000</td><td>UI、镜头光晕等</td></tr>
+</tbody>
+</table></div>
+
+<h3>透明度测试</h3>
+
+<p>透明度测试不混合，而是用 <code>clip</code> 丢弃低于阈值的片元。它通常仍然写深度，所以适合树叶、草丛、破洞等“要么完全可见、要么完全透明”的效果。</p>
+
+<pre><code>Properties
+{
+    _MainTex ("Texture", 2D) = "white" {}
+    _Cutoff ("Alpha Cutoff", Range(0,1)) = 0.5
+}
+
+fixed4 frag (v2f i) : SV_Target
+{
+    fixed4 texColor = tex2D(_MainTex, i.uv);
+    clip(texColor.a - _Cutoff);
+    return texColor;
+}</code></pre>
+
+<p>对应的渲染状态通常是 <code>Queue = AlphaTest</code>、<code>ZWrite On</code>、<code>Cull Off</code>（树叶等双面物体）。</p>
+
+<h3>透明度混合</h3>
+
+<p>透明度混合把片元颜色和帧缓冲颜色按 alpha 混合。最常见的是：</p>
+
+<pre><code>Tags { "Queue" = "Transparent" "RenderType" = "Transparent" }
+ZWrite Off
+Blend SrcAlpha OneMinusSrcAlpha</code></pre>
+
+<p>片元输出 alpha：</p>
+
+<pre><code>fixed4 frag (v2f i) : SV_Target
+{
+    fixed4 texColor = tex2D(_MainTex, i.uv);
+    return fixed4(texColor.rgb, texColor.a * _AlphaScale);
+}</code></pre>
+
+<p><code>ZWrite Off</code> 让透明物体不写深度，避免挡住后面的透明物体；但这也意味着排序错误会更明显。Unity 会按物体中心/包围盒排序，复杂透明场景仍可能出现穿插错误。</p>
+
+<h3>双面渲染</h3>
+
+<p>默认 <code>Cull Back</code> 只画正面。透明物体（玻璃、树叶、布料）经常需要双面：</p>
+
+<pre><code>Cull Off</code></pre>
+
+<p>如果双面透明需要正确的正反面顺序，可以写两个 Pass：第一个 <code>Cull Front</code> 画背面，第二个 <code>Cull Back</code> 画正面，并分别设置队列/混合。</p>
+
+<h3>常见混合命令</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>Blend</th><th>效果</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Blend SrcAlpha OneMinusSrcAlpha</code></td><td>标准 alpha 混合</td></tr>
+<tr><td><code>Blend One One</code></td><td>叠加/发光</td></tr>
+<tr><td><code>Blend One OneMinusSrcAlpha</code></td><td>预乘 alpha 的常见写法</td></tr>
+<tr><td><code>Blend DstColor Zero</code></td><td>正片叠底</td></tr>
+<tr><td><code>BlendOp Add / Sub / RevSub / Min / Max</code></td><td>自定义混合运算</td></tr>
+</tbody>
+</table></div>
+
+<h3>透明排序的边界</h3>
+
+<ul>
+<li>Unity 按 Renderer 排序，不按三角形排序；一个网格内部的透明三角形仍可能出错。</li>
+<li>半透明物体互相穿插时，排序错误很难完全避免；可以用 <code>SortingOrder</code>、拆分网格、深度预 Pass 等方式缓解。</li>
+<li>粒子、头发、玻璃是透明问题的重灾区；不要指望一个 <code>Blend</code> 解决所有情况。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 的透明物体同样按队列和排序处理，但 Shader 的 <code>Tags</code>、光照/阴影宏不同；URP 还提供 <code>Transparent</code> 队列和 Depth Priming 等设置。后处理/抓屏不能用内置管线的 <code>GrabPass</code>，要用 <code>_CameraOpaqueTexture</code> 或 Renderer Feature。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>不透明靠深度，透明靠排序和混合；AlphaTest 用 <code>clip</code>，AlphaBlend 用 <code>Blend</code> + <code>ZWrite Off</code>；双面用 <code>Cull Off</code> 或两个 Pass；透明排序没有银弹，复杂场景要拆/排/预 Pass。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-08.html"><span class="dir">← 上一节</span>第 7 章 基础纹理</a>
+    <a href="ch-10.html"><span class="dir">下一节 →</span>第 9 章 更复杂的光照</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

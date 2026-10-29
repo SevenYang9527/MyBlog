@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 15 章 使用噪声 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">16 · 第 15 章 使用噪声</div>
+    <div class="pager"><a href="ch-15.html">← 上一节</a><a href="ch-17.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>使用噪声：消融、水波与雾</h2>
+
+<p>原书第 15 章讲噪声。噪声看起来只是“随机纹理”，实际是把规则图案打散，让消融边缘不规则、水面有细节、雾有流动感。核心不是“生成一张随机图”，而是“用可重复的数学函数控制随机性”。</p>
+
+<h3>噪声的基本类型</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>类型</th><th>特点</th><th>常见用途</th></tr>
+</thead>
+<tbody>
+<tr><td>Value Noise</td><td>对格点随机值插值，便宜，块状感明显。</td><td>消融、雾、简单扰动。</td></tr>
+<tr><td>Perlin Noise</td><td>梯度噪声，连续、自然，计算量稍大。</td><td>水面、云、地形。</td></tr>
+<tr><td>FBM（分形噪声）</td><td>多层噪声叠加，细节丰富。</td><td>云、火焰、地形。</td></tr>
+<tr><td>Worley Noise</td><td>基于距离场，细胞状。</td><td>水泡、皮肤、石块。</td></tr>
+</tbody>
+</table></div>
+
+<h3>消融效果</h3>
+
+<p>用噪声值和一个阈值比较，低于阈值的片元丢弃；在阈值附近加一圈边缘色：</p>
+
+<pre><code>sampler2D _NoiseTex;
+float _Threshold;
+float _EdgeWidth;
+fixed4 _EdgeColor;
+
+fixed4 frag (v2f i) : SV_Target
+{
+    float noise = tex2D(_NoiseTex, i.uv).r;
+    clip(noise - _Threshold);
+
+    float edge = smoothstep(_Threshold, _Threshold + _EdgeWidth, noise);
+    fixed4 baseColor = tex2D(_MainTex, i.uv);
+    return lerp(_EdgeColor, baseColor, edge);
+}</code></pre>
+
+<p>噪声纹理的 Wrap Mode 通常设为 Repeat，Tiling 控制消融块的大小。阈值随时间变化，就能做“逐渐消失”的动画。</p>
+
+<h3>水波效果</h3>
+
+<p>水面通常叠加两层法线/噪声，按不同速度滚动，再用菲涅耳控制反射/折射：</p>
+
+<pre><code>float2 uv1 = i.uv + _Time.y * _Speed1;
+float2 uv2 = i.uv * 1.3 + _Time.y * _Speed2;
+float3 n1 = UnpackNormal(tex2D(_NormalTex1, uv1));
+float3 n2 = UnpackNormal(tex2D(_NormalTex2, uv2));
+float3 normal = normalize(n1 + n2);
+
+float fresnel = pow(1.0 - saturate(dot(normal, viewDir)), _FresnelPower);
+float3 color = lerp(refraction, reflection, fresnel);</code></pre>
+
+<h3>全局雾</h3>
+
+<p>噪声可以让雾“流动”起来，而不是一层均匀的颜色。常见做法是用世界坐标/时间采样噪声，叠加到雾密度上：</p>
+
+<pre><code>float noise = tex2D(_NoiseTex, worldPos.xz * _NoiseScale + _Time.y * _Speed).r;
+float fog = saturate((depth - _FogStart) / (_FogEnd - _FogStart));
+fog *= lerp(1.0, noise, _NoiseStrength);
+float3 color = lerp(sceneColor, _FogColor.rgb, fog);</code></pre>
+
+<h3>噪声的性能</h3>
+
+<ul>
+<li>片元里多层 FBM 很贵；能用纹理预烘焙就用纹理。</li>
+<li>噪声采样次数、纹理分辨率、Tiling 都会影响带宽和 ALU。</li>
+<li>移动端优先用低分辨率噪声纹理 + 少量采样，避免在片元里跑多层循环。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>Shader Graph 有 Noise 节点；URP 里同样可以用噪声纹理/程序噪声。VFX Graph 更适合粒子级噪声，不要把所有噪声都塞进表面 Shader。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>噪声是可重复的随机函数；消融用阈值 + 边缘色；水面用多层法线/噪声滚动 + 菲涅耳；雾用深度 + 噪声；片元里多层噪声很贵，优先预烘焙。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-15.html"><span class="dir">← 上一节</span>第 14 章 非真实感渲染</a>
+    <a href="ch-17.html"><span class="dir">下一节 →</span>第 16 章 Unity 中的渲染优化技术</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

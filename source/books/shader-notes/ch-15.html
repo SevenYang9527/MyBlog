@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 14 章 非真实感渲染 · 《Unity Shader 入门精要》精要导读</title>
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity Shader 入门精要》精要导读</div>
+    <div class="book-en">Unity Shader Essentials: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">导读：这本书怎么读，以及今天的版本差异</a></li>
+      <li><a href="ch-02.html">第 1 章 欢迎来到 Shader 的世界</a></li>
+      <li><a href="ch-03.html">第 2 章 渲染流水线</a></li>
+      <li><a href="ch-04.html">第 3 章 Unity Shader 基础</a></li>
+      <li><a href="ch-05.html">第 4 章 学习 Shader 所需的数学基础</a></li>
+      <li><a href="ch-06.html">第 5 章 开始 Unity Shader 学习之旅</a></li>
+      <li><a href="ch-07.html">第 6 章 Unity 中的基础光照</a></li>
+      <li><a href="ch-08.html">第 7 章 基础纹理</a></li>
+      <li><a href="ch-09.html">第 8 章 透明效果</a></li>
+      <li><a href="ch-10.html">第 9 章 更复杂的光照</a></li>
+      <li><a href="ch-11.html">第 10 章 高级纹理</a></li>
+      <li><a href="ch-12.html">第 11 章 让画面动起来</a></li>
+      <li><a href="ch-13.html">第 12 章 屏幕后处理效果</a></li>
+      <li><a href="ch-14.html">第 13 章 使用深度和法线纹理</a></li>
+      <li><a href="ch-15.html">第 14 章 非真实感渲染</a></li>
+      <li><a href="ch-16.html">第 15 章 使用噪声</a></li>
+      <li><a href="ch-17.html">第 16 章 Unity 中的渲染优化技术</a></li>
+      <li><a href="ch-18.html">第 17 章 Unity 的表面着色器探秘</a></li>
+      <li><a href="ch-19.html">第 18 章 基于物理的渲染</a></li>
+      <li><a href="ch-20.html">第 19 章 Unity 5 更新了什么</a></li>
+      <li><a href="ch-21.html">第 20 章 还有更多内容吗 + 延伸阅读</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity Shader 入门精要》导读<br>
+      原书 389 页 · 2016 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="topbar">
+    <div class="chapter-no">15 · 第 14 章 非真实感渲染</div>
+    <div class="pager"><a href="ch-14.html">← 上一节</a><a href="ch-16.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>非真实感渲染：卡通、描边与素描</h2>
+
+<p>原书第 14 章讲非真实感渲染（NPR）。它不追求物理正确，而是用风格化的光照、描边和纹理，做出卡通、素描、水彩等效果。核心手段是“把连续的光照量化成色阶”和“在轮廓处画线”。</p>
+
+<h3>卡通风格：色阶化光照</h3>
+
+<p>最简单的卡通光照是把 <code>N·L</code> 量化成几个台阶：</p>
+
+<pre><code>float NdotL = saturate(dot(N, L));
+float toon = floor(NdotL * _Steps) / _Steps;
+float3 diffuse = _LightColor0.rgb * _BaseColor.rgb * toon;</code></pre>
+
+<p>也可以用渐变纹理（Ramp）控制色阶，边缘更柔和、可调性更好。高光同样可以量化，或者用一张高光遮罩控制形状。</p>
+
+<h3>描边：反向外扩与边缘检测</h3>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>方式</th><th>做法</th><th>特点</th></tr>
+</thead>
+<tbody>
+<tr><td>反向外扩（Inverted Hull）</td><td>再画一遍模型，沿法线外扩，<code>Cull Front</code>，只显示背面轮廓。</td><td>便宜、风格稳定；对硬边/法线不连续的模型可能断裂。</td></tr>
+<tr><td>屏幕后处理边缘检测</td><td>用深度/法线/颜色做 Sobel/Roberts。</td><td>全屏统一，适合复杂场景；线宽受分辨率影响。</td></tr>
+<tr><td>几何着色器/法线平滑</td><td>复制模型并平滑法线后外扩。</td><td>轮廓更连续，成本更高。</td></tr>
+</tbody>
+</table></div>
+
+<pre><code>// 反向外扩 Pass（简化）
+Pass
+{
+    Cull Front
+    CGPROGRAM
+    #pragma vertex vert
+    #pragma fragment frag
+    #include "UnityCG.cginc"
+
+    float _OutlineWidth;
+    fixed4 _OutlineColor;
+
+    v2f vert (appdata v)
+    {
+        v2f o;
+        float3 pos = v.vertex.xyz + v.normal * _OutlineWidth;
+        o.pos = UnityObjectToClipPos(float4(pos, 1));
+        return o;
+    }
+
+    fixed4 frag (v2f i) : SV_Target { return _OutlineColor; }
+    ENDCG
+}</code></pre>
+
+<h3>素描风格</h3>
+
+<p>素描风格通常用噪声/纸张纹理 + 色调映射：根据光照强度选择不同的排线纹理，或者用噪声扰动 UV 做出手绘抖动。原书用一张噪声纹理和光照结果混合，模拟铅笔排线。</p>
+
+<pre><code>float3 sketch = tex2D(_SketchTex, i.uv * _Tile).rgb;
+float tone = saturate(dot(N, L));
+float3 color = lerp(_PaperColor, sketch, 1.0 - tone);</code></pre>
+
+<h3>风格化的取舍</h3>
+
+<ul>
+<li><strong>不要追求物理正确</strong>：卡通光照可以故意压暗背光、强化轮廓。</li>
+<li><strong>描边宽度要随距离/分辨率调整</strong>：否则远处太粗、近处太细。</li>
+<li><strong>法线要连续</strong>：反向外扩依赖平滑法线；硬边模型要做法线平滑或改用后处理描边。</li>
+<li><strong>阴影可以简化</strong>：卡通阴影常用硬阴影/色块，不必追求软阴影。</li>
+</ul>
+
+<blockquote>
+<p><strong>现代 Unity 备注：</strong>URP 可以用 Shader Graph 做色阶化光照和反向外扩；后处理描边可以用 Renderer Feature + 深度/法线。HDRP 的材质/光照模型更复杂，卡通渲染通常要自定义 Pass 或 Shader Graph。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>卡通 = 光照色阶化 + 描边；描边有反向外扩和后处理两条路；素描 = 噪声/排线 + 色调；风格化可以牺牲物理正确，但要保证轮廓、法线和分辨率下的稳定性。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-14.html"><span class="dir">← 上一节</span>第 13 章 使用深度和法线纹理</a>
+    <a href="ch-16.html"><span class="dir">下一节 →</span>第 15 章 使用噪声</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>
