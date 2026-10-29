@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">04 · 适配：Canvas Scaler 的三种模式与两种匹配</div>
     <div class="pager"><a href="ch-03.html">← 上一节</a><a href="ch-05.html">下一节 →</a></div>
   </div>
@@ -90,7 +90,7 @@ float scale     = Mathf.Pow(2, logAvg);</code></pre>
 </table></div>
 
 <figure>
-<svg viewBox="0 0 760 210" role="img" aria-label="Expand 与 Shrink 的差异" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 210" role="img" aria-label="Expand 与 Shrink 的差异" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="160" rx="10"></rect>
     <rect x="400" y="25" width="340" height="160" rx="10"></rect>
@@ -110,7 +110,7 @@ float scale     = Mathf.Pow(2, logAvg);</code></pre>
     <text x="570" y="123" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">参考分辨率内容</text>
     <text x="570" y="180" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">画布比参考小：边缘可能被裁掉</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 4-1：Expand 保证参考内容全部可见，但可能露出额外区域；Shrink 填满屏幕，但可能裁掉参考边缘。</figcaption>
 </figure>
 

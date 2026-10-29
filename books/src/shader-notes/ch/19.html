@@ -9,6 +9,38 @@
 <pre><code>// 简化的反射方程（概念）
 Lo = ∫ Li * f(l, v) * (N·L) dω</code></pre>
 
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="BRDF 把入射光映射为出射光" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-brdf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="75" width="180" height="70" rx="9"></rect>
+    <rect x="290" y="45" width="180" height="130" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="560" y="75" width="180" height="70" rx="9"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="110" y="102" font-weight="600">入射光 Li</text>
+    <text x="110" y="122" font-size="10.5">方向 l</text>
+    <text x="380" y="72" font-weight="600">BRDF f(l, v)</text>
+    <text x="380" y="98" font-size="10.5">D 法线分布</text>
+    <text x="380" y="116" font-size="10.5">G 几何遮蔽</text>
+    <text x="380" y="134" font-size="10.5">F 菲涅耳</text>
+    <text x="380" y="158" font-size="10.5">能量守恒</text>
+    <text x="650" y="102" font-weight="600">出射光 Lo</text>
+    <text x="650" y="122" font-size="10.5">方向 v → 相机</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-brdf)">
+    <line x1="200" y1="110" x2="282" y2="110"></line>
+    <line x1="470" y1="110" x2="552" y2="110"></line>
+  </g>
+  <text x="380" y="212" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">Lo = ∫ Li · f(l,v) · (N·L) dω；f 不能凭空放大能量</text>
+</svg>
+<figcaption>图 19-1：BRDF 描述入射光如何分配到出射方向。实时 PBR 用 D/G/F 近似微表面反射，并保证能量守恒。</figcaption>
+</figure>
+
 <h3>漫反射与高光</h3>
 
 <p>漫反射常用 Lambert：</p>

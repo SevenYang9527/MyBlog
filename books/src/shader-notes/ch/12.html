@@ -35,6 +35,35 @@ float2 uv2 = i.uv + _Time.y * _Speed2;
 fixed4 c1 = tex2D(_MainTex1, uv1);
 fixed4 c2 = tex2D(_MainTex2, uv2);</code></pre>
 
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="UV 滚动与广告牌" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-anim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="180" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="180" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="50">UV 滚动</text>
+    <text x="570" y="50">广告牌（Billboard）</text>
+  </g>
+  <rect x="65" y="80" width="240" height="100" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+  <rect x="100" y="100" width="240" height="100" rx="4" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 4"></rect>
+  <line x1="190" y1="130" x2="280" y2="130" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow-anim)"></line>
+  <text x="190" y="200" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">uv += _Time.y * speed</text>
+
+  <circle cx="470" cy="135" r="8" fill="var(--accent)" stroke="none"></circle>
+  <path d="M 478 135 L 520 105 M 478 135 L 520 165" stroke="currentColor" stroke-width="1.5" fill="none"></path>
+  <rect x="530" y="100" width="110" height="70" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+  <line x1="585" y1="135" x2="585" y2="85" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow-anim)"></line>
+  <text x="570" y="200" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">面片始终朝向相机右/上方向</text>
+</svg>
+<figcaption>图 12-1：UV 滚动与广告牌。前者改 UV 偏移，后者用相机右/上方向重建面片顶点。</figcaption>
+</figure>
+
 <h3>顶点动画</h3>
 
 <p>流动的河流：在顶点着色器里按正弦波改高度，或按 UV/时间偏移顶点。</p>

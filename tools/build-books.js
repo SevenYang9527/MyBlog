@@ -34,6 +34,11 @@ function wrapTables(html) {
   return html.replace(/<table(\s[^>]*)?>[\s\S]*?<\/table>/g, (m) => `<div class="table-wrap">${m}</div>`);
 }
 
+// 给内联 SVG 套一层横向滚动容器，窄屏下保持图内文字可读
+function wrapFigures(html) {
+  return html.replace(/<svg(\s[^>]*)?>[\s\S]*?<\/svg>/g, (m) => `<div class="figure-scroll">${m}</div>`);
+}
+
 function copyTheme() {
   const dir = path.join(outRoot, 'assets');
   fs.mkdirSync(dir, { recursive: true });
@@ -90,8 +95,7 @@ ${sidebar}
     </div>
   </aside>
   <div class="main">
-    <div class="progress"><span></span></div>
-    ${isIndex ? '' : pager}
+    <div class="progress"><span></span></div>${isIndex ? '' : '\n' + pager}
     ${body}
   </div>
 </div>
@@ -181,7 +185,7 @@ ${tocRows}
       next && next.ready ? `<a href="ch-${next.id}.html">下一节 →</a>` : ''
     }</div>
   </div>`;
-    const content = wrapTables(fs.readFileSync(u.file, 'utf8'));
+    const content = wrapFigures(wrapTables(fs.readFileSync(u.file, 'utf8')));
     const body = `  <article class="content">
 ${content}
   </article>

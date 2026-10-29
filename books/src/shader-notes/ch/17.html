@@ -26,6 +26,35 @@
 </tbody>
 </table>
 
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="渲染优化的五类瓶颈" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="270" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="520" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="20" y="115" width="220" height="70" rx="9"></rect>
+    <rect x="270" y="115" width="220" height="70" rx="9"></rect>
+    <rect x="520" y="115" width="220" height="70" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="130" y="52" font-weight="600">Draw Call</text>
+    <text x="130" y="72" font-size="10.5">批处理 / 共享材质 / Instancing</text>
+    <text x="380" y="52" font-weight="600">顶点</text>
+    <text x="380" y="72" font-size="10.5">减面 / LOD / 遮挡剔除</text>
+    <text x="630" y="52" font-weight="600">片元 / 填充率</text>
+    <text x="630" y="72" font-size="10.5">Overdraw / 全屏特效 / 透明</text>
+    <text x="130" y="142" font-weight="600">带宽</text>
+    <text x="130" y="162" font-size="10.5">纹理压缩 / RT 分辨率 / Pass 数</text>
+    <text x="380" y="142" font-weight="600">Shader 复杂度</text>
+    <text x="380" y="162" font-size="10.5">采样 / 分支 / ALU / 变体</text>
+    <text x="630" y="142" font-weight="600">发热 / 降频</text>
+    <text x="630" y="162" font-size="10.5">持续负载 / 真机测试</text>
+  </g>
+  <text x="380" y="212" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">先用 Profiler / Frame Debugger 定位，再选对应的优化手段</text>
+</svg>
+<figcaption>图 17-1：渲染优化的五类瓶颈。DrawCall、顶点、片元、带宽、Shader 复杂度要分开看，不要用一种技巧解决所有问题。</figcaption>
+</figure>
+
 <h3>减少 Draw Call</h3>
 
 <ul>

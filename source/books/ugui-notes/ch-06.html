@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">06 · RectTransform 计算：anchoredPosition、sizeDelta 与 rect</div>
     <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
   </div>
@@ -73,7 +73,7 @@ rect.max  = rect.min + size</code></pre>
 <p><code>RectTransform.rect</code> 是“以轴心为原点”的局部矩形。轴心在中心时，范围是 <code>(-w/2, -h/2, w, h)</code>；轴心在左下角时，范围是 <code>(0, 0, w, h)</code>。所以讲义说“rect 的 x、y 是轴心点到矩形框左下角的向量值”是对的，只不过这个向量通常指向负方向。</p>
 
 <figure>
-<svg viewBox="0 0 760 230" role="img" aria-label="rect、sizeDelta 与锚框的关系" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="rect、sizeDelta 与锚框的关系" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="180" rx="10"></rect>
     <rect x="400" y="25" width="340" height="180" rx="10"></rect>
@@ -99,7 +99,7 @@ rect.max  = rect.min + size</code></pre>
     </g>
     <text x="570" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">sizeDelta = size - 锚框尺寸</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 6-1：锚点重合时 <code>sizeDelta</code> 就是尺寸；锚点分开时，它是实际尺寸与锚框尺寸的差。</figcaption>
 </figure>
 

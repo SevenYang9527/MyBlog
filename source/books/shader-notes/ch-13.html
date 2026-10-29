@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>第 12 章 屏幕后处理效果 · 《Unity Shader 入门精要》精要导读</title>
-<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
@@ -48,7 +48,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">13 · 第 12 章 屏幕后处理效果</div>
     <div class="pager"><a href="ch-12.html">← 上一节</a><a href="ch-14.html">下一节 →</a></div>
   </div>
@@ -56,6 +56,43 @@
 <h2>屏幕后处理：把整帧当成一张图</h2>
 
 <p>原书第 12 章讲屏幕后处理（Post-Processing）。思路是：场景先渲染到一张 RenderTexture，再用一个全屏 Pass 对这张图做颜色调整、边缘检测、模糊、Bloom、运动模糊，最后输出到屏幕。它把 Shader 从“物体表面”扩展到了“整帧图像”。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 190" role="img" aria-label="屏幕后处理链路" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-post" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="40" width="120" height="60" rx="9"></rect>
+    <rect x="160" y="40" width="120" height="60" rx="9"></rect>
+    <rect x="310" y="40" width="120" height="60" rx="9"></rect>
+    <rect x="460" y="40" width="120" height="60" rx="9"></rect>
+    <rect x="610" y="40" width="120" height="60" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" text-anchor="middle" font-family="inherit">
+    <text x="70" y="65">场景</text>
+    <text x="70" y="84" font-size="10.5">Camera Render</text>
+    <text x="220" y="65">RenderTexture</text>
+    <text x="220" y="84" font-size="10.5">整帧图像</text>
+    <text x="370" y="65">Pass 1</text>
+    <text x="370" y="84" font-size="10.5">颜色 / 边缘</text>
+    <text x="520" y="65">Pass 2</text>
+    <text x="520" y="84" font-size="10.5">模糊 / Bloom</text>
+    <text x="670" y="65">屏幕</text>
+    <text x="670" y="84" font-size="10.5">Composite</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-post)">
+    <line x1="130" y1="70" x2="152" y2="70"></line>
+    <line x1="280" y1="70" x2="302" y2="70"></line>
+    <line x1="430" y1="70" x2="452" y2="70"></line>
+    <line x1="580" y1="70" x2="602" y2="70"></line>
+  </g>
+  <text x="380" y="145" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">每个全屏 Pass 都是一次采样/写入；Pass 越多，带宽和填充率越高</text>
+</svg></div>
+<figcaption>图 13-1：屏幕后处理链路。场景先进入 RenderTexture，再经过一个或多个全屏 Pass，最后合成到屏幕。</figcaption>
+</figure>
 
 <h3>最基本的后处理脚本</h3>
 

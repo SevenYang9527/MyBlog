@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>第 16 章 Unity 中的渲染优化技术 · 《Unity Shader 入门精要》精要导读</title>
-<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
@@ -48,7 +48,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">17 · 第 16 章 Unity 中的渲染优化技术</div>
     <div class="pager"><a href="ch-16.html">← 上一节</a><a href="ch-18.html">下一节 →</a></div>
   </div>
@@ -80,6 +80,35 @@
 <tr><td>Shader 太复杂</td><td>ALU/采样/分支多</td><td>简化光照、减少采样、用 LOD/变体、避免动态分支。</td></tr>
 </tbody>
 </table></div>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="渲染优化的五类瓶颈" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="270" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="520" y="25" width="220" height="70" rx="9"></rect>
+    <rect x="20" y="115" width="220" height="70" rx="9"></rect>
+    <rect x="270" y="115" width="220" height="70" rx="9"></rect>
+    <rect x="520" y="115" width="220" height="70" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="130" y="52" font-weight="600">Draw Call</text>
+    <text x="130" y="72" font-size="10.5">批处理 / 共享材质 / Instancing</text>
+    <text x="380" y="52" font-weight="600">顶点</text>
+    <text x="380" y="72" font-size="10.5">减面 / LOD / 遮挡剔除</text>
+    <text x="630" y="52" font-weight="600">片元 / 填充率</text>
+    <text x="630" y="72" font-size="10.5">Overdraw / 全屏特效 / 透明</text>
+    <text x="130" y="142" font-weight="600">带宽</text>
+    <text x="130" y="162" font-size="10.5">纹理压缩 / RT 分辨率 / Pass 数</text>
+    <text x="380" y="142" font-weight="600">Shader 复杂度</text>
+    <text x="380" y="162" font-size="10.5">采样 / 分支 / ALU / 变体</text>
+    <text x="630" y="142" font-weight="600">发热 / 降频</text>
+    <text x="630" y="162" font-size="10.5">持续负载 / 真机测试</text>
+  </g>
+  <text x="380" y="212" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">先用 Profiler / Frame Debugger 定位，再选对应的优化手段</text>
+</svg></div>
+<figcaption>图 17-1：渲染优化的五类瓶颈。DrawCall、顶点、片元、带宽、Shader 复杂度要分开看，不要用一种技巧解决所有问题。</figcaption>
+</figure>
 
 <h3>减少 Draw Call</h3>
 

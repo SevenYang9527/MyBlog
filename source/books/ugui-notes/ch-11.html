@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">11 · DrawCall：合批优化与常见打断</div>
     <div class="pager"><a href="ch-10.html">← 上一节</a><a href="ch-12.html">下一节 →</a></div>
   </div>
@@ -117,7 +117,7 @@
 <p>讲义的红点/Icon 例子很典型：红点和 Icon 来自不同图集；红点稍微大一点，遮住了旁边的 Icon，就不能合批。原因不是“红点太大”，而是“红点夹在了本来可以合批的 Icon 之间，破坏了绘制顺序”。</p>
 
 <figure>
-<svg viewBox="0 0 760 230" role="img" aria-label="穿插重叠与分组后的合批" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="穿插重叠与分组后的合批" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="180" rx="10"></rect>
     <rect x="400" y="25" width="340" height="180" rx="10"></rect>
@@ -142,7 +142,7 @@
     <circle cx="605" cy="160" r="16" style="stroke:#c0392b;fill:rgba(192,57,43,.15)"></circle>
     <text x="570" y="195" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">Icon 一组、红点一组，各自成批</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 11-1：把同图集的元素放在相邻层级，能减少穿插造成的断批；但要注意遮挡关系不能被破坏。</figcaption>
 </figure>
 

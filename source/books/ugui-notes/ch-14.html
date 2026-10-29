@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">14 · 工具与美术规范：Profiler、Frame Debugger 与团队约定</div>
     <div class="pager"><a href="ch-13.html">← 上一节</a><a href="ch-15.html">下一节 →</a></div>
   </div>
@@ -100,7 +100,7 @@
 <p>一个常见的误判是“DrawCall 少就一定快”。如果 DrawCall 少但都是全屏半透明，GPU 填充率仍然会爆。反过来，DrawCall 多但都是小图，CPU 可能先扛不住。Frame Debugger 和 GPU Profiler 要一起看。</p>
 
 <figure>
-<svg viewBox="0 0 760 190" role="img" aria-label="Profiler 时间线示意" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 190" role="img" aria-label="Profiler 时间线示意" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="720" height="140" rx="10"></rect>
   </g>
@@ -127,7 +127,7 @@
     <text x="120" y="152">先看谁占得多</text>
     <text x="540" y="152">再决定拆 Canvas / 少改 UI</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 14-1：Profiler 时间线的读法。Layout、Graphic、Batch 是三段不同的开销，不要用一个“UI 卡”概括。</figcaption>
 </figure>
 

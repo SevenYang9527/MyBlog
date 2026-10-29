@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">08 · 合批：重叠检测、层级号与 SubMesh</div>
     <div class="pager"><a href="ch-07.html">← 上一节</a><a href="ch-09.html">下一节 →</a></div>
   </div>
@@ -91,7 +91,7 @@ return a.renderOrder.CompareTo(b.renderOrder);</code></pre>
 <p>讲义第 27 页讲“Hierarchy 穿插重叠问题”：红点和 Icon 如果在不同图集里，红点稍微大一点、遮住了旁边的 Icon，就不能合批。这个例子说明了一个关键点：合批不是“全局找同图集”，而是“按绘制顺序，在不破坏遮挡关系的前提下合并”。</p>
 
 <figure>
-<svg viewBox="0 0 760 250" role="img" aria-label="重叠穿插打断合批的示意" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="重叠穿插打断合批的示意" style="width:100%;height:auto;color:var(--text-soft)">
   <defs>
     <marker id="arrow8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
@@ -122,7 +122,7 @@ return a.renderOrder.CompareTo(b.renderOrder);</code></pre>
     <text x="620" y="168" fill="#2d6cdf" font-size="13" text-anchor="middle" stroke="none">B</text>
     <text x="570" y="205" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">B 放到最后，A/C 可以合批</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 8-1：合批看的是绘制顺序和遮挡关系。A、C 同材质，但 B 夹在中间时，A/C 无法跨过 B 合并。</figcaption>
 </figure>
 

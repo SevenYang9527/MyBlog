@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>第 7 章 基础纹理 · 《Unity Shader 入门精要》精要导读</title>
-<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
@@ -48,7 +48,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">08 · 第 7 章 基础纹理</div>
     <div class="pager"><a href="ch-07.html">← 上一节</a><a href="ch-09.html">下一节 →</a></div>
   </div>
@@ -119,6 +119,43 @@ fixed4 frag (v2f i) : SV_Target
 }</code></pre>
 
 <p>法线纹理通常有两类：切线空间（Tangent Space）和模型空间（Object Space）。切线空间法线贴图可以复用在不同模型上，更常见；模型空间法线贴图适合特殊风格或不需要变形的物体。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="切线空间法线贴图与 TBN 基向量" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-tbn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="25" width="340" height="200" rx="10"></rect>
+    <rect x="400" y="25" width="340" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="50">表面的 TBN 基</text>
+    <text x="570" y="50">法线贴图（切线空间）</text>
+  </g>
+  <g stroke="currentColor" stroke-width="2" marker-end="url(#arrow-tbn)">
+    <line x1="180" y1="190" x2="300" y2="190"></line>
+    <line x1="180" y1="190" x2="110" y2="130"></line>
+    <line x1="180" y1="190" x2="180" y2="85"></line>
+  </g>
+  <g fill="currentColor" font-size="14" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="312" y="194">T</text>
+    <text x="100" y="122">B</text>
+    <text x="180" y="75">N</text>
+  </g>
+  <text x="190" y="215" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">T × B = N（切线空间）</text>
+
+  <rect x="455" y="75" width="230" height="115" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"></rect>
+  <line x1="570" y1="132" x2="625" y2="90" stroke="var(--accent)" stroke-width="2" marker-end="url(#arrow-tbn)"></line>
+  <circle cx="570" cy="132" r="4" fill="var(--accent)" stroke="none"></circle>
+  <text x="650" y="85" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">(x, y, z)</text>
+  <text x="570" y="205" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">RGB 存法线，采样后解包到 [-1,1]</text>
+  <text x="570" y="225" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">再用 T/B/N 转到世界空间</text>
+</svg></div>
+<figcaption>图 8-1：法线贴图存的是切线空间法线。片元阶段解包后，用 T/B/N 基向量把它转到世界空间再参与光照。</figcaption>
+</figure>
 
 <h3>渐变纹理</h3>
 

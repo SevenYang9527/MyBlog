@@ -3,7 +3,7 @@
   "kind": "notes",
   "title_en": "Unity Shader Essentials: A Guided Companion",
   "title_zh": "《Unity Shader 入门精要》精要导读",
-  "subtitle_zh": "以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。",
+  "subtitle_zh": "以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。",
   "kicker": "书籍导读 · Shader",
   "foot_note": "《Unity Shader 入门精要》导读",
   "source_pages_label": "原书页数",

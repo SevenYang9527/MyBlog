@@ -160,6 +160,10 @@ a:hover { text-decoration: underline; }
   border: 1px dashed var(--line);
   border-radius: 10px;
 }
+.content .figure-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 .content figure img {
   display: block;
   max-width: 100%;
@@ -194,6 +198,9 @@ a:hover { text-decoration: underline; }
   .content .table-wrap th,
   .content .table-wrap td {
     word-break: break-word;
+  }
+  .content .figure-scroll svg {
+    min-width: 560px;
   }
 }
 .content hr { margin: 32px 0; border: 0; border-top: 1px solid var(--line); }

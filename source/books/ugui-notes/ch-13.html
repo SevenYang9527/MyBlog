@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">13 · ScrollView、Raycast 与其他技巧</div>
     <div class="pager"><a href="ch-12.html">← 上一节</a><a href="ch-14.html">下一节 →</a></div>
   </div>
@@ -129,7 +129,7 @@ public class SimpleList : MonoBehaviour
 <p>优点是避免了 LayoutGroup 的全量布局，缺点是你要自己处理内容总高度、滚动边界、复用时的数据刷新和遮罩。没有万能的实现，选社区验证过的虚拟列表（如 LoopScrollRect 一类）通常比从零写更稳。</p>
 
 <figure>
-<svg viewBox="0 0 760 240" role="img" aria-label="滚动视图池化" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="滚动视图池化" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="190" rx="10"></rect>
     <rect x="400" y="25" width="340" height="190" rx="10"></rect>
@@ -157,7 +157,7 @@ public class SimpleList : MonoBehaviour
     </g>
     <text x="570" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">只保留可见槽位，滚出后回收/复用</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 13-1：全量填充 vs 池化。池化减少同时存活的元素数量，但需要自己管理可见范围和复用。</figcaption>
 </figure>
 

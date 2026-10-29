@@ -2,6 +2,44 @@
 
 <p>原书第 5 章把前面的理论落到一个最小可运行的 Shader 上：顶点/片元着色器的基本结构、模型数据从哪里来、两个阶段怎么通信、怎么使用属性、内置文件和变量、语义、调试、平台差异和代码整洁。这一章是后面所有效果的模板。</p>
 
+<figure>
+<svg viewBox="0 0 760 190" role="img" aria-label="appdata 到 v2f 再到片元输出的数据流" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-vf" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="35" width="120" height="64" rx="9"></rect>
+    <rect x="160" y="35" width="120" height="64" rx="9"></rect>
+    <rect x="310" y="35" width="120" height="64" rx="9"></rect>
+    <rect x="460" y="35" width="120" height="64" rx="9"></rect>
+    <rect x="610" y="35" width="120" height="64" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="70" y="60">appdata</text>
+    <text x="70" y="80" font-size="10.5">POSITION / NORMAL / UV</text>
+    <text x="220" y="60">vert</text>
+    <text x="220" y="80" font-size="10.5">顶点变换 / 法线</text>
+    <text x="370" y="60">v2f</text>
+    <text x="370" y="80" font-size="10.5">SV_POSITION / TEXCOORD</text>
+    <text x="520" y="60">frag</text>
+    <text x="520" y="80" font-size="10.5">采样 / 光照</text>
+    <text x="670" y="60">SV_Target</text>
+    <text x="670" y="80" font-size="10.5">颜色 / 深度 / 混合</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-vf)">
+    <line x1="130" y1="67" x2="152" y2="67"></line>
+    <line x1="280" y1="67" x2="302" y2="67"></line>
+    <line x1="430" y1="67" x2="452" y2="67"></line>
+    <line x1="580" y1="67" x2="602" y2="67"></line>
+  </g>
+  <text x="380" y="140" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">顶点阶段输出 v2f，光栅化插值后交给片元阶段</text>
+  <text x="380" y="162" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">字段越多，插值/带宽/寄存器压力越大</text>
+</svg>
+<figcaption>图 6-1：顶点/片元着色器的数据流。appdata 接模型数据，v2f 承载插值数据，frag 输出到帧缓冲。</figcaption>
+</figure>
+
 <h3>最小结构</h3>
 
 <pre><code>Shader "Custom/Minimal"

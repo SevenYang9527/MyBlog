@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">03 · Canvas：渲染模式、层级顺序与“谁在谁上面”</div>
     <div class="pager"><a href="ch-02.html">← 上一节</a><a href="ch-04.html">下一节 →</a></div>
   </div>
@@ -69,7 +69,7 @@
 <h3>三种渲染模式</h3>
 
 <figure>
-<svg viewBox="0 0 760 250" role="img" aria-label="Canvas 三种渲染模式示意图" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="Canvas 三种渲染模式示意图" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="10" y="20" width="236" height="200" rx="10"></rect>
     <rect x="262" y="20" width="236" height="200" rx="10"></rect>
@@ -98,7 +98,7 @@
     <rect x="650" y="130" width="40" height="30" rx="3"></rect>
     <text x="632" y="196" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">画布是场景中的 3D 对象</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 3-1：三种 Canvas 渲染模式。Overlay 直接覆盖屏幕；Camera 模式由指定相机渲染；World Space 把画布当成场景里的 3D 对象。</figcaption>
 </figure>
 

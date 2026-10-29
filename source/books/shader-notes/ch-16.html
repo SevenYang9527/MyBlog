@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>第 15 章 使用噪声 · 《Unity Shader 入门精要》精要导读</title>
-<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
@@ -48,7 +48,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">16 · 第 15 章 使用噪声</div>
     <div class="pager"><a href="ch-15.html">← 上一节</a><a href="ch-17.html">下一节 →</a></div>
   </div>
@@ -91,6 +91,39 @@ fixed4 frag (v2f i) : SV_Target
 }</code></pre>
 
 <p>噪声纹理的 Wrap Mode 通常设为 Repeat，Tiling 控制消融块的大小。阈值随时间变化，就能做“逐渐消失”的动画。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 180" role="img" aria-label="噪声消融流程" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-noise" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="15" y="40" width="150" height="62" rx="9"></rect>
+    <rect x="205" y="40" width="150" height="62" rx="9"></rect>
+    <rect x="395" y="40" width="150" height="62" rx="9"></rect>
+    <rect x="585" y="40" width="160" height="62" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="90" y="66">噪声值</text>
+    <text x="90" y="85" font-size="10.5">noise.r</text>
+    <text x="280" y="66">clip</text>
+    <text x="280" y="85" font-size="10.5">noise - threshold</text>
+    <text x="470" y="66">边缘</text>
+    <text x="470" y="85" font-size="10.5">smoothstep</text>
+    <text x="665" y="66">消融结果</text>
+    <text x="665" y="85" font-size="10.5">base + edge color</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-noise)">
+    <line x1="165" y1="71" x2="197" y2="71"></line>
+    <line x1="355" y1="71" x2="387" y2="71"></line>
+    <line x1="545" y1="71" x2="577" y2="71"></line>
+  </g>
+  <text x="380" y="140" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">阈值随时间上升 → 噪声低的区域先消失</text>
+</svg></div>
+<figcaption>图 16-1：噪声消融。噪声值低于阈值就丢弃片元，阈值附近用 smoothstep 加一圈边缘色。</figcaption>
+</figure>
 
 <h3>水波效果</h3>
 

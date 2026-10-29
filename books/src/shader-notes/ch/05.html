@@ -48,6 +48,49 @@ float4 clipPos = mul(UNITY_MATRIX_VP, mul(unity_ObjectToWorld, v.vertex));</code
 
 <p>MVP 就是 Model × View × Projection。Unity 里最常用的封装是 <code>UnityObjectToClipPos(v.vertex)</code>，它等价于把模型空间顶点变换到裁剪空间，并处理不同平台的差异。老代码里的 <code>mul(UNITY_MATRIX_MVP, v.vertex)</code> 在新版本中不推荐直接使用。</p>
 
+<figure>
+<svg viewBox="0 0 760 180" role="img" aria-label="模型空间到屏幕空间的 MVP 变换链" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <marker id="arrow-mvp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="10" y="40" width="120" height="58" rx="9"></rect>
+    <rect x="160" y="40" width="120" height="58" rx="9"></rect>
+    <rect x="310" y="40" width="120" height="58" rx="9"></rect>
+    <rect x="460" y="40" width="120" height="58" rx="9"></rect>
+    <rect x="610" y="40" width="120" height="58" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" text-anchor="middle" font-family="inherit">
+    <text x="70" y="66">模型空间</text>
+    <text x="70" y="85" font-size="10.5">Local / Object</text>
+    <text x="220" y="66">世界空间</text>
+    <text x="220" y="85" font-size="10.5">World</text>
+    <text x="370" y="66">观察空间</text>
+    <text x="370" y="85" font-size="10.5">View / Eye</text>
+    <text x="520" y="66">裁剪空间</text>
+    <text x="520" y="85" font-size="10.5">Clip</text>
+    <text x="670" y="66">屏幕空间</text>
+    <text x="670" y="85" font-size="10.5">Screen</text>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="145" y="120">M</text>
+    <text x="295" y="120">V</text>
+    <text x="445" y="120">P</text>
+    <text x="595" y="120">视口</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-mvp)">
+    <line x1="130" y1="69" x2="152" y2="69"></line>
+    <line x1="280" y1="69" x2="302" y2="69"></line>
+    <line x1="430" y1="69" x2="452" y2="69"></line>
+    <line x1="580" y1="69" x2="602" y2="69"></line>
+  </g>
+  <text x="380" y="158" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">MVP = M × V × P；UnityObjectToClipPos 封装了这条链</text>
+</svg>
+<figcaption>图 5-1：模型空间到屏幕空间的变换链。M/V/P 分别对应模型、观察、投影矩阵；视口变换把 NDC 映射到像素。</figcaption>
+</figure>
+
 <table>
 <thead>
 <tr><th>空间</th><th>常用矩阵/函数</th><th>说明</th></tr>

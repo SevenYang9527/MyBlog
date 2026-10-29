@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>第 14 章 非真实感渲染 · 《Unity Shader 入门精要》精要导读</title>
-<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；不复制原书正文。">
+<meta name="description" content="以冯乐乐《Unity Shader 入门精要》的 20 章结构为线索，用原创表述重讲渲染流水线、ShaderLab、光照、纹理、透明、后处理、PBR 与优化；图示为本站重绘，不复制原书正文和插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
@@ -48,7 +48,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">15 · 第 14 章 非真实感渲染</div>
     <div class="pager"><a href="ch-14.html">← 上一节</a><a href="ch-16.html">下一节 →</a></div>
   </div>
@@ -66,6 +66,36 @@ float toon = floor(NdotL * _Steps) / _Steps;
 float3 diffuse = _LightColor0.rgb * _BaseColor.rgb * toon;</code></pre>
 
 <p>也可以用渐变纹理（Ramp）控制色阶，边缘更柔和、可调性更好。高光同样可以量化，或者用一张高光遮罩控制形状。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="卡通光照的色阶化与描边" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs>
+    <clipPath id="toon-clip">
+      <circle cx="190" cy="130" r="78"></circle>
+    </clipPath>
+    <marker id="arrow-toon" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+    </marker>
+  </defs>
+  <circle cx="190" cy="130" r="78" fill="var(--bg-soft)" stroke="currentColor" stroke-width="6"></circle>
+  <g clip-path="url(#toon-clip)">
+    <rect x="112" y="52" width="52" height="156" fill="currentColor" opacity=".38"></rect>
+    <rect x="164" y="52" width="52" height="156" fill="currentColor" opacity=".22"></rect>
+    <rect x="216" y="52" width="52" height="156" fill="currentColor" opacity=".08"></rect>
+  </g>
+  <line x1="45" y1="55" x2="105" y2="88" stroke="currentColor" stroke-width="2" marker-end="url(#arrow-toon)"></line>
+  <text x="190" y="228" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">N·L 量化成 3 档 + 外轮廓</text>
+  <g fill="currentColor" font-size="12" font-family="inherit">
+    <text x="360" y="80" font-weight="600">卡通光照</text>
+    <text x="360" y="104" font-size="11">N·L → floor(×steps) / steps</text>
+    <text x="360" y="128" font-size="11">高光也可以量化/用遮罩控制</text>
+    <text x="360" y="170" font-weight="600">描边</text>
+    <text x="360" y="194" font-size="11">反向外扩：沿法线外扩 + Cull Front</text>
+    <text x="360" y="218" font-size="11">后处理：深度/法线边缘检测</text>
+  </g>
+</svg></div>
+<figcaption>图 15-1：卡通渲染的两个核心：光照色阶化和轮廓描边。反向外扩便宜、稳定；后处理描边更适合复杂场景。</figcaption>
+</figure>
 
 <h3>描边：反向外扩与边缘检测</h3>
 

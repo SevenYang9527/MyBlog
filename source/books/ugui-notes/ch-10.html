@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">10 · Overdraw：看不见的像素也在花钱</div>
     <div class="pager"><a href="ch-09.html">← 上一节</a><a href="ch-11.html">下一节 →</a></div>
   </div>
@@ -118,7 +118,7 @@ public class RaycastOnlyGraphic : Graphic
 <h3>Overdraw 是怎么堆起来的</h3>
 
 <figure>
-<svg viewBox="0 0 760 250" role="img" aria-label="Overdraw 叠加示意" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="Overdraw 叠加示意" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="200" rx="10"></rect>
     <rect x="400" y="25" width="340" height="200" rx="10"></rect>
@@ -141,7 +141,7 @@ public class RaycastOnlyGraphic : Graphic
     <text x="540" y="132" fill="#27ae60" font-size="11" stroke="none">3</text>
     <text x="570" y="220" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">中心区域被 3 层覆盖 → 3 次着色</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 10-1：Overdraw 不是“画了几张图”，而是“每个像素被着色了几次”。被完全遮住的层，仍然可能参与绘制。</figcaption>
 </figure>
 

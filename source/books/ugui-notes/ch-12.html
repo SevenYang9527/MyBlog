@@ -42,7 +42,7 @@
   </aside>
   <div class="main">
     <div class="progress"><span></span></div>
-      <div class="topbar">
+  <div class="topbar">
     <div class="chapter-no">12 · 字体与文本：动态图集、后备字体与顶点数</div>
     <div class="pager"><a href="ch-11.html">← 上一节</a><a href="ch-13.html">下一节 →</a></div>
   </div>
@@ -167,7 +167,7 @@ public class FontPrewarm : MonoBehaviour
 <p>因此，长文本 + Outline 是非常昂贵的组合。更好的方案：用 TMP 的材质描边/阴影；把描边烘焙进字体图集或图片；用 Shader 在片元阶段做描边；或者只在标题等少量文本上使用 Effect。</p>
 
 <figure>
-<svg viewBox="0 0 760 230" role="img" aria-label="字体图集与后备字体链" style="width:100%;height:auto;color:var(--text-soft)">
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="字体图集与后备字体链" style="width:100%;height:auto;color:var(--text-soft)">
   <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
     <rect x="20" y="25" width="340" height="180" rx="10"></rect>
     <rect x="400" y="25" width="340" height="180" rx="10"></rect>
@@ -213,7 +213,7 @@ public class FontPrewarm : MonoBehaviour
     </g>
     <text x="570" y="200" fill="currentColor" font-size="11" text-anchor="middle" stroke="none">WebGL / 主机：不要依赖 OS 字体</text>
   </g>
-</svg>
+</svg></div>
 <figcaption>图 12-1：动态字体图集会重建；后备字体是一条链，不是单个 Arial.ttf。跨平台项目要显式打包并配置 fallback。</figcaption>
 </figure>
 
