@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 2 章 异步与多路复用 · 《Unity3D 网络游戏实战（第2版）》精要导读</title>
+<meta name="description" content="以罗培羽原书的 12 章结构为线索，用原创表述重讲 Socket、异步、粘包、TCP、客户端/服务端框架、大厅、战斗与同步；每章补充 2026 年仍适用的工程做法；图示为本站重绘，不复制原书正文/插图。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《Unity3D 网络游戏实战（第2版）》精要导读</div>
+    <div class="book-en">Multiplayer Game Development with Unity3D: A Guided Companion</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 网络游戏的开端：Echo、Socket 与 TCP/UDP</a></li>
+      <li><a href="ch-02.html">第 2 章 异步与多路复用</a></li>
+      <li><a href="ch-03.html">第 3 章 实践：大乱斗游戏与协议</a></li>
+      <li><a href="ch-04.html">第 4 章 正确收发数据流：粘包、半包与分帧</a></li>
+      <li><a href="ch-05.html">第 5 章 深入了解 TCP：连接、参数与异常</a></li>
+      <li><a href="ch-06.html">第 6 章 通用客户端网络模块</a></li>
+      <li><a href="ch-07.html">第 7 章 通用服务端框架</a></li>
+      <li><a href="ch-08.html">第 8 章 完整大项目《坦克大战》</a></li>
+      <li><a href="ch-09.html">第 9 章 UI 界面模块</a></li>
+      <li><a href="ch-10.html">第 10 章 游戏大厅和房间</a></li>
+      <li><a href="ch-11.html">第 11 章 战斗和胜负判定</a></li>
+      <li><a href="ch-12.html">第 12 章 同步战斗信息</a></li>
+      <li><a href="ch-13.html">附录 2026：从自定义 Socket 到现代网络栈</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《Unity3D 网络游戏实战》导读<br>
+      原书 434 页 · 2019 年 · 2026 年导读
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">02 · 第 2 章 异步与多路复用</div>
+    <div class="pager"><a href="ch-01.html">← 上一节</a><a href="ch-03.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 2 章 异步与多路复用</h2>
+
+<p>同步 Socket 会阻塞线程：<code>Accept</code> 等连接、<code>Receive</code> 等数据，一个线程只能服务一个连接。原书用异步客户端/服务端解决这个问题：<code>BeginConnect/BeginReceive</code> 或 <code>async/await</code> 让等待不占线程；<code>Poll/Select</code> 则在一个线程里检查多个 Socket 是否可读/可写。</p>
+<p>服务端要同时管理很多客户端，常见做法是“事件循环 + 非阻塞/异步 I/O”：Acceptor 接受连接，每个连接注册读/写事件，消息到达后分发到处理函数。聊天室就是最小例子：广播、用户列表、上下线通知。</p>
+<p>关键原则：<strong>不要阻塞主线程</strong>，<strong>不要在子线程直接调用 Unity API</strong>。网络线程只负责收发包，把消息放进线程安全队列，主线程再消费。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 210" role="img" aria-label="异步网络事件循环" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="50" width="160" height="70" rx="8"></rect>
+    <rect x="220" y="50" width="160" height="70" rx="8"></rect>
+    <rect x="420" y="50" width="160" height="70" rx="8"></rect>
+    <rect x="620" y="50" width="120" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="220" y="150" width="360" height="38" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="100" y="75">Socket I/O</text><text x="100" y="94" font-size="10.5">Accept/Receive/Send</text>
+    <text x="300" y="75">事件队列</text><text x="300" y="94" font-size="10.5">线程安全</text>
+    <text x="500" y="75">事件循环</text><text x="500" y="94" font-size="10.5">分发/处理</text>
+    <text x="680" y="75">游戏/UI</text><text x="680" y="94" font-size="10.5">主线程</text>
+    <text x="400" y="174">网络线程只收发包；Unity API 只在主线程调用</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net2)">
+    <line x1="180" y1="85" x2="212" y2="85"></line>
+    <line x1="380" y1="85" x2="412" y2="85"></line>
+    <line x1="580" y1="85" x2="612" y2="85"></line>
+    <path d="M 300 120 L 300 142"></path>
+  </g>
+</svg></div>
+<figcaption>图 2-1：异步网络事件循环。I/O 完成后把事件放入队列，主线程消费并更新游戏/UI。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代 .NET 用 <code>ValueTask</code>、<code>Span&lt;byte&gt;</code>、<code>ArrayPool</code>、<code>System.IO.Pipelines</code>、<code>Channel</code> 降低分配；Unity 可用 <code>UniTask</code> 或 Unity 6 的 <code>Awaitable</code> 回到主线程。服务端用 <code>ConfigureAwait(false)</code>，客户端回调要切回主线程。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>同步阻塞 vs 异步/多路复用；Acceptor + 事件循环 + 分发；网络线程与 Unity 主线程分离；线程安全队列/Channel；不要阻塞主线程。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-01.html"><span class="dir">← 上一节</span>第 1 章 网络游戏的开端：Echo、Socket 与 TCP/UDP</a>
+    <a href="ch-03.html"><span class="dir">下一节 →</span>第 3 章 实践：大乱斗游戏与协议</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

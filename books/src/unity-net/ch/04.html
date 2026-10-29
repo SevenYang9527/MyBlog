@@ -1,0 +1,37 @@
+<h2>第 4 章 正确收发数据流：粘包、半包与分帧</h2>
+
+<p>TCP 是字节流，不保留消息边界：你发两次 100 字节，接收端可能一次收到 200 字节（粘包），也可能先收到 50 字节（半包）。这不是“TCP 的 bug”，而是流式协议的正常行为。应用层必须自己分帧。</p>
+<p>常见分帧方案：长度前缀（先读 4 字节长度，再读 payload）、固定长度、分隔符。长度前缀最通用；要注意大小端（网络序通常大端）、长度上限、恶意超长包。发送端还可能“没发完”（<code>Send</code> 返回值小于请求），接收端要循环读到足够字节。</p>
+<p>这一章的核心是“把字节流还原成消息”：缓冲区、队列、循环读、长度校验、线程安全。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="TCP 粘包半包与长度前缀分帧" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="720" height="70" rx="8"></rect>
+    <rect x="20" y="130" width="720" height="70" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="380" y="20">TCP 字节流</text>
+    <text x="380" y="120">长度前缀分帧</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <rect x="50" y="50" width="100" height="30"></rect><rect x="150" y="50" width="160" height="30"></rect><rect x="310" y="50" width="80" height="30"></rect><rect x="390" y="50" width="180" height="30"></rect><rect x="570" y="50" width="140" height="30"></rect>
+    <rect x="50" y="150" width="70" height="30" style="stroke:var(--accent)"></rect><rect x="120" y="150" width="160" height="30"></rect>
+    <rect x="300" y="150" width="70" height="30" style="stroke:var(--accent)"></rect><rect x="370" y="150" width="100" height="30"></rect>
+    <rect x="490" y="150" width="70" height="30" style="stroke:var(--accent)"></rect><rect x="560" y="150" width="150" height="30"></rect>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="100" y="70">消息 A</text><text x="230" y="70">消息 B</text><text x="350" y="70">消息 C</text><text x="480" y="70">消息 D</text><text x="640" y="70">…</text>
+    <text x="85" y="170" fill="var(--accent)">长度</text><text x="200" y="170">payload</text><text x="335" y="170" fill="var(--accent)">长度</text><text x="420" y="170">payload</text><text x="525" y="170" fill="var(--accent)">长度</text><text x="635" y="170">payload</text>
+  </g>
+</svg>
+<figcaption>图 4-1：TCP 字节流没有消息边界；长度前缀让接收端知道每条消息有多长。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代 .NET 用 <code>System.IO.Pipelines</code>、<code>ReadOnlySequence&lt;byte&gt;</code>、<code>Span&lt;byte&gt;</code>、<code>ArrayPool</code>、<code>BinaryPrimitives</code> 降低分配；<code>NetworkStream.ReadExactly</code>（.NET 7+）简化“读满”。WebSocket 自带消息帧，但仍要校验长度/类型。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>TCP 是字节流，粘包/半包正常；应用层分帧：长度前缀/固定长度/分隔符；处理大小端、长度上限、发送不完整、循环读；线程安全队列。</p>
+</blockquote>

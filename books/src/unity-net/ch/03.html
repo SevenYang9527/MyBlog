@@ -1,0 +1,37 @@
+<h2>第 3 章 实践：大乱斗游戏与协议</h2>
+
+<p>原书用一个“大乱斗”小游戏把网络模块跑起来：角色、场景、进入游戏、玩家列表、移动、离开、攻击、受击、死亡。每个动作对应一个协议（消息），客户端发送意图，服务端校验/广播结果。</p>
+<p>协议设计的核心是“消息 ID + 参数 + 序列化”。消息要能区分类型（Enter/List/Move/Leave/Attack/Hit/Die），要有玩家 ID、位置、方向、时间戳等字段；服务端不能盲信客户端，要校验移动速度、攻击范围、冷却和命中。</p>
+<p>这一章把“Socket 能通”推进到“游戏能玩”：消息顺序、状态同步、事件广播、断线处理开始变得重要。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="大乱斗协议时序" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <line x1="120" y1="35" x2="120" y2="205" stroke="currentColor" stroke-width="1.5"></line>
+  <line x1="640" y1="35" x2="640" y2="205" stroke="currentColor" stroke-width="1.5"></line>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="120" y="25">客户端</text><text x="640" y="25">服务端</text>
+    <text x="380" y="60" font-size="10.5">Enter → 创建角色 / 返回玩家列表</text>
+    <text x="380" y="88" font-size="10.5">Move → 校验/广播位置</text>
+    <text x="380" y="116" font-size="10.5">Attack → 校验冷却/范围</text>
+    <text x="380" y="144" font-size="10.5">Hit → 扣血/广播</text>
+    <text x="380" y="172" font-size="10.5">Die → 结算/重生/离开</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net3)">
+    <line x1="128" y1="55" x2="632" y2="55"></line>
+    <line x1="128" y1="83" x2="632" y2="83"></line>
+    <line x1="128" y1="111" x2="632" y2="111"></line>
+    <line x1="632" y1="139" x2="128" y2="139"></line>
+    <line x1="632" y1="167" x2="128" y2="167"></line>
+  </g>
+</svg>
+<figcaption>图 3-1：大乱斗协议时序。客户端发意图，服务端校验并广播结果；服务端才是权威。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代协议多用 Protobuf/MessagePack/FlatBuffers，带 schema 版本和向后兼容；消息要幂等、可重放、可限流。动作游戏通常不用纯 TCP 广播，而是 UDP/ENet/UTP + 快照/预测；防作弊必须服务端权威。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>每个动作一个协议；消息 ID + 参数 + 序列化；服务端校验移动/攻击/命中；消息顺序/广播/断线；服务端权威。</p>
+</blockquote>

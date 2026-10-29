@@ -1,0 +1,38 @@
+<h2>第 9 章 UI 界面模块</h2>
+
+<p>原书把 UI 做成“面板 + 管理器”的结构：<code>BasePanel</code> 定义打开/关闭/刷新，<code>PanelManager</code> 管理层级、缓存、打开/关闭；登录、注册、提示、游戏入口等面板各自处理自己的 UI 和网络事件。</p>
+<p>要点：面板栈/层级、显示/隐藏、生命周期、事件订阅/退订、缓存常用面板、异步加载、分辨率/安全区适配。UI 不应该每帧轮询网络状态，而是订阅网络事件。</p>
+<p>这一章把“网络消息”接到“可见界面”：登录成功 → 大厅；房间列表更新 → 刷新列表；战斗开始 → 切场景/面板。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="UI 面板管理" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="280" y="25" width="200" height="42" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="30" y="100" width="150" height="42" rx="8"></rect>
+    <rect x="200" y="100" width="150" height="42" rx="8"></rect>
+    <rect x="370" y="100" width="150" height="42" rx="8"></rect>
+    <rect x="540" y="100" width="190" height="42" rx="8"></rect>
+    <rect x="200" y="170" width="360" height="30" rx="6"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="380" y="52">PanelManager</text>
+    <text x="105" y="126">LoginPanel</text>
+    <text x="275" y="126">RegisterPanel</text>
+    <text x="445" y="126">RoomPanel</text>
+    <text x="635" y="126">BattlePanel / TipPanel</text>
+    <text x="380" y="190">层级 / 缓存 / 生命周期 / 事件订阅 / 安全区</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5">
+    <path d="M 380 67 L 380 100 M 380 100 L 105 100 M 380 100 L 275 100 M 380 100 L 445 100 M 380 100 L 635 100"></path>
+  </g>
+</svg>
+<figcaption>图 9-1：UI 面板管理。PanelManager 统一管理层级/缓存/生命周期，各面板订阅网络事件。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>UGUI + TMP 仍是主流；UI Toolkit 适合工具/数据界面；MVVM/UniRx/消息总线可解耦；异步加载/安全区/无障碍/本地化要纳入设计；避免每帧刷新 UI。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>UI = BasePanel + PanelManager；层级/缓存/生命周期/事件订阅；登录/注册/提示/大厅/房间/战斗面板；UI 订阅网络事件而不是轮询。</p>
+</blockquote>

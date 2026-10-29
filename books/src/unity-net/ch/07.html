@@ -1,0 +1,39 @@
+<h2>第 7 章 通用服务端框架</h2>
+
+<p>原书把服务端拆成“网络模块 + 消息分发 + 玩家数据 + 数据库 + 登录注册”。服务端监听端口，接受客户端连接，为每个连接维护 <code>ClientState</code>；收到消息后按协议 ID 分发到处理函数，再读写玩家数据/数据库。</p>
+<p>架构要点：Acceptor/Listener、连接管理、消息队列、定时器、心跳、协议编解码、玩家/房间数据、MySQL 持久化、登录注册、异常/断线清理。服务端要能同时处理很多连接，且不能让一个慢客户端拖垮全局。</p>
+<p>这一章把“单机 Echo”变成“多人在线服务”：连接、状态、持久化、业务逻辑开始分层。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="服务端框架" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="55" width="140" height="65" rx="8"></rect>
+    <rect x="190" y="55" width="150" height="65" rx="8"></rect>
+    <rect x="370" y="55" width="150" height="65" rx="8"></rect>
+    <rect x="550" y="55" width="180" height="65" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="190" y="150" width="330" height="38" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="90" y="80">Listener</text><text x="90" y="99" font-size="10.5">Accept</text>
+    <text x="265" y="80">ClientState</text><text x="265" y="99" font-size="10.5">连接/缓冲/玩家</text>
+    <text x="445" y="80">消息分发</text><text x="445" y="99" font-size="10.5">协议 → Handler</text>
+    <text x="640" y="80">业务/DB</text><text x="640" y="99" font-size="10.5">登录/房间/战斗</text>
+    <text x="355" y="174">心跳 / 定时器 / 断线清理 / MySQL / 日志</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net7)">
+    <line x1="160" y1="87" x2="182" y2="87"></line>
+    <line x1="340" y1="87" x2="362" y2="87"></line>
+    <line x1="520" y1="87" x2="542" y2="87"></line>
+  </g>
+</svg>
+<figcaption>图 7-1：服务端框架。Listener 接受连接，ClientState 保存连接/玩家，消息分发到业务/DB。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代服务端可用 ASP.NET Core/gRPC、Orleans/Akka、Redis、PostgreSQL、EF Core/Dapper、Docker/K8s；加 JWT/OAuth2、限流、可观测性（日志/指标/追踪）、SQL 参数化、服务端权威。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>服务端 = 网络模块 + 分发 + 玩家数据 + DB；Listener/ClientState/Handler/Timer/心跳/断线清理；登录注册/房间/战斗分层；生产化要加鉴权/限流/可观测性。</p>
+</blockquote>

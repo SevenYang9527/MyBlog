@@ -1,0 +1,37 @@
+<h2>第 12 章 同步战斗信息</h2>
+
+<p>原书讲同步理论：同步的过程/难题；状态同步（直接状态、跟随算法、预测算法）；帧同步（指令同步、从 Update 说起、同步帧、指令/执行）；协议（SyncTank/Fire/Hit）；服务端处理；细节（滚动的轮子/履带、灵活操作、准心、自动瞄准、界面/场景优化、战斗面板、击杀提示）。</p>
+<p>状态同步是“服务端发状态，客户端跟随/插值/预测”；帧同步是“服务端发指令，客户端按同一帧执行”。状态同步更适合服务器权威的 FPS/动作游戏；帧同步更适合 RTS/格斗/需要确定性的场景。</p>
+<p>同步的难点是延迟、丢包、抖动、作弊、带宽。预测/回滚/延迟补偿/插值/兴趣管理是常见手段。</p>
+
+<figure>
+<svg viewBox="0 0 760 230" role="img" aria-label="状态同步与帧同步" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="30" width="340" height="170" rx="10"></rect>
+    <rect x="400" y="30" width="340" height="170" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="190" y="55">状态同步</text>
+    <text x="570" y="55">帧同步</text>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="190" y="85">服务端发状态</text>
+    <text x="190" y="110">客户端插值/预测</text>
+    <text x="190" y="135">服务器权威</text>
+    <text x="190" y="160">适合 FPS/动作</text>
+    <text x="570" y="85">服务端发指令</text>
+    <text x="570" y="110">客户端同帧执行</text>
+    <text x="570" y="135">确定性/回放</text>
+    <text x="570" y="160">适合 RTS/格斗</text>
+  </g>
+</svg>
+<figcaption>图 12-1：状态同步 vs 帧同步。前者同步状态、客户端插值/预测；后者同步指令、客户端确定性执行。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代动作游戏用 tick-based 快照 + 客户端预测/回滚 + 延迟补偿 + 兴趣管理；帧同步要保证确定性（定点数/固定物理/随机种子）；带宽/丢包/抖动要用插值/冗余/拥塞控制。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>同步 = 状态同步/帧同步；状态同步服务端权威 + 插值/预测；帧同步指令 + 确定性执行；延迟/丢包/作弊/带宽是难点；现代用快照/预测/回滚/延迟补偿。</p>
+</blockquote>

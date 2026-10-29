@@ -124,6 +124,7 @@ a:hover { text-decoration: underline; }
 .content h3 { margin: 34px 0 10px; font-size: 20px; line-height: 1.5; }
 .content h4 { margin: 26px 0 8px; font-size: 17px; }
 .content p { margin: 14px 0; color: var(--text); }
+.content p, .content li, .content figcaption { overflow-wrap: anywhere; }
 .content strong { font-weight: 650; }
 .content ul, .content ol { margin: 14px 0; padding-left: 1.5em; }
 .content li { margin: 6px 0; }

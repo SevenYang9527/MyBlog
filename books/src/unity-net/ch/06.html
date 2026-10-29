@@ -1,0 +1,39 @@
+<h2>第 6 章 通用客户端网络模块</h2>
+
+<p>原书把客户端网络能力抽成“通用模块”：对外提供 Connect/Close/Send/事件回调，内部管理 Socket、收发包、心跳、协议编解码。业务层不直接碰 Socket，只订阅“连接成功/断开/收到消息”。</p>
+<p>模块设计要点：连接状态机（未连接/连接中/已连接/关闭中）、消息队列、主线程分发、超时/重连、心跳 PING/PONG、序列化（JSON/Protobuf）、错误回调。网络线程只做 I/O，Unity 主线程消费事件。</p>
+<p>这一章的核心是“把网络细节关进盒子里”：业务代码只关心协议和事件，不关心 Socket 生命周期。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="客户端网络模块" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="30" y="55" width="150" height="70" rx="8"></rect>
+    <rect x="220" y="55" width="150" height="70" rx="8"></rect>
+    <rect x="410" y="55" width="150" height="70" rx="8"></rect>
+    <rect x="600" y="55" width="130" height="70" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="220" y="155" width="340" height="38" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="105" y="80">Socket</text><text x="105" y="99" font-size="10.5">连接/收发</text>
+    <text x="295" y="80">收包队列</text><text x="295" y="99" font-size="10.5">线程安全</text>
+    <text x="485" y="80">协议分发</text><text x="485" y="99" font-size="10.5">消息 ID → 回调</text>
+    <text x="665" y="80">业务/UI</text><text x="665" y="99" font-size="10.5">主线程</text>
+    <text x="390" y="179">心跳 / 超时 / 重连 / 错误回调 / JSON/Protobuf</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net6)">
+    <line x1="180" y1="90" x2="212" y2="90"></line>
+    <line x1="370" y1="90" x2="402" y2="90"></line>
+    <line x1="560" y1="90" x2="592" y2="90"></line>
+  </g>
+</svg>
+<figcaption>图 6-1：客户端网络模块。Socket 收发包，队列跨线程，协议分发到业务回调。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>现代客户端可用 <code>System.Text.Json</code>/MessagePack、<code>Channel&lt;Message&gt;</code>、<code>UniTask</code>/<code>Awaitable</code>、<code>CancellationToken</code>；WebSocket/Unity Transport 替代裸 TCP；重连要指数退避 + 幂等登录。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>客户端模块封装 Connect/Close/Send/事件；状态机/队列/主线程分发/心跳/重连/序列化；业务只订阅事件，不碰 Socket。</p>
+</blockquote>

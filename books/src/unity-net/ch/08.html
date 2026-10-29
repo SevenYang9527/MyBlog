@@ -1,0 +1,44 @@
+<h2>第 8 章 完整大项目《坦克大战》</h2>
+
+<p>原书用《坦克大战》把前面所有模块串起来：登录注册、房间系统、战斗系统；坦克模型/资源管理器、坦克类、行走控制、爬坡、相机跟随、旋转炮塔、发射炮弹、摧毁敌人、生命值/特效。</p>
+<p>客户端负责输入、表现、预测；服务端负责权威状态、命中/伤害/胜负。资源管理要处理模型、材质、预设、图集、加载/释放；坦克移动要处理地形/物理/同步；相机和炮塔是“本地表现”与“服务器状态”的分界。</p>
+<p>这一章的核心是“把网络、战斗、UI、资源组织成一个可玩的闭环”。</p>
+
+<figure>
+<svg viewBox="0 0 760 220" role="img" aria-label="坦克大战客户端服务端架构" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.5">
+    <rect x="20" y="45" width="220" height="120" rx="9"></rect>
+    <rect x="280" y="45" width="200" height="120" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="520" y="45" width="220" height="120" rx="9"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" text-anchor="middle" font-family="inherit">
+    <text x="130" y="70" font-weight="600">客户端</text>
+    <text x="130" y="94" font-size="10.5">输入 / 相机 / UI</text>
+    <text x="130" y="114" font-size="10.5">预测 / 插值 / 表现</text>
+    <text x="130" y="134" font-size="10.5">资源 / 特效</text>
+    <text x="380" y="70" font-weight="600">网络</text>
+    <text x="380" y="94" font-size="10.5">Enter / Move / Fire</text>
+    <text x="380" y="114" font-size="10.5">Hit / Die / Result</text>
+    <text x="380" y="134" font-size="10.5">心跳 / 重连</text>
+    <text x="630" y="70" font-weight="600">服务端</text>
+    <text x="630" y="94" font-size="10.5">权威状态 / 命中</text>
+    <text x="630" y="114" font-size="10.5">伤害 / 胜负</text>
+    <text x="630" y="134" font-size="10.5">房间 / DB</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net8)">
+    <line x1="240" y1="90" x2="272" y2="90"></line>
+    <line x1="480" y1="90" x2="512" y2="90"></line>
+    <line x1="512" y1="130" x2="248" y2="130"></line>
+  </g>
+</svg>
+<figcaption>图 8-1：坦克大战的客户端/服务端分工。客户端做输入与表现，服务端做权威状态与胜负。</figcaption>
+</figure>
+
+<blockquote>
+<p><strong>2026 更新：</strong>Unity 6/URP、Addressables、Cinemachine、Input System 是更现代的工程组合；物理/移动要区分“客户端表现”和“服务端权威”，动作游戏考虑预测/回滚/确定性物理。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>坦克大战串起登录/房间/战斗；客户端输入/表现/预测，服务端权威状态/命中/胜负；资源/物理/相机/炮塔/特效要分层；现代工程用 URP/Addressables/Cinemachine/Input System。</p>
+</blockquote>
