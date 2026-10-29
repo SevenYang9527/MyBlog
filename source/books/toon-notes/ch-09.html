@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 9 章 战双帕弥什：PBR 与 NPR 混着用 · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">09 · 第 9 章 战双帕弥什：PBR 与 NPR 混着用</div>
+    <div class="pager"><a href="ch-08.html">← 上一节</a><a href="ch-10.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 9 章 战双帕弥什：PBR 与 NPR 混着用</h2>
+
+<p>《战双帕弥什》的底子仍然接近罪恶装备：裁边漫反射、LightMap、顶点色、描边。但它多了一层 PBR：金属、皮革、机能面料需要真实的高光形状和粗糙度变化，纯卡通高光不够用。于是它把 PBR 的 Metalness、Smoothness、AO 和 NPR 的 Ramp、Rim、描边放在同一套 Shader 里，用一张 PBRMask 决定“这块像素走哪条路”。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="战双 PBRMixMap 的通道分工" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="34" width="712" height="180" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="130" y="62">R：Metallic</text>
+    <text x="315" y="62">G：Smoothness</text>
+    <text x="500" y="62">B：AO / 高光遮罩</text>
+    <text x="665" y="62">A：PBRMask</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.2">
+    <rect x="60" y="86" width="140" height="92" rx="8"></rect>
+    <rect x="245" y="86" width="140" height="92" rx="8"></rect>
+    <rect x="430" y="86" width="140" height="92" rx="8"></rect>
+    <rect x="615" y="86" width="100" height="92" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="130" y="114">金属度</text><text x="130" y="136">0 非金属</text><text x="130" y="158">1 金属</text>
+    <text x="315" y="114">光滑度</text><text x="315" y="136">1 - 粗糙度</text><text x="315" y="158">控制高光大小</text>
+    <text x="500" y="114">AO / 高光遮罩</text><text x="500" y="136">压暗缝隙</text><text x="500" y="158">限制高光范围</text>
+    <text x="665" y="114">PBR 权重</text><text x="665" y="136">0 NPR</text><text x="665" y="158">1 PBR</text>
+  </g>
+  <text x="380" y="242" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">一张图里同时存 PBR 参数和 NPR 开关，片元按 A 通道混合两条光照路径</text>
+</svg></div>
+<figcaption>图 9-1：战双的 PBRMixMap。PBR 与 NPR 不是二选一，而是可以在同一角色上按像素混合。</figcaption>
+</figure>
+
+<h3>混合光照：先算 NPR，再按遮罩叠 PBR 高光</h3>
+
+<p>最常见的做法是：漫反射仍然用裁边 Ramp，高光则根据 <code>PBRMask</code> 在“卡通高光”和“PBR 高光”之间插值。这样衣服、皮肤保持干净的块面，金属扣、武器、机械件又能有真实的高光形状。代价是同一个片元里要算两条高光路径，移动端需要控制面积和分支。</p>
+
+<pre><code>float pbrMask = SAMPLE_TEXTURE2D(_PBRMixMap, sampler_PBRMixMap, uv).a;
+float metallic = SAMPLE_TEXTURE2D(_PBRMixMap, sampler_PBRMixMap, uv).r;
+float smoothness = SAMPLE_TEXTURE2D(_PBRMixMap, sampler_PBRMixMap, uv).g;
+
+float3 nprSpec = ToonSpecular(N, L, V) * _ToonSpecColor;
+float3 pbrSpec = GGXSpecular(N, L, V, smoothness, metallic) * _PbrSpecColor;
+float3 spec = lerp(nprSpec, pbrSpec, pbrMask);
+float3 color = nprDiffuse + spec;</code></pre>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="NPR 与 PBR 混合的光照路径" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-toon9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="18" y="54" width="150" height="74" rx="8"></rect>
+    <rect x="196" y="54" width="150" height="74" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="374" y="54" width="150" height="74" rx="8"></rect>
+    <rect x="552" y="54" width="190" height="74" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="93" y="80" font-weight="600">NPR 漫反射</text><text x="93" y="102">Ramp / 裁边</text>
+    <text x="271" y="80" font-weight="600">NPR 高光</text><text x="271" y="102">Step / MatCap</text>
+    <text x="449" y="80" font-weight="600">PBR 高光</text><text x="449" y="102">GGX / Smoothness</text>
+    <text x="647" y="80" font-weight="600">按 PBRMask 混合</text><text x="647" y="102">输出最终颜色</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow-toon9)">
+    <line x1="168" y1="91" x2="190" y2="91"></line>
+    <line x1="346" y1="91" x2="368" y2="91"></line>
+    <line x1="524" y1="91" x2="546" y2="91"></line>
+  </g>
+  <text x="380" y="180" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">两条路径可以共用同一组 N/L/V，只是高光 BRDF 不同</text>
+  <text x="380" y="204" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">金属、皮革、机械件走 PBR；皮肤、布料继续走 NPR</text>
+</svg></div>
+<figcaption>图 9-2：战双的混合光照。NPR 负责“像画”，PBR 负责“像材质”，用一张遮罩决定比例。</figcaption>
+</figure>
+
+<h3>头发高光：GGX 与 BlinnPhong 的切换</h3>
+
+<p>原笔记提到战双的头发高光可以在 GGX 和 BlinnPhong 之间切换，用 <code>_SpecShift</code> 这类关键字控制。GGX 的高光更“物理”，边缘更长；BlinnPhong 更干净，适合卡通发片。两种都保留，是因为不同角色/不同发型的风格需求不一样。</p>
+
+<pre><code>#ifdef _SPEC_SHIFT_GGX
+    float3 hairSpec = StylizedSpecularLight_GGX(
+        N, L, V, roughness, metallic) * _HairSpecColor;
+#else
+    float3 hairSpec = StylizedSpecularLight_BlinnPhong(
+        N, L, V) * _HairSpecColor;
+#endif
+
+float3 hairColor = baseColor * _HairShadowColor
+                 + hairSpec * _HairSpecIntensity * specMask;</code></pre>
+
+<h3>代价：每个角色一套 Shader</h3>
+
+<p>原笔记很坦诚地指出：战双的渲染特性太多，几乎每个角色都有自己的 Shader，导致多人协作不方便。这是“风格自由”的代价。对 Unity 项目来说，更稳的路线是做一个可配置的 UberShader，把常用特性做成关键字/位掩码，把真正特殊的角色单独开分支；同时用材质变体收集和 Shader 变体剥离控制包体。</p>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>通道 / 参数</th><th>战双里的用途</th><th>Unity 落地</th></tr>
+</thead>
+<tbody>
+<tr><td>PBRMixMap.r</td><td>Metallic</td><td>金属度，决定高光颜色与反射</td></tr>
+<tr><td>PBRMixMap.g</td><td>Smoothness</td><td>1 - 粗糙度，控制高光大小</td></tr>
+<tr><td>PBRMixMap.b</td><td>AO / 高光遮罩</td><td>压暗缝隙、限制高光</td></tr>
+<tr><td>PBRMixMap.a</td><td>PBRMask</td><td>NPR/PBR 混合权重</td></tr>
+<tr><td>LightMap.r</td><td>RampOffset</td><td>加到 halfLambert</td></tr>
+<tr><td>LightMap.g</td><td>ShadowAO</td><td>常暗区域</td></tr>
+<tr><td>LightMap.b</td><td>高光类型</td><td>裁边 / BlinnPhong / PBR</td></tr>
+</tbody>
+</table></div></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>PBR 和 NPR 混用时，最容易忽略的是颜色空间和金属度。金属的高光颜色应该来自 BaseColor（或明确的 SpecColor），非金属的高光才是白色；如果直接把 PBR 高光叠在卡通色上，金属会发灰。移动端可以把 GGX 简化成 BlinnPhong 或预积分高光，但要让美术知道“简化后形状会变”。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>战双的路线是“NPR 打底 + PBR 补材质”：PBRMask 控制混合，PBRMixMap 存金属度/光滑度/AO，头发高光可在 GGX 与 BlinnPhong 间切换。自由度高，但工程上要控制 Shader 数量。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-08.html"><span class="dir">← 上一节</span>第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a>
+    <a href="ch-10.html"><span class="dir">下一节 →</span>第 10 章 角色专项：头发、脸与那些不该描边的地方</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

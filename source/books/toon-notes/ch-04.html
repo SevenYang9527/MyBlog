@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 4 章 边缘光、视角光与暗部补光 · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">04 · 第 4 章 边缘光、视角光与暗部补光</div>
+    <div class="pager"><a href="ch-03.html">← 上一节</a><a href="ch-05.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 4 章 边缘光、视角光与暗部补光</h2>
+
+<p>边缘光和视角光经常被混为一谈，但它们看的不是同一个向量。<strong>边缘光</strong>看 <code>N·V</code>：法线越偏离视线，越靠近轮廓，越亮；<strong>视角光</strong>看 <code>N·L</code>：法线越朝向光源，越亮。原笔记把两者都做了“裁边”处理，并且指出：视角光本质上也可以理解成“从光源方向看的边缘光”。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="边缘光与视角光的向量和亮区" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="340" height="200" rx="10"></rect>
+    <rect x="396" y="30" width="340" height="200" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="55">边缘光：看 N·V</text>
+    <text x="566" y="55">视角光：看 N·L</text>
+  </g>
+  <circle cx="194" cy="145" r="58" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <path d="M 194 87 A 58 58 0 0 1 194 203" fill="none" stroke="var(--accent)" stroke-width="9" opacity=".85"></path>
+  <path d="M 194 87 A 58 58 0 0 0 194 203" fill="none" stroke="var(--accent)" stroke-width="9" opacity=".75"></path>
+  <circle cx="566" cy="145" r="58" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <circle cx="542" cy="128" r="34" fill="var(--accent)" opacity=".28"></circle>
+  <circle cx="542" cy="128" r="18" fill="var(--accent)" opacity=".55"></circle>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="194" y="220">轮廓处 1-N·V 接近 1，两侧都亮</text>
+    <text x="566" y="220">朝向光源的正面亮，背面暗</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.2" fill="none">
+    <path d="M 120 145 L 268 145"></path>
+    <path d="M 492 145 L 640 145"></path>
+  </g>
+</svg></div>
+<figcaption>图 4-1：边缘光沿轮廓亮，视角光沿光源方向亮。两者的公式只差一个向量，但美术效果完全不同。</figcaption>
+</figure>
+
+<h3>裁边边缘光</h3>
+
+<p>连续边缘光用 <code>pow(1 - N·V, exp)</code> 就能做出来，但它会从轮廓往内慢慢衰减。卡通渲染通常用 <code>step</code> 把边缘光裁成一条窄带，再用 <code>RimWidth</code> 控制宽度，用遮罩控制哪些部位出现。</p>
+
+<pre><code>float rim = 1.0 - saturate(dot(normalWS, viewDirWS));
+rim = step(1.0 - _RimWidth, rim) * _RimIntensity;
+float3 color = baseColor + _RimColor.rgb * rim * _RimMask;</code></pre>
+
+<p>原笔记里还有一个更细的做法：把法线转到视角空间，只取 <code>abs(N_VS.x)</code> 作为左右轮廓的遮罩，这样边缘光只出现在脸的侧面，而不会在额头或下巴也亮一圈。这个做法在角色转头时特别有用。</p>
+
+<h3>暗部边缘光与亮暗分侧</h3>
+
+<p>如果整圈轮廓都亮，角色会像“发光塑料”。更自然的方式是：先算光源在亮部还是暗部，再决定边缘光用亮部色还是暗部色。原笔记给的逻辑是 <code>RimDarkSide</code> 和 <code>RimBrightSide</code> 分别做 <code>lerp</code>，最后相加；暗部那侧可以补一点冷色，亮部那侧补一点暖色。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 250" role="img" aria-label="暗部边缘光与亮暗分侧" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="712" height="190" rx="10"></rect>
+  </g>
+  <circle cx="260" cy="130" r="64" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <path d="M 260 66 A 64 64 0 0 0 260 194" fill="none" stroke="currentColor" stroke-width="8" opacity=".28"></path>
+  <path d="M 260 66 A 64 64 0 0 1 260 194" fill="none" stroke="var(--accent)" stroke-width="8"></path>
+  <g stroke="currentColor" stroke-width="1.2" fill="none">
+    <line x1="180" y1="130" x2="210" y2="130"></line>
+    <line x1="310" y1="130" x2="340" y2="130"></line>
+  </g>
+  <g fill="currentColor" font-size="10.5" font-family="inherit">
+    <text x="142" y="120">L</text><text x="344" y="120">光源方向</text>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="390" y="98" font-weight="600">亮部侧 Rim</text>
+    <text x="390" y="120">用暖色/基础色，宽度窄</text>
+    <text x="390" y="152" font-weight="600">暗部侧 Rim</text>
+    <text x="390" y="174">用冷色/阴影色，宽度可略宽</text>
+    <text x="390" y="204">两侧用同一个 step，但颜色与强度分开调</text>
+  </g>
+</svg></div>
+<figcaption>图 4-2：暗部边缘光。先判断亮暗侧，再分别给 Rim 颜色；暗部那圈通常比亮部更宽、更冷。</figcaption>
+</figure>
+
+<h3>屏幕空间的深度边缘光</h3>
+
+<p>原神在角色身上还用了后处理边缘光：单独渲染一张人物 Mask，再对深度图做邻域采样，深度差超过阈值的像素判为轮廓，最后只给 Mask 内的像素加边缘光。这样线宽按屏幕像素算，近处和远处更统一，也不会被角色自身的高模法线干扰。</p>
+
+<pre><code>// 后处理伪代码：深度差 + 人物 Mask
+float rawDepth = SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, uv);
+float center = LinearEyeDepth(rawDepth, _ZBufferParams);
+float neighbor = LinearEyeDepth(
+    SAMPLE_DEPTH_TEXTURE(_CameraDepthTexture, uv + _TexelSize.xy), _ZBufferParams);
+float edge = step(_DepthThreshold, abs(center - neighbor));
+float mask = SAMPLE_TEXTURE2D(_CharacterMask, sampler_CharacterMask, uv).r;
+float rim = edge * mask * _RimIntensity;
+return baseColor + _RimColor.rgb * rim;</code></pre>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>类型</th><th>公式</th><th>适合</th><th>注意</th></tr>
+</thead>
+<tbody>
+<tr><td>连续 Rim</td><td><code>pow(1 - N·V, exp)</code></td><td>头发、金属、柔光</td><td>容易糊，宽度随视角变化</td></tr>
+<tr><td>裁边 Rim</td><td><code>step(1 - width, 1 - N·V)</code></td><td>赛璐璐角色</td><td>要配遮罩，避免全轮廓发亮</td></tr>
+<tr><td>暗部 Rim</td><td>先算亮暗侧，再 lerp 颜色</td><td>有明确主光的角色</td><td>亮部/暗部宽度与颜色分开</td></tr>
+<tr><td>屏幕空间 Rim</td><td>深度差 + 人物 Mask</td><td>统一线宽、后处理风格</td><td>需要额外 Mask Pass 和深度图</td></tr>
+</tbody>
+</table></div></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>URP 里主 Pass 做 Rim 最便宜；后处理 Rim 需要 <code>_CameraDepthTexture</code> 和一张人物 Mask，通常由 RenderObjects Renderer Feature 把角色单独画到 RenderTexture。移动端如果已经有描边 Pass，优先把 Rim 放进主 Pass，少开一张全屏图。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>边缘光看 N·V，视角光看 N·L；裁边让边缘变成窄带；暗部/亮部要分侧调色；屏幕空间 Rim 适合统一线宽，但要额外 Mask 与深度采样。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-03.html"><span class="dir">← 上一节</span>第 3 章 裁边高光：从一团白到可控形状</a>
+    <a href="ch-05.html"><span class="dir">下一节 →</span>第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

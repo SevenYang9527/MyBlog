@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>《日式卡通渲染笔记》Unity 视角重述 · 重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+      <div class="cover">
+    <div class="kicker">渲染笔记 · 卡通</div>
+    <h1>《日式卡通渲染笔记》Unity 视角重述</h1>
+    <div class="en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <div class="sub">以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。</div>
+    <div class="stats">
+      <div><b>12</b><span>章</span></div>
+      <div><b>91</b><span>原笔记页数</span></div>
+      <div><b>12</b><span>已整理章节</span></div>
+    </div>
+  </div>
+  <div class="toc">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="ch-01.html"><span class="no">01</span><span class="tt">第 1 章 先拆层：一张日式卡通画面里到底有什么<span class="en">Deconstructing the anime look</span></span><span class="pg">p.1-2</span></a></li>
+      <li><a href="ch-02.html"><span class="no">02</span><span class="tt">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶<span class="en">Diffuse: clipping N·L into bands</span></span><span class="pg">p.3-5</span></a></li>
+      <li><a href="ch-03.html"><span class="no">03</span><span class="tt">第 3 章 裁边高光：从一团白到可控形状<span class="en">Specular: from a blob to a shape</span></span><span class="pg">p.5-7, 13-16</span></a></li>
+      <li><a href="ch-04.html"><span class="no">04</span><span class="tt">第 4 章 边缘光、视角光与暗部补光<span class="en">Rim, view light and shadow-side fill</span></span><span class="pg">p.6-10, 25-28</span></a></li>
+      <li><a href="ch-05.html"><span class="no">05</span><span class="tt">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha<span class="en">Outlines: inverted hull and smooth normals</span></span><span class="pg">p.11-15, 33-35</span></a></li>
+      <li><a href="ch-06.html"><span class="no">06</span><span class="tt">第 6 章 罪恶装备 Strive：LightMap 的三个通道<span class="en">Guilty Gear Strive: a three-channel LightMap</span></span><span class="pg">p.16-36</span></a></li>
+      <li><a href="ch-07.html"><span class="no">07</span><span class="tt">第 7 章 碧蓝幻想：11 层材质与组合式 NPR<span class="en">Granblue Fantasy: 11 layers of NPR</span></span><span class="pg">p.37-56</span></a></li>
+      <li><a href="ch-08.html"><span class="no">08</span><span class="tt">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影<span class="en">Genshin Impact: ramp atlas, MatCap and SDF face shadows</span></span><span class="pg">p.57-80</span></a></li>
+      <li><a href="ch-09.html"><span class="no">09</span><span class="tt">第 9 章 战双帕弥什：PBR 与 NPR 混着用<span class="en">Punishing: Gray Raven: PBR meets NPR</span></span><span class="pg">p.81-89</span></a></li>
+      <li><a href="ch-10.html"><span class="no">10</span><span class="tt">第 10 章 角色专项：头发、脸与那些不该描边的地方<span class="en">Hair, face and outline exclusions</span></span><span class="pg">p.28-30, 49-66</span></a></li>
+      <li><a href="ch-11.html"><span class="no">11</span><span class="tt">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader<span class="en">Implementing the toon shader in Unity/URP</span></span><span class="pg">p.11-15, 87-89</span></a></li>
+      <li><a href="ch-12.html"><span class="no">12</span><span class="tt">第 12 章 性能、移动端与 2026 的工程化<span class="en">Performance, mobile and the 2026 workflow</span></span><span class="pg">p.87-91</span></a></li>
+    </ol>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

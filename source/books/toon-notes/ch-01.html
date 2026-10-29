@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 1 章 先拆层：一张日式卡通画面里到底有什么 · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">01 · 第 1 章 先拆层：一张日式卡通画面里到底有什么</div>
+    <div class="pager"><a href="ch-02.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 1 章 先拆层：一张日式卡通画面里到底有什么</h2>
+
+<p>这份笔记的原作者是知乎的“光阳果”，2021 年以《罪恶装备 Strive》《碧蓝幻想》《原神》《战双帕弥什》为例，拆了日式卡通渲染的一整套做法。它不是某一个 Shader 的参数表，而是一种“把光拆成美术能改的图层”的思路。</p>
+
+<blockquote>
+<p><strong>原文：</strong><a href="https://zhuanlan.zhihu.com/p/402409985">知乎专栏《日式卡通渲染笔记（罪恶装备 碧蓝幻想 原神 战双）》</a>，作者光阳果，2021-08-23。本文按 Unity/URP 的视角重新组织，并重绘全部图解，不复制原文图片。</p>
+</blockquote>
+
+<p>先把画面拆成六件事：亮部与暗部、裁边高光、裁边边缘光、裁边视角光、描边、材质与贴花。所谓“裁边”，就是不让光照连续过渡，而是用阈值、Ramp 或遮罩把它切成几块，让明暗交界线像手绘一样干净。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 310" role="img" aria-label="日式卡通渲染的六个图层" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="26" width="224" height="108" rx="10"></rect>
+    <rect x="268" y="26" width="224" height="108" rx="10"></rect>
+    <rect x="512" y="26" width="224" height="108" rx="10"></rect>
+    <rect x="24" y="154" width="224" height="108" rx="10"></rect>
+    <rect x="268" y="154" width="224" height="108" rx="10"></rect>
+    <rect x="512" y="154" width="224" height="108" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="136" y="55">裁边漫反射</text>
+    <text x="380" y="55">裁边高光</text>
+    <text x="624" y="55">裁边边缘光</text>
+    <text x="136" y="183">裁边视角光</text>
+    <text x="380" y="183">描边</text>
+    <text x="624" y="183">材质与贴花</text>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="136" y="82">Base / Shadow / Ramp</text>
+    <text x="136" y="103">阈值 + 过渡宽度</text>
+    <text x="380" y="82">SpecMask / MatCap</text>
+    <text x="380" y="103">高光形状可变形</text>
+    <text x="624" y="82">N·V + Mask</text>
+    <text x="624" y="103">亮部/暗部分开处理</text>
+    <text x="136" y="210">N·L / Ramp</text>
+    <text x="136" y="231">从光源方向补轮廓</text>
+    <text x="380" y="210">Cull Front + 平滑法线</text>
+    <text x="380" y="231">顶点 Alpha 控宽度</text>
+    <text x="624" y="210">LayerMap + Keyword</text>
+    <text x="624" y="231">金属、皮革、贴花</text>
+  </g>
+  <text x="380" y="292" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">先决定要哪几层，再决定每层用贴图、顶点色、Shader 还是后处理</text>
+</svg></div>
+<figcaption>图 1-1：日式卡通渲染的六个图层。真正需要调的是图层之间的关系，而不是某一个魔法阈值。</figcaption>
+</figure>
+
+<p>在 Unity/URP 里，这六层大致落在三个地方：材质的主 Pass、额外的描边 Pass、以及 Renderer Feature 做的全屏后处理。主 Pass 负责基础色、阴影、高光、边缘光；描边 Pass 负责反向外扩；后处理负责屏幕空间的深度边缘光、色调和抗锯齿。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="URP 卡通角色渲染流程" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-toon1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="18" y="58" width="128" height="70" rx="9"></rect>
+    <rect x="166" y="58" width="128" height="70" rx="9"></rect>
+    <rect x="314" y="58" width="128" height="70" rx="9" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="462" y="58" width="128" height="70" rx="9"></rect>
+    <rect x="610" y="58" width="132" height="70" rx="9"></rect>
+  </g>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="82" y="84" font-weight="600">模型 / UV</text><text x="82" y="104">法线 / 顶点色</text>
+    <text x="230" y="84" font-weight="600">光照数据</text><text x="230" y="104">LightMap / Ramp</text>
+    <text x="378" y="84" font-weight="600">Toon 主 Pass</text><text x="378" y="104">漫反射 / 高光 / Rim</text>
+    <text x="526" y="84" font-weight="600">描边 Pass</text><text x="526" y="104">Cull Front</text>
+    <text x="676" y="84" font-weight="600">Renderer Feature</text><text x="676" y="104">后处理 Rim / 色调</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow-toon1)">
+    <line x1="146" y1="93" x2="160" y2="93"></line>
+    <line x1="294" y1="93" x2="308" y2="93"></line>
+    <line x1="442" y1="93" x2="456" y2="93"></line>
+    <line x1="590" y1="93" x2="604" y2="93"></line>
+  </g>
+  <text x="380" y="178" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">URP 下通常是一个 UniversalForward + 一个 Outline Pass，再加可选的屏幕空间后处理</text>
+</svg></div>
+<figcaption>图 1-2：角色卡通渲染的常见 Pass 划分。层越多，越要先想清楚哪些数据可以烘进贴图。</figcaption>
+</figure>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>画面层</th><th>Unity 里通常放哪</th><th>常用数据</th></tr>
+</thead>
+<tbody>
+<tr><td>亮部 / 暗部</td><td>主 Pass 的漫反射分支</td><td>Base、Shadow、Ramp、LightMap.r</td></tr>
+<tr><td>高光</td><td>主 Pass 的高光分支或 MatCap</td><td>SpecMask、LightMap.b、MatCap 贴图</td></tr>
+<tr><td>边缘光</td><td>主 Pass 的 Rim 项</td><td>N·V、RimMask、顶点色</td></tr>
+<tr><td>视角光</td><td>主 Pass 的 N·L 项或 MatCap</td><td>LightMap、Ramp、视角空间法线</td></tr>
+<tr><td>描边</td><td>独立 Outline Pass</td><td>平滑法线、顶点 Alpha、描边颜色</td></tr>
+<tr><td>材质 / 贴花</td><td>LayerMap 分支、独立 Mesh</td><td>LayerMap、Decal、顶点色开关</td></tr>
+</tbody>
+</table></div></div>
+
+<p>下面这段伪代码不是完整 Shader，只是把“图层”落成一个片元函数的样子。真正写的时候，每个分支都可能变成一张贴图或一个关键字：</p>
+
+<pre><code>float3 ToonLighting(Surface s, Light l)
+{
+    float ndl = dot(s.normalWS, l.direction);
+    float halfLambert = ndl * 0.5 + 0.5;
+
+    float3 diffuse = lerp(s.shadowColor, s.baseColor,
+                          smoothstep(s.shadowThreshold,
+                                     s.shadowThreshold + s.shadowSoftness,
+                                     halfLambert));
+
+    float3 H = normalize(l.direction + s.viewDirWS);
+    float spec = pow(saturate(dot(s.normalWS, H)), s.specPower);
+    spec = smoothstep(s.specThreshold, s.specThreshold + s.specSoftness, spec);
+
+    float rim = 1.0 - saturate(dot(s.normalWS, s.viewDirWS));
+    rim = smoothstep(s.rimThreshold, s.rimThreshold + s.rimSoftness, rim);
+
+    return diffuse + s.specColor * spec * s.specMask + s.rimColor * rim;
+}</code></pre>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>不要直接把内置 Standard 材质套一个 Ramp 就当作卡通渲染。Standard 的漫反射、高光、环境光会一起参与，颜色很难压成干净的块。更稳的做法是写一个自定义 URP Lit：自己决定主光、阴影、高光、边缘光各自怎么算，再把不需要的项关掉。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>日式卡通渲染是“图层 + 美术控制”，不是单个 Shader。先定风格，再决定保留哪几层；每层都要能回答“它由哪张图、哪个顶点通道、哪个 Pass 驱动”。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <span class="empty"></span>
+    <a href="ch-02.html"><span class="dir">下一节 →</span>第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

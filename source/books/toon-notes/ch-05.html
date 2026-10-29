@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 5 章 描边：Cull Front、平滑法线与顶点 Alpha · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">05 · 第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</div>
+    <div class="pager"><a href="ch-04.html">← 上一节</a><a href="ch-06.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</h2>
+
+<p>日式卡通描边最常用的还是“反向外扩”：把模型再画一遍，沿法线方向往外推一点，然后 <code>Cull Front</code> 只显示背面。正面被正常模型挡住，剩下的外圈就是描边。它便宜、稳定、风格统一，缺点是硬边模型会裂开，线宽也会随距离变化。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="反向外扩描边的几何原理" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="712" height="180" rx="10"></rect>
+  </g>
+  <circle cx="240" cy="120" r="54" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <circle cx="240" cy="120" r="64" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="7 5"></circle>
+  <g stroke="currentColor" stroke-width="1.2" fill="none">
+    <line x1="240" y1="120" x2="304" y2="120"></line>
+    <line x1="240" y1="120" x2="278" y2="82"></line>
+  </g>
+  <g fill="currentColor" font-size="10.5" font-family="inherit">
+    <text x="306" y="124">法线</text><text x="282" y="78">外扩</text>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="390" y="88" font-weight="600">1. 正常 Pass 画正面</text>
+    <text x="390" y="114" font-weight="600">2. Outline Pass 沿法线外扩</text>
+    <text x="390" y="140" font-weight="600">3. Cull Front，只留背面</text>
+    <text x="390" y="176">描边宽度 = 外扩距离 + 顶点 Alpha 遮罩</text>
+  </g>
+  <text x="380" y="232" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">外扩之后，正面被原模型遮住，背面留在轮廓外</text>
+</svg></div>
+<figcaption>图 5-1：反向外扩描边。描边 Pass 只需要位置、法线和顶点色，不需要完整光照。</figcaption>
+</figure>
+
+<h3>硬边为什么会裂</h3>
+
+<p>如果模型是硬边（同一个位置有多个法线），沿各自法线外扩就会在拐角处分开，描边出现缺口。解决办法不是把模型改成全平滑，而是单独维护一套“描边法线”：按顶点位置合并法线，再写回切线或顶点色，描边 Pass 用这套法线，正常光照仍然用原法线。</p>
+
+<pre><code>// 把平滑后的法线写进 tangent.xyz，供 Outline Pass 使用
+static void WriteSmoothNormalToTangent(Mesh mesh)
+{
+    var sum = new Dictionary&lt;Vector3, Vector3&gt;();
+    for (int i = 0; i &lt; mesh.vertexCount; i++)
+    {
+        Vector3 p = mesh.vertices[i];
+        Vector3 n = mesh.normals[i];
+        sum[p] = sum.TryGetValue(p, out var acc) ? acc + n : n;
+    }
+
+    var tangents = new Vector4[mesh.vertexCount];
+    for (int i = 0; i &lt; mesh.vertexCount; i++)
+    {
+        Vector3 n = sum[mesh.vertices[i]].normalized;
+        tangents[i] = new Vector4(n.x, n.y, n.z, 0);
+    }
+    mesh.tangents = tangents;
+}</code></pre>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="硬边法线与平滑法线的描边差异" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="340" height="200" rx="10"></rect>
+    <rect x="396" y="30" width="340" height="200" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="55">硬边：法线各自外扩</text>
+    <text x="566" y="55">平滑法线：拐角连起来</text>
+  </g>
+  <path d="M 110 170 L 170 90 L 230 170" fill="none" stroke="currentColor" stroke-width="2"></path>
+  <path d="M 110 170 L 170 90 L 230 170" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="6 5"></path>
+  <g stroke="currentColor" stroke-width="1" fill="none">
+    <line x1="170" y1="90" x2="170" y2="64"></line>
+    <line x1="120" y1="155" x2="98" y2="132"></line>
+    <line x1="220" y1="155" x2="242" y2="132"></line>
+  </g>
+  <path d="M 480 170 L 540 90 L 600 170" fill="none" stroke="currentColor" stroke-width="2"></path>
+  <path d="M 480 170 L 540 90 L 600 170" fill="none" stroke="var(--accent)" stroke-width="5"></path>
+  <g stroke="currentColor" stroke-width="1" fill="none">
+    <line x1="540" y1="90" x2="540" y2="64"></line>
+    <line x1="516" y1="124" x2="506" y2="108"></line>
+    <line x1="564" y1="124" x2="574" y2="108"></line>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="194" y="212">拐角处出现裂缝</text>
+    <text x="566" y="212">描边连续，但会略“胖”</text>
+  </g>
+</svg></div>
+<figcaption>图 5-2：硬边模型的描边裂口，以及用平均法线修复后的连续描边。代价是拐角处描边会变粗一点。</figcaption>
+</figure>
+
+<h3>顶点 Alpha 控制宽度</h3>
+
+<p>原笔记里描边宽度不是全局常数，而是乘了顶点色的 Alpha：眼睛、鼻子这些不需要描边的地方把 Alpha 设为 0；头发发梢可以让 Alpha 从 1 渐变到 0，描边就会自然收细。这样不用给每个部件单独做一套材质。</p>
+
+<pre><code>// Outline Pass：v.tangent.xyz 是平滑法线，v.color.a 是宽度遮罩
+v2f vert (Attributes v)
+{
+    v2f o;
+    float width = _OutlineWidth * 0.01 * v.color.a;
+    v.vertex.xyz += v.tangent.xyz * width;
+    o.positionCS = TransformObjectToHClip(v.vertex.xyz);
+    return o;
+}</code></pre>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="描边 Pass 与模型 Pass 的叠加结果" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="34" width="220" height="156" rx="10"></rect>
+    <rect x="270" y="34" width="220" height="156" rx="10"></rect>
+    <rect x="516" y="34" width="220" height="156" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="134" y="58">仅描边</text>
+    <text x="380" y="58">仅模型</text>
+    <text x="626" y="58">最终叠加</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="7" opacity=".8">
+    <path d="M 92 102 L 134 162 L 176 102"></path>
+    <path d="M 338 102 L 380 162 L 422 102"></path>
+    <path d="M 584 102 L 626 162 L 668 102" stroke="var(--accent)"></path>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.4">
+    <path d="M 104 100 L 134 148 L 164 100" opacity=".25"></path>
+    <path d="M 350 100 L 380 148 L 410 100"></path>
+    <path d="M 596 100 L 626 148 L 656 100" opacity=".9"></path>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="134" y="182">Cull Front</text>
+    <text x="380" y="182">正常光照</text>
+    <text x="626" y="182">描边在外，模型在内</text>
+  </g>
+</svg></div>
+<figcaption>图 5-3：描边 Pass 与模型 Pass 的关系。只显示描边时是纯色壳，叠加后才是完整角色。</figcaption>
+</figure>
+
+<h3>后处理描边与屏幕空间宽度</h3>
+
+<p>如果场景里角色很多、硬边很复杂，后处理描边更省事：用深度、法线或颜色做边缘检测，再乘一张人物 Mask。它的线宽按像素算，近处远处一致，但需要额外的深度/法线纹理，并且对细小结构（发丝、睫毛）容易断线。原笔记主要讲反向外扩，后处理作为对照即可。</p>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>方案</th><th>优点</th><th>缺点</th><th>适合</th></tr>
+</thead>
+<tbody>
+<tr><td>反向外扩</td><td>便宜、风格稳定、可控</td><td>硬边裂缝、线宽随距离变化</td><td>角色特写、卡通项目</td></tr>
+<tr><td>后处理深度/法线</td><td>线宽统一、适合多角色</td><td>额外纹理、细结构易断</td><td>大场景、统一描边</td></tr>
+<tr><td>顶点 Alpha 外扩</td><td>不用拆材质，能局部关描边</td><td>需要美术写顶点色</td><td>眼、鼻、发梢</td></tr>
+</tbody>
+</table></div></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>Outline 可以写在同一个 Shader 的第二个 Pass，也可以用 RenderObjects Renderer Feature 单独画一层。写进同一个 Shader 更省状态切换，但要注意 <code>DepthOnly</code>、<code>ShadowCaster</code> 不要被描边 Pass 污染；用 Renderer Feature 则更容易按 Layer 控制。无论哪种，外扩距离最好在裁剪空间或屏幕空间换算，避免角色走近时描边突然变粗。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>反向外扩是主力方案；硬边要单独存平滑法线；顶点 Alpha 控制局部宽度；线宽要按距离/FOV 换算；后处理描边是另一种工程取舍。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-04.html"><span class="dir">← 上一节</span>第 4 章 边缘光、视角光与暗部补光</a>
+    <a href="ch-06.html"><span class="dir">下一节 →</span>第 6 章 罪恶装备 Strive：LightMap 的三个通道</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

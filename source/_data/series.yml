@@ -99,3 +99,12 @@
     - 原书 434 页
     - 精讲 + 代码/图解
   url: /books/unity-net/
+
+- tag: 渲染笔记 · 卡通
+  title: 《日式卡通渲染笔记》Unity 视角重述
+  intro: 以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；配原创图解。
+  stats:
+    - 12 章
+    - 原笔记 91 页
+    - 29 幅原创图解
+  url: /books/toon-notes/

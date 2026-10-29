@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 6 章 罪恶装备 Strive：LightMap 的三个通道 · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">06 · 第 6 章 罪恶装备 Strive：LightMap 的三个通道</div>
+    <div class="pager"><a href="ch-05.html">← 上一节</a><a href="ch-07.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 6 章 罪恶装备 Strive：LightMap 的三个通道</h2>
+
+<p>《罪恶装备 Strive》是这套笔记里最重要的案例：它用 3D 模型做出了接近 2D 动画的观感。模型面数在五万面级别，很多信息不再靠材质参数，而是塞进贴图和顶点色里，让一套 Shader 能覆盖大量角色部件。</p>
+
+<p>原笔记把它的数据拆得很细，核心是两张表：一张 LightMap，一张顶点色。LightMap 的 R/G/B 分别管材质类型、Ramp 偏移、高光类型；顶点色的 R/G/B/A 分别管阴影 AO、脸/发切换、无用通道、描边宽度。理解这两张表，比记某个阈值有用得多。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 310" role="img" aria-label="罪恶装备 LightMap 与顶点色的通道分工" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="28" width="340" height="250" rx="10"></rect>
+    <rect x="396" y="28" width="340" height="250" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="12.5" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="54">LightMap</text>
+    <text x="566" y="54">顶点色</text>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="48" y="88" font-weight="600">R：材质 / 高光类型</text>
+    <text x="48" y="110">0-60 普通；60-80 皮革</text>
+    <text x="48" y="132">80+ 金属（由 B 通道再分高光）</text>
+    <text x="48" y="166" font-weight="600">G：Ramp 偏移</text>
+    <text x="48" y="188">控制哪些区域更容易感光</text>
+    <text x="48" y="222" font-weight="600">B：高光强度 / 类型</text>
+    <text x="48" y="244">0 无高光；&lt;128 裁边；&gt;128 Blinn</text>
+  </g>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="420" y="88" font-weight="600">R：ShadowAO</text>
+    <text x="420" y="110">常暗区域，永远压在暗部</text>
+    <text x="420" y="144" font-weight="600">G：脸 / 发切换</text>
+    <text x="420" y="166">同一材质里区分脸和头发</text>
+    <text x="420" y="200" font-weight="600">B：备用</text>
+    <text x="420" y="222">原笔记中未参与最终渲染</text>
+    <text x="420" y="256" font-weight="600">A：描边宽度</text>
+  </g>
+  <text x="380" y="300" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">把“材质参数”变成贴图通道，才能让一套 Shader 覆盖大量角色</text>
+</svg></div>
+<figcaption>图 6-1：罪恶装备的 LightMap 与顶点色分工。每个通道都对应一个明确的美术开关。</figcaption>
+</figure>
+
+<h3>为什么要把 UV 竖着排</h3>
+
+<p>原笔记提到罪恶装备的 UV 是竖直展开的，贴图也按竖向条带组织。这样做的好处是：同一类部件可以共用一条 Ramp/LightMap 采样带，减少贴图切换；同时也方便美术把“哪些地方更容易感光”画进 G 通道。它不是为了省 UV 空间，而是为了让数据布局服务于 Shader 的采样方式。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 240" role="img" aria-label="角色贴图与数据通道的组合" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-toon6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="18" y="58" width="130" height="86" rx="8"></rect>
+    <rect x="168" y="58" width="130" height="86" rx="8"></rect>
+    <rect x="318" y="58" width="130" height="86" rx="8"></rect>
+    <rect x="468" y="58" width="130" height="86" rx="8"></rect>
+    <rect x="618" y="58" width="124" height="86" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="83" y="84" font-weight="600">BaseMap</text><text x="83" y="106">基础色</text>
+    <text x="233" y="84" font-weight="600">Shadow</text><text x="233" y="106">暗部色 / Tint</text>
+    <text x="383" y="84" font-weight="600">LightMap</text><text x="383" y="106">R/G/B 数据</text>
+    <text x="533" y="84" font-weight="600">Mask</text><text x="533" y="106">高光/边缘光</text>
+    <text x="680" y="84" font-weight="600">最终 Shader</text><text x="680" y="106">按通道分支</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow-toon6)">
+    <line x1="148" y1="101" x2="162" y2="101"></line>
+    <line x1="298" y1="101" x2="312" y2="101"></line>
+    <line x1="448" y1="101" x2="462" y2="101"></line>
+    <line x1="598" y1="101" x2="612" y2="101"></line>
+  </g>
+  <text x="380" y="188" fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">Base、Shadow、LightMap、Mask 和顶点色一起决定最终颜色</text>
+  <text x="380" y="212" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">原笔记里，暗部可以用 Base × Tint，也可以直接画一张 Shadow 贴图</text>
+</svg></div>
+<figcaption>图 6-2：罪恶装备角色的数据组合。贴图不是“越真越好”，而是把美术决策编码进通道。</figcaption>
+</figure>
+
+<h3>脸与头发共用材质</h3>
+
+<p>原笔记提到，罪恶装备的脸和头发使用同一个材质，用顶点色的 G 通道来区分：G 大于 0.5 走脸部逻辑，否则走头发逻辑。脸部阴影不是纯 <code>N·L</code>，而是先由美术在 DCC 里编辑法线，让鼻子、颧骨、下巴附近的法线朝向更适合“动画脸”的方向；运行时仍然用同一套漫反射，但阴影形状已经被法线“画”过了。</p>
+
+<p>头发则额外需要高光遮罩和暗部高光控制。原笔记的头发高光用 <code>HairSpecularIntensityMask * BaseMap * lerp(HairDarkIntensity, HairBrightIntensity, ...)</code> 这类组合，让高光在亮部出现、在暗部按需要保留或消失。</p>
+
+<pre><code>float layer      = SAMPLE_TEXTURE2D(_LightMap, sampler_LightMap, uv).r;
+float rampOffset = SAMPLE_TEXTURE2D(_LightMap, sampler_LightMap, uv).g;
+float specType   = SAMPLE_TEXTURE2D(_LightMap, sampler_LightMap, uv).b;
+
+float shadowAO  = i.color.r;
+float isFace    = step(0.5, i.color.g);
+float outlineA  = i.color.a;
+
+float ndl = dot(normalWS, lightDirWS);
+float halfLambert = ndl * 0.5 + 0.5;
+float bright = step(_LightThreshold,
+                    halfLambert + rampOffset + _RampOffsetMask) * shadowAO;
+
+float3 diffuse = lerp(shadowColor, baseColor, bright);
+float3 faceDiffuse = lerp(faceShadowColor, baseColor, bright);
+diffuse = lerp(diffuse, faceDiffuse, isFace);</code></pre>
+
+<h3>贴花与自发光</h3>
+
+<p>罪恶装备的贴花不是画在基础贴图上的，而是用单独的 Mesh 加一张贴花图，再用 <code>clip</code> 或透明混合把没有图案的地方裁掉。这样做有两个好处：贴花可以独立控制分辨率，不会因为基础贴图压缩而糊；不规则的图案也不会在 UV 接缝处产生锯齿。自发光同样是单独 Mesh，不参与主光照。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 230" role="img" aria-label="编辑法线与默认法线在脸部阴影上的差异" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="340" height="170" rx="10"></rect>
+    <rect x="396" y="30" width="340" height="170" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="55">默认法线：阴影碎</text>
+    <text x="566" y="55">编辑法线：阴影整</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.5">
+    <ellipse cx="194" cy="128" rx="62" ry="48"></ellipse>
+    <path d="M 152 110 C 180 130 200 150 194 170" stroke="var(--accent)" stroke-width="2"></path>
+    <path d="M 170 100 C 200 112 214 138 208 160" stroke="currentColor" stroke-width="1" stroke-dasharray="3 3"></path>
+    <ellipse cx="566" cy="128" rx="62" ry="48"></ellipse>
+    <path d="M 528 108 C 556 124 578 146 572 170" stroke="var(--accent)" stroke-width="2"></path>
+  </g>
+  <text x="380" y="220" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">同样是 N·L，法线朝向改了，脸的阴影形状就会跟着改</text>
+</svg></div>
+<figcaption>图 6-3：罪恶装备用“编辑法线”解决脸部阴影。到了原神，这套思路会换成 SDF 面部阴影。</figcaption>
+</figure>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>数据</th><th>通道</th><th>作用</th></tr>
+</thead>
+<tbody>
+<tr><td>LightMap.r</td><td>R</td><td>材质/高光类型：普通、皮革、金属</td></tr>
+<tr><td>LightMap.g</td><td>G</td><td>Ramp 偏移：让某些区域更容易感光</td></tr>
+<tr><td>LightMap.b</td><td>B</td><td>高光强度或高光类型</td></tr>
+<tr><td>顶点色.r</td><td>R</td><td>ShadowAO：常暗区域</td></tr>
+<tr><td>顶点色.g</td><td>G</td><td>脸/发切换</td></tr>
+<tr><td>顶点色.a</td><td>A</td><td>描边宽度</td></tr>
+</tbody>
+</table></div></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>在 URP 里复刻这套做法，不需要真的做 11 层材质。先把 LightMap 的 R/G/B 采样出来，用 <code>if</code>/<code>step</code> 做分支；顶点色通过 <code>COLOR</code> 语义传入。要注意移动端的分支成本：能在贴图里预乘的，就不要在片元里做太多 <code>if</code>。另外，编辑法线要在导入模型时保留自定义法线，不要让 Unity 重新计算。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>罪恶装备的核心不是复杂 BRDF，而是数据布局：LightMap 管材质/偏移/高光，顶点色管 AO/脸发/描边。脸用编辑法线，贴花和自发光用独立 Mesh。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-05.html"><span class="dir">← 上一节</span>第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a>
+    <a href="ch-07.html"><span class="dir">下一节 →</span>第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

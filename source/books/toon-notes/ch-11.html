@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader · 《日式卡通渲染笔记》Unity 视角重述</title>
+<meta name="description" content="以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。">
+<link rel="stylesheet" href="../assets/book.css">
+</head>
+<body>
+<a class="hub-bar" href="../../series/">← 回到知识站</a>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="book-name">《日式卡通渲染笔记》Unity 视角重述</div>
+    <div class="book-en">Japanese Toon Rendering Notes: A Unity Perspective</div>
+    <nav>
+      <div class="nav-title">目录</div>
+      <ol>
+        <li><a href="index.html">封面与目录</a></li>
+      <li><a href="ch-01.html">第 1 章 先拆层：一张日式卡通画面里到底有什么</a></li>
+      <li><a href="ch-02.html">第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</a></li>
+      <li><a href="ch-03.html">第 3 章 裁边高光：从一团白到可控形状</a></li>
+      <li><a href="ch-04.html">第 4 章 边缘光、视角光与暗部补光</a></li>
+      <li><a href="ch-05.html">第 5 章 描边：Cull Front、平滑法线与顶点 Alpha</a></li>
+      <li><a href="ch-06.html">第 6 章 罪恶装备 Strive：LightMap 的三个通道</a></li>
+      <li><a href="ch-07.html">第 7 章 碧蓝幻想：11 层材质与组合式 NPR</a></li>
+      <li><a href="ch-08.html">第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影</a></li>
+      <li><a href="ch-09.html">第 9 章 战双帕弥什：PBR 与 NPR 混着用</a></li>
+      <li><a href="ch-10.html">第 10 章 角色专项：头发、脸与那些不该描边的地方</a></li>
+      <li><a href="ch-11.html">第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</a></li>
+      <li><a href="ch-12.html">第 12 章 性能、移动端与 2026 的工程化</a></li>
+      </ol>
+    </nav>
+    <div class="side-foot">
+      《日式卡通渲染笔记》Unity 视角重述<br>
+      原笔记 91 页 · 2021 年 · 2026 年重述
+      <button class="theme-btn" type="button">☾ 深色模式</button>
+    </div>
+  </aside>
+  <div class="main">
+    <div class="progress"><span></span></div>
+  <div class="topbar">
+    <div class="chapter-no">11 · 第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</div>
+    <div class="pager"><a href="ch-10.html">← 上一节</a><a href="ch-12.html">下一节 →</a></div>
+  </div>
+      <article class="content">
+<h2>第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader</h2>
+
+<p>把前面这些层落成工程，最小的结构是：一个 <code>UniversalForward</code> Pass 算颜色，一个 <code>Outline</code> Pass 画描边，再加可选的 <code>DepthOnly</code>/<code>ShadowCaster</code>。材质属性和贴图声明放在一个共享的 HLSL 文件里，两个 Pass 都 include，避免 SRP Batcher 因为 CBUFFER 不一致而失效。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 280" role="img" aria-label="URP Toon Shader 的 Pass 结构" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="18" y="38" width="230" height="190" rx="10"></rect>
+    <rect x="266" y="38" width="230" height="190" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="514" y="38" width="228" height="190" rx="10"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="133" y="64">UniversalForward</text>
+    <text x="381" y="64">Outline</text>
+    <text x="628" y="64">可选 Pass</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="133" y="94">Lighting.hlsl</text>
+    <text x="133" y="116">主光 / 阴影 / Ramp</text>
+    <text x="133" y="138">高光 / Rim</text>
+    <text x="133" y="160">LightMap / 顶点色</text>
+    <text x="381" y="94">Cull Front</text>
+    <text x="381" y="116">平滑法线外扩</text>
+    <text x="381" y="138">顶点 Alpha 宽度</text>
+    <text x="381" y="160">纯色 / 遮罩</text>
+    <text x="628" y="94">DepthOnly</text>
+    <text x="628" y="116">ShadowCaster</text>
+    <text x="628" y="138">DepthNormals</text>
+    <text x="628" y="160">后处理 Rim</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.4">
+    <line x1="248" y1="133" x2="262" y2="133"></line>
+    <line x1="496" y1="133" x2="510" y2="133"></line>
+  </g>
+  <text x="380" y="258" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">一个角色材质可以只有前两个 Pass；需要投影/深度时才补后两个</text>
+</svg></div>
+<figcaption>图 11-1：URP Toon Shader 的 Pass 结构。主 Pass 负责“像画”，Outline Pass 负责“有线”，其余 Pass 负责工程正确性。</figcaption>
+</figure>
+
+<h3>共享的输入文件</h3>
+
+<pre><code>// ToonInput.hlsl
+#ifndef TOON_INPUT_INCLUDED
+#define TOON_INPUT_INCLUDED
+
+CBUFFER_START(UnityPerMaterial)
+    float4 _BaseMap_ST;
+    float4 _BaseColor;
+    float4 _ShadowColor;
+    float4 _RimColor;
+    float4 _ToonSpecColor;
+    float4 _OutlineColor;
+    float  _ShadowThreshold;
+    float  _ShadowSoftness;
+    float  _RimWidth;
+    float  _RimPower;
+    float  _OutlineWidth;
+CBUFFER_END
+
+TEXTURE2D(_BaseMap);   SAMPLER(sampler_BaseMap);
+TEXTURE2D(_LightMap);  SAMPLER(sampler_LightMap);
+TEXTURE2D(_RampTex);   SAMPLER(sampler_RampTex);
+
+#endif</code></pre>
+
+<p>把所有材质属性放进同一个 <code>CBUFFER_START(UnityPerMaterial)</code>，是 SRP Batcher 能合批的前提。两个 Pass 如果各写一份不一样的 CBUFFER，Unity 会认为材质布局不一致，合批直接失效。</p>
+
+<h3>主 Pass：颜色与光照</h3>
+
+<pre><code>Pass
+{
+    Name "ForwardLit"
+    Tags { "LightMode" = "UniversalForward" }
+
+    HLSLPROGRAM
+    #pragma vertex vert
+    #pragma fragment frag
+    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS
+    #pragma multi_compile _ _MAIN_LIGHT_SHADOWS_CASCADE
+    #pragma multi_compile _ _SHADOWS_SOFT
+
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+    #include "ToonInput.hlsl"
+
+    struct Attributes
+    {
+        float4 positionOS : POSITION;
+        float3 normalOS   : NORMAL;
+        float2 uv         : TEXCOORD0;
+        float4 color      : COLOR;
+    };
+
+    struct Varyings
+    {
+        float4 positionCS  : SV_POSITION;
+        float2 uv          : TEXCOORD0;
+        float3 normalWS    : TEXCOORD1;
+        float3 positionWS  : TEXCOORD2;
+        float4 color       : TEXCOORD4;
+        float4 shadowCoord : TEXCOORD3;
+    };
+
+    Varyings vert (Attributes v)
+    {
+        Varyings o;
+        VertexPositionInputs p = GetVertexPositionInputs(v.positionOS.xyz);
+        VertexNormalInputs n = GetVertexNormalInputs(v.normalOS);
+        o.positionCS = p.positionCS;
+        o.positionWS = p.positionWS;
+        o.normalWS = n.normalWS;
+        o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+        o.color = v.color;
+        o.shadowCoord = GetShadowCoord(p);
+        return o;
+    }
+
+    half4 frag (Varyings i) : SV_Target
+    {
+        float3 N = normalize(i.normalWS);
+        float3 V = normalize(GetWorldSpaceViewDir(i.positionWS));
+        Light mainLight = GetMainLight(i.shadowCoord);
+        float3 L = mainLight.direction;
+
+        float halfLambert = dot(N, L) * 0.5 + 0.5;
+        float shadow = smoothstep(_ShadowThreshold,
+                                  _ShadowThreshold + _ShadowSoftness,
+                                  halfLambert);
+
+        float3 baseColor = SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, i.uv).rgb;
+        float3 ramp = SAMPLE_TEXTURE2D(_RampTex, sampler_RampTex,
+                                       float2(halfLambert, 0.5)).rgb;
+        float3 color = ramp * baseColor * _BaseColor.rgb;
+        color = lerp(color * _ShadowColor.rgb, color, shadow);
+
+        float3 H = normalize(L + V);
+        float spec = pow(saturate(dot(N, H)), 32.0);
+        spec = step(0.9, spec);
+        color += _ToonSpecColor.rgb * spec;
+
+        float rim = 1.0 - saturate(dot(N, V));
+        rim = smoothstep(1.0 - _RimWidth, 1.0, rim);
+        color += _RimColor.rgb * rim;
+
+        return half4(color, 1.0);
+    }
+    ENDHLSL
+}</code></pre>
+
+<h3>Outline Pass：平滑法线从切线来</h3>
+
+<pre><code>Pass
+{
+    Name "Outline"
+    Tags { "LightMode" = "SRPDefaultUnlit" }
+    Cull Front
+    ZWrite On
+
+    HLSLPROGRAM
+    #pragma vertex vert
+    #pragma fragment frag
+    #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+    #include "ToonInput.hlsl"
+
+    struct Attributes
+    {
+        float4 positionOS : POSITION;
+        float4 tangentOS  : TANGENT;
+        float4 color      : COLOR;
+    };
+
+    struct Varyings { float4 positionCS : SV_POSITION; };
+
+    Varyings vert (Attributes v)
+    {
+        Varyings o;
+        float3 smoothNormal = v.tangentOS.xyz;
+        float3 posOS = v.positionOS.xyz
+                     + smoothNormal * _OutlineWidth * 0.01 * v.color.a;
+        o.positionCS = TransformObjectToHClip(posOS);
+        return o;
+    }
+
+    half4 frag (Varyings i) : SV_Target
+    {
+        return _OutlineColor;
+    }
+    ENDHLSL
+}</code></pre>
+
+<p>这里的 <code>tangentOS.xyz</code> 不是切线，而是上一章 C# 工具写进去的平滑法线。如果模型没有导入切线，或者导入时被重新计算，描边就会退回硬边效果。</p>
+
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 260" role="img" aria-label="从网格数据到最终颜色的数据流" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-toon11" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="18" y="48" width="150" height="86" rx="8"></rect>
+    <rect x="188" y="48" width="150" height="86" rx="8"></rect>
+    <rect x="358" y="48" width="150" height="86" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+    <rect x="528" y="48" width="214" height="86" rx="8"></rect>
+  </g>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="93" y="76" font-weight="600">Mesh</text><text x="93" y="98">Position / Normal</text><text x="93" y="120">UV / Color / Tangent</text>
+    <text x="263" y="76" font-weight="600">Textures</text><text x="263" y="98">Base / LightMap</text><text x="263" y="120">Ramp / MatCap</text>
+    <text x="433" y="76" font-weight="600">Shader</text><text x="433" y="98">Toon Lighting</text><text x="433" y="120">Outline</text>
+    <text x="635" y="76" font-weight="600">Frame Buffer</text><text x="635" y="98">颜色 / 深度 / 模板</text><text x="635" y="120">后处理输入</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.4" marker-end="url(#arrow-toon11)">
+    <line x1="168" y1="91" x2="182" y2="91"></line>
+    <line x1="338" y1="91" x2="352" y2="91"></line>
+    <line x1="508" y1="91" x2="522" y2="91"></line>
+  </g>
+  <text x="380" y="196" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">同一份 Mesh 数据可以被主 Pass 和 Outline Pass 以不同方式解释</text>
+  <text x="380" y="220" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">Tangent 用来存平滑法线；Color.a 用来存描边宽度</text>
+</svg></div>
+<figcaption>图 11-2：从网格数据到最终颜色的数据流。通道复用是卡通渲染工程化的核心技巧。</figcaption>
+</figure>
+
+<h3>Shader Graph 还是 HLSL？</h3>
+
+<div class="table-wrap"><div class="table-wrap"><table>
+<thead>
+<tr><th>维度</th><th>Shader Graph</th><th>HLSL</th></tr>
+</thead>
+<tbody>
+<tr><td>上手速度</td><td>快，节点可视化</td><td>慢，需要熟悉 URP 库</td></tr>
+<tr><td>多 Pass / 描边</td><td>不方便，通常要配合手写 Pass</td><td>直接写，控制力强</td></tr>
+<tr><td>分支/关键字</td><td>Boolean Keyword 会产生变体</td><td>可用位掩码/手写分支</td></tr>
+<tr><td>调试</td><td>节点预览方便</td><td>Frame Debugger / RenderDoc 更直接</td></tr>
+<tr><td>适合</td><td>原型、简单角色、美术自制</td><td>量产角色、复杂多 Pass、性能敏感</td></tr>
+</tbody>
+</table></div></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>先把主 Pass 写对，再考虑后处理。URP 的 <code>GetMainLight(shadowCoord)</code> 只在定义了阴影关键字时才有阴影；如果场景没有主光阴影，<code>shadowCoord</code> 仍然可以传，但结果不受影响。还有，Outline Pass 的 <code>LightMode</code> 用 <code>SRPDefaultUnlit</code> 可以避免被 UniversalForward 重复调用；如果你用 RenderObjects 单独画描边，则要确保它只对目标 Layer 生效。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>一个最小 URP Toon Shader = 共享输入 + UniversalForward + Outline。CBUFFER 要一致，平滑法线走 Tangent，描边宽度走顶点 Alpha，后处理用 Renderer Feature。先把这条链跑通，再往上加 SDF、MatCap、PBR。</p>
+</blockquote>
+
+  </article>
+  <div class="prevnext">
+    <a href="ch-10.html"><span class="dir">← 上一节</span>第 10 章 角色专项：头发、脸与那些不该描边的地方</a>
+    <a href="ch-12.html"><span class="dir">下一节 →</span>第 12 章 性能、移动端与 2026 的工程化</a>
+  </div>
+  </div>
+</div>
+<script src="../assets/book.js"></script>
+</body>
+</html>

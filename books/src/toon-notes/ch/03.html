@@ -1,0 +1,107 @@
+<h2>第 3 章 裁边高光：从一团白到可控形状</h2>
+
+<p>写实渲染里的高光是一块连续衰减的亮斑，日式卡通里通常不要这种“糊成一片”的高光。原笔记先给出 Blinn-Phong：<code>pow(N·H, exp)</code>，然后用 <code>step</code> 把高光截断，再用一张高光遮罩控制它出现在哪里。</p>
+
+<pre><code>float3 H = normalize(lightDirWS + viewDirWS);
+float spec = pow(saturate(dot(normalWS, H)), _SpecPower);
+spec = step(_SpecThreshold, spec) * _SpecMask;
+float3 color = baseColor + _SpecColor.rgb * spec;</code></pre>
+
+<figure>
+<svg viewBox="0 0 760 240" role="img" aria-label="高光的 N、L、V、H 向量关系" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-toon3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <line x1="90" y1="190" x2="670" y2="190" stroke="currentColor" stroke-width="1.5"></line>
+  <g stroke="currentColor" stroke-width="2" marker-end="url(#arrow-toon3)">
+    <line x1="380" y1="190" x2="380" y2="66"></line>
+    <line x1="380" y1="190" x2="242" y2="94"></line>
+    <line x1="380" y1="190" x2="518" y2="94"></line>
+    <line x1="380" y1="190" x2="450" y2="58"></line>
+  </g>
+  <g fill="currentColor" font-size="13" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="380" y="54">N</text><text x="230" y="86">L</text><text x="530" y="86">V</text><text x="461" y="48">H</text>
+  </g>
+  <circle cx="380" cy="190" r="5" fill="var(--accent)" stroke="none"></circle>
+  <g fill="currentColor" font-size="11" text-anchor="middle" font-family="inherit">
+    <text x="380" y="220">N·H 决定高光位置</text>
+    <text x="380" y="238">N·V 决定边缘光 / 视角光</text>
+  </g>
+  <path d="M 380 190 A 52 52 0 0 1 432 190" fill="none" stroke="var(--accent)" stroke-width="1.5"></path>
+  <text x="424" y="174" fill="var(--accent)" font-size="10" font-family="inherit">半角</text>
+</svg>
+<figcaption>图 3-1：高光看的是半程向量 H，而不是光源方向 L。H 与 N 的夹角越小，高光越亮。</figcaption>
+</figure>
+
+<h3>“高光变形”是什么</h3>
+
+<p>原笔记在讲完 StepSpecular 之后，专门放了一页“高光形变”：一个球上不是圆形高光，而是两块被拉长、切角的白斑。这意味着高光不只是亮不亮，还可以有形状。做法通常有三种：</p>
+
+<ul>
+<li>用 Ramp 或遮罩把 <code>N·H</code> 的等值线画成想要的形状；</li>
+<li>用 MatCap：在视角空间里拿 <code>N</code> 的 XY 去采样一张“已经打好光的球”，高光形状由贴图决定；</li>
+<li>用各向异性高光，沿头发或布料的切线方向拉长。</li>
+</ul>
+
+<figure>
+<svg viewBox="0 0 760 250" role="img" aria-label="连续高光、裁边高光与变形高光的对比" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="224" height="180" rx="10"></rect>
+    <rect x="268" y="30" width="224" height="180" rx="10"></rect>
+    <rect x="512" y="30" width="224" height="180" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="136" y="56">连续 Blinn-Phong</text>
+    <text x="380" y="56">Step 截断</text>
+    <text x="624" y="56">高光变形 / MatCap</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.4">
+    <circle cx="136" cy="132" r="56"></circle>
+    <circle cx="380" cy="132" r="56"></circle>
+    <circle cx="624" cy="132" r="56"></circle>
+  </g>
+  <ellipse cx="146" cy="114" rx="20" ry="14" fill="currentColor" opacity=".25" stroke="none"></ellipse>
+  <ellipse cx="146" cy="114" rx="10" ry="7" fill="currentColor" opacity=".45" stroke="none"></ellipse>
+  <ellipse cx="390" cy="114" rx="13" ry="8" fill="currentColor" opacity=".9" stroke="none"></ellipse>
+  <g fill="var(--accent)" stroke="none">
+    <rect x="610" y="104" width="14" height="26" rx="7"></rect>
+    <rect x="630" y="104" width="14" height="26" rx="7"></rect>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="136" y="204">边缘柔和，容易“糊”</text>
+    <text x="380" y="204">边界干净，适合赛璐璐</text>
+    <text x="624" y="204">形状由贴图/切线决定</text>
+  </g>
+</svg>
+<figcaption>图 3-2：同一条高光，可以用连续衰减、Step 截断，或者完全交给 MatCap/形状遮罩。原笔记里的“高光形变”就是第三种。</figcaption>
+</figure>
+
+<h3>四个项目怎么用高光</h3>
+
+<p>罪恶装备把高光类型塞进 LightMap 的 B 通道：0 表示无高光，小于 128 是裁边高光，大于 128 是 BlinnPhong 高光；皮革、金属还会再走单独的裁边高光分支。碧蓝幻想把高光类型做成材质层的一部分，并额外提供 StepNV、StepNL、StepNH 等边缘光/高光变体。原神用 LightMap.a 选 Ramp 层，用 LightMap.r 选高光类型，用 LightMap.b 控高光强度，再用 MatCap 做视角光。战双则在 PBRMixMap 里区分金属度、光滑度和 PBR 遮罩，高光可以在 GGX 与 BlinnPhong 之间切换。</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>项目</th><th>高光数据</th><th>典型用途</th></tr>
+</thead>
+<tbody>
+<tr><td>罪恶装备</td><td>LightMap.b：0 / &lt;128 / &gt;128</td><td>无高光、裁边高光、BlinnPhong 高光</td></tr>
+<tr><td>碧蓝幻想</td><td>LayerMap + 每层参数</td><td>按材质层决定高光/边缘光类型</td></tr>
+<tr><td>原神</td><td>LightMap.a / r / b + MatCap</td><td>Ramp 层、高光类型、高光强度、视角光</td></tr>
+<tr><td>战双</td><td>PBRMixMap + SpecularMask</td><td>PBR 高光与卡通高光混用</td></tr>
+</tbody>
+</table></div>
+
+<pre><code>// MatCap：用视角空间法线的 XY 采样一张球形光照图
+float3 normalVS = mul((float3x3)UNITY_MATRIX_V, normalWS);
+float2 matcapUV = normalVS.xy * 0.5 + 0.5;
+float3 matcap = SAMPLE_TEXTURE2D(_MatCapTex, sampler_MatCapTex, matcapUV).rgb;
+
+// 用遮罩决定谁有高光，避免整件衣服都闪
+float3 finalColor = baseColor + matcap * _MatCapIntensity * specMask;</code></pre>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>高光遮罩最好和粗糙度/金属度分开画。日式卡通里“哪里该闪”是美术决定，不是物理推导。移动端可以把高光形状直接烘进 MatCap 或 Ramp，运行时只做一次采样；多光源场景里，卡通高光通常只跟主光，副光最多给一点环境反射。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>卡通高光 = 强度计算 + 阈值截断 + 形状控制。Step 负责“干净”，MatCap/遮罩负责“形状”，切线负责“拉长”。不要把所有材质都套同一个高光公式。</p>
+</blockquote>

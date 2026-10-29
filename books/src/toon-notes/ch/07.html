@@ -1,0 +1,176 @@
+<h2>第 7 章 碧蓝幻想：11 层材质与组合式 NPR</h2>
+
+<p>《碧蓝幻想》和《罪恶装备》同属 ARC System Works，基础做法一致：UV 竖直展开、平滑法线、LightMap 存偏移、顶点色存 AO、贴花独立 Mesh。差别在于碧蓝幻想的角色更“插画化”，一个角色身上的材质类型更多，于是它把材质层做到了 11 层，并把“每层有哪些特性”做成了可组合的开关。</p>
+
+<p>层信息存在 BaseMap 的 Alpha 通道里：0~1 被切成 11 段，每段代表一种材质。运行时先采样 <code>BaseMap.a</code>，判断当前像素落在哪一层，再从该层读取 Rim、高光、视角光、两层明暗等开关。</p>
+
+<figure>
+<svg viewBox="0 0 760 330" role="img" aria-label="碧蓝幻想的 11 层材质分布" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="38" y="38" width="64" height="250" rx="8"></rect>
+  </g>
+  <g stroke="currentColor" stroke-width="1">
+    <line x1="38" y1="60.7" x2="102" y2="60.7"></line>
+    <line x1="38" y1="83.5" x2="102" y2="83.5"></line>
+    <line x1="38" y1="106.2" x2="102" y2="106.2"></line>
+    <line x1="38" y1="128.9" x2="102" y2="128.9"></line>
+    <line x1="38" y1="151.6" x2="102" y2="151.6"></line>
+    <line x1="38" y1="174.4" x2="102" y2="174.4"></line>
+    <line x1="38" y1="197.1" x2="102" y2="197.1"></line>
+    <line x1="38" y1="219.8" x2="102" y2="219.8"></line>
+    <line x1="38" y1="242.5" x2="102" y2="242.5"></line>
+    <line x1="38" y1="265.3" x2="102" y2="265.3"></line>
+  </g>
+  <g fill="var(--accent)" opacity=".18">
+    <rect x="38" y="38" width="64" height="22.7"></rect>
+    <rect x="38" y="83.5" width="64" height="22.7"></rect>
+    <rect x="38" y="151.6" width="64" height="22.7"></rect>
+    <rect x="38" y="219.8" width="64" height="22.7"></rect>
+  </g>
+  <g fill="currentColor" font-size="10" font-family="inherit">
+    <text x="116" y="54">0.00-0.20 基础：单层明暗 / 无 Rim</text>
+    <text x="116" y="77">0.21-0.25 布料 1：两层明暗 / Rim</text>
+    <text x="116" y="100">0.26-0.30 布料 2：两层 / Rim / 高光遮罩</text>
+    <text x="116" y="123">0.31-0.46 布料 3：两层 / Rim / 视角光</text>
+    <text x="116" y="146">0.47-0.55 皮革 1：单层 / Rim / 高光 / 裁边高光</text>
+    <text x="116" y="169">0.56-0.57 皮革 2：两层 / Rim / 高光遮罩</text>
+    <text x="116" y="192">0.58-0.61 皮革 3：两层 / Rim / 高光遮罩</text>
+    <text x="116" y="215">0.62-0.66 金属 1：两层 / Rim / 高光遮罩</text>
+    <text x="116" y="238">0.67-0.71 金属 2：两层 / Rim / 高光 / 裁边高光</text>
+    <text x="116" y="261">0.72-0.87 金属 3：两层 / Rim / 高光 / 裁边高光</text>
+    <text x="116" y="284">0.88-1.00 金属 4：单层 / 无 Rim / 高光</text>
+  </g>
+  <text x="380" y="318" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">层不是“材质槽”，而是“特性组合”；同一层还可以再被 LightMap 细分高光/边缘光类型</text>
+</svg>
+<figcaption>图 7-1：碧蓝幻想的 11 层材质。层决定基础规则，LightMap 再决定这一层里的高光/边缘光细节。</figcaption>
+</figure>
+
+<h3>固定分层 vs 组合式分层</h3>
+
+<p>原笔记对比了两种设计。固定分层是给每个层写死一套 Shader 逻辑，层与层之间互不影响；组合式分层是把“两层明暗、Rim、高光、裁边高光、视角光”做成开关，每层自由勾选。前者简单、可预测；后者灵活，但分支更多，材质面板也更复杂。</p>
+
+<figure>
+<svg viewBox="0 0 760 260" role="img" aria-label="固定分层与组合式分层的对比" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="340" height="200" rx="10"></rect>
+    <rect x="396" y="30" width="340" height="200" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="55">固定分层</text>
+    <text x="566" y="55">组合式分层</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" font-family="inherit">
+    <text x="52" y="86">层 1 → 特性 A / B</text>
+    <text x="52" y="112">层 2 → 特性 A / C</text>
+    <text x="52" y="138">层 3 → 特性 B / D</text>
+    <text x="52" y="164">层 4 → 特性 A / D</text>
+    <text x="52" y="196" opacity=".8">规则清晰，但新增组合要改代码</text>
+  </g>
+  <g fill="currentColor" font-size="10.5" font-family="inherit">
+    <text x="424" y="86">层 1 → [两层] [Rim] [高光]</text>
+    <text x="424" y="112">层 2 → [两层] [Rim] [视角光]</text>
+    <text x="424" y="138">层 3 → [单层] [Rim] [裁边高光]</text>
+    <text x="424" y="164">层 4 → [两层] [金属] [高光]</text>
+    <text x="424" y="196" opacity=".8">开关自由组合，但分支与面板更复杂</text>
+  </g>
+</svg>
+<figcaption>图 7-2：固定分层与组合式分层。碧蓝幻想选择后者，因为它需要给美术更大的自由度。</figcaption>
+</figure>
+
+<h3>NprData：把“一层”变成结构体</h3>
+
+<p>原笔记用一个 <code>NprData</code> 结构体承载每层参数：是否两层明暗、是否有 Rim、是否有高光、是否有裁边高光、是否有视角光，以及 Base、Shadow、Ramp、遮罩、高光指数等贴图与标量。光照函数只读这个结构体，不再关心“现在处理的是第几层”。</p>
+
+<pre><code>struct NprData
+{
+    bool  hasTwoLayerShadow;
+    bool  hasRim;
+    bool  hasSpecular;
+    bool  hasStepSpecular;
+    bool  hasViewLight;
+
+    float3 baseColor;
+    float3 shadowColor;
+    float3 rimColor;
+    float3 specColor;
+
+    float  rampOffset;
+    float  shadowMask;
+    float  specMask;
+    float  rimWidth;
+    float  rimExp;
+    float  specExp;
+};</code></pre>
+
+<p>下面的伪代码把常见分支串起来。实际工程里通常不会真的用 <code>bool</code> 分支，而是用 <code>uint</code> flags、关键字或预乘遮罩，减少片元着色器的动态分支。</p>
+
+<pre><code>float3 NprLighting(NprData d, float3 N, float3 L, float3 V)
+{
+    float ndl = dot(N, L);
+    float halfLambert = ndl * 0.5 + 0.5;
+
+    float bright = step(_LightThreshold,
+                        halfLambert + d.rampOffset * _RampOffsetMask) * d.shadowMask;
+    float3 color = lerp(d.shadowColor, d.baseColor, bright);
+
+    if (d.hasRim)
+    {
+        float rim = 1.0 - saturate(dot(N, V));
+        rim = step(1.0 - d.rimWidth, rim);
+        color += d.rimColor * rim;
+    }
+
+    if (d.hasSpecular)
+    {
+        float3 H = normalize(L + V);
+        float spec = pow(saturate(dot(N, H)), d.specExp);
+        spec = step(_SpecThreshold, spec) * d.specMask;
+        color += d.specColor * spec;
+    }
+
+    return color;
+}</code></pre>
+
+<h3>金属的“暗边”</h3>
+
+<p>碧蓝幻想的金属不是靠一张环境贴图，而是靠 Fresnel 把边缘压暗：<code>Diffuse *= pow(1 - saturate(N·V), exp) * intensity</code>。这和常见的“边缘提亮”相反，但在卡通金属上很好用——边缘变暗，中间的色块更亮，金属的厚度感就出来了。</p>
+
+<figure>
+<svg viewBox="0 0 760 240" role="img" aria-label="金属暗边与普通边缘光的对比" style="width:100%;height:auto;color:var(--text-soft)">
+  <g style="fill:var(--bg-soft)" stroke="currentColor" stroke-width="1.4">
+    <rect x="24" y="30" width="340" height="180" rx="10"></rect>
+    <rect x="396" y="30" width="340" height="180" rx="10" style="fill:var(--accent-soft);stroke:var(--accent)"></rect>
+  </g>
+  <g fill="currentColor" font-size="12" font-weight="600" text-anchor="middle" font-family="inherit">
+    <text x="194" y="55">普通边缘光：边缘更亮</text>
+    <text x="566" y="55">金属暗边：边缘更暗</text>
+  </g>
+  <circle cx="194" cy="132" r="52" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <path d="M 194 80 A 52 52 0 0 1 194 184" fill="none" stroke="var(--accent)" stroke-width="8" opacity=".8"></path>
+  <circle cx="566" cy="132" r="52" fill="none" stroke="currentColor" stroke-width="1.4"></circle>
+  <path d="M 566 80 A 52 52 0 0 0 566 184" fill="none" stroke="currentColor" stroke-width="8" opacity=".45"></path>
+  <text x="380" y="232" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">同一个 Fresnel，乘在颜色上是提亮，乘在 Diffuse 上就是压暗</text>
+</svg>
+<figcaption>图 7-3：金属暗边。碧蓝幻想用 Fresnel 压暗 Diffuse，而不是给边缘加亮色。</figcaption>
+</figure>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>设计点</th><th>碧蓝幻想的做法</th><th>Unity 对应</th></tr>
+</thead>
+<tbody>
+<tr><td>材质分层</td><td>BaseMap.a 切 11 段</td><td>采样 Alpha，映射到 layer index</td></tr>
+<tr><td>特性开关</td><td>每层勾选 Rim/高光/视角光</td><td>Keyword、uint flags 或预乘遮罩</td></tr>
+<tr><td>金属</td><td>Fresnel 压暗 Diffuse</td><td><code>pow(1 - N·V, exp)</code></td></tr>
+<tr><td>边缘光类型</td><td>StepNV / StepNL / StepNH</td><td>用不同向量做 step，按层选择</td></tr>
+<tr><td>头发/脸/描边</td><td>与罪恶装备基本一致</td><td>可复用同一套 Pass</td></tr>
+</tbody>
+</table></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>组合式材质最容易失控的是变体数量。Shader Graph 里每加一个 Boolean Keyword，材质变体就翻一倍；更稳的做法是用一张 LayerMap 加一个 <code>uint</code> 位掩码，把常用组合压成少量关键字。移动端尤其要限制“每层都开一堆分支”的做法。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>碧蓝幻想的核心是“层 + 特性开关”：11 层材质、组合式 NPR、Fresnel 金属暗边、多种 Rim 类型。它比罪恶装备更灵活，但也更依赖工程约束。</p>
+</blockquote>

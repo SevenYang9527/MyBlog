@@ -1,0 +1,160 @@
+{
+  "slug": "toon-notes",
+  "kind": "notes",
+  "title_en": "Japanese Toon Rendering Notes: A Unity Perspective",
+  "title_zh": "《日式卡通渲染笔记》Unity 视角重述",
+  "subtitle_zh": "以罪恶装备、碧蓝幻想、原神、战双的卡通渲染为线索，用 Unity/URP 的视角重讲裁边光照、LightMap 通道、描边、SDF 面部阴影与 PBR 混用；图示为本站重绘，不复制原笔记图片/正文。",
+  "kicker": "渲染笔记 · 卡通",
+  "foot_note": "《日式卡通渲染笔记》Unity 视角重述",
+  "source_pages_label": "原笔记页数",
+  "source_line": "原笔记 91 页 · 2021 年 · 2026 年重述",
+  "book_label": "重述",
+  "part_label": "已整理章节",
+  "chapters": [
+    {
+      "no": 1,
+      "title_en": "Deconstructing the anime look",
+      "title_zh": "第 1 章 先拆层：一张日式卡通画面里到底有什么",
+      "pages": "1-2",
+      "parts": [
+        {
+          "id": "01",
+          "title_zh": "第 1 章 先拆层：一张日式卡通画面里到底有什么"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title_en": "Diffuse: clipping N·L into bands",
+      "title_zh": "第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶",
+      "pages": "3-5",
+      "parts": [
+        {
+          "id": "02",
+          "title_zh": "第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶"
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title_en": "Specular: from a blob to a shape",
+      "title_zh": "第 3 章 裁边高光：从一团白到可控形状",
+      "pages": "5-7, 13-16",
+      "parts": [
+        {
+          "id": "03",
+          "title_zh": "第 3 章 裁边高光：从一团白到可控形状"
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title_en": "Rim, view light and shadow-side fill",
+      "title_zh": "第 4 章 边缘光、视角光与暗部补光",
+      "pages": "6-10, 25-28",
+      "parts": [
+        {
+          "id": "04",
+          "title_zh": "第 4 章 边缘光、视角光与暗部补光"
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title_en": "Outlines: inverted hull and smooth normals",
+      "title_zh": "第 5 章 描边：Cull Front、平滑法线与顶点 Alpha",
+      "pages": "11-15, 33-35",
+      "parts": [
+        {
+          "id": "05",
+          "title_zh": "第 5 章 描边：Cull Front、平滑法线与顶点 Alpha"
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title_en": "Guilty Gear Strive: a three-channel LightMap",
+      "title_zh": "第 6 章 罪恶装备 Strive：LightMap 的三个通道",
+      "pages": "16-36",
+      "parts": [
+        {
+          "id": "06",
+          "title_zh": "第 6 章 罪恶装备 Strive：LightMap 的三个通道"
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title_en": "Granblue Fantasy: 11 layers of NPR",
+      "title_zh": "第 7 章 碧蓝幻想：11 层材质与组合式 NPR",
+      "pages": "37-56",
+      "parts": [
+        {
+          "id": "07",
+          "title_zh": "第 7 章 碧蓝幻想：11 层材质与组合式 NPR"
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title_en": "Genshin Impact: ramp atlas, MatCap and SDF face shadows",
+      "title_zh": "第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影",
+      "pages": "57-80",
+      "parts": [
+        {
+          "id": "08",
+          "title_zh": "第 8 章 原神：Ramp 分层、MatCap 与 SDF 面部阴影"
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title_en": "Punishing: Gray Raven: PBR meets NPR",
+      "title_zh": "第 9 章 战双帕弥什：PBR 与 NPR 混着用",
+      "pages": "81-89",
+      "parts": [
+        {
+          "id": "09",
+          "title_zh": "第 9 章 战双帕弥什：PBR 与 NPR 混着用"
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title_en": "Hair, face and outline exclusions",
+      "title_zh": "第 10 章 角色专项：头发、脸与那些不该描边的地方",
+      "pages": "28-30, 49-66",
+      "parts": [
+        {
+          "id": "10",
+          "title_zh": "第 10 章 角色专项：头发、脸与那些不该描边的地方"
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title_en": "Implementing the toon shader in Unity/URP",
+      "title_zh": "第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader",
+      "pages": "11-15, 87-89",
+      "parts": [
+        {
+          "id": "11",
+          "title_zh": "第 11 章 在 Unity/URP 里落地：一个可运行的 Toon Shader"
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title_en": "Performance, mobile and the 2026 workflow",
+      "title_zh": "第 12 章 性能、移动端与 2026 的工程化",
+      "pages": "87-91",
+      "parts": [
+        {
+          "id": "12",
+          "title_zh": "第 12 章 性能、移动端与 2026 的工程化"
+        }
+      ]
+    }
+  ],
+  "book_pages": 91
+}

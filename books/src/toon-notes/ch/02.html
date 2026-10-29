@@ -1,0 +1,108 @@
+<h2>第 2 章 裁边漫反射：把 N·L 压成美术能改的色阶</h2>
+
+<p>传统的 Lambert 漫反射只有一条公式：<code>N·L</code> 越大越亮，越小越暗。它在写实渲染里很好用，但放在日式卡通里会显得“脏”：明暗交界线是一大片连续渐变，颜色被平均成灰，画面上没有手绘那种干净的块面。</p>
+
+<p>原笔记的做法很直接：把 <code>N·L</code> 先映射到 0~1，再用 <code>step</code> 或 <code>smoothstep</code> 切成两档，最后在亮部色和暗部色之间插值。阈值决定交界线在哪，过渡宽度决定边缘是硬切还是稍微柔一点。</p>
+
+<pre><code>float NdotL = dot(normalWS, lightDirWS);
+float halfLambert = NdotL * 0.5 + 0.5;
+float shadow = smoothstep(_ShadowThreshold,
+                          _ShadowThreshold + _ShadowSoftness,
+                          halfLambert);
+float3 color = lerp(_ShadowColor.rgb, _BaseColor.rgb, shadow);</code></pre>
+
+<figure>
+<svg viewBox="0 0 760 260" role="img" aria-label="Lambert、Step 与 SmoothStep 的色阶对比" style="width:100%;height:auto;color:var(--text-soft)">
+  <line x1="62" y1="205" x2="718" y2="205" stroke="currentColor" stroke-width="1.5"></line>
+  <line x1="62" y1="205" x2="62" y2="34" stroke="currentColor" stroke-width="1.5"></line>
+  <path d="M 62 195 C 210 190 330 120 718 55" fill="none" stroke="currentColor" stroke-width="2" opacity=".45"></path>
+  <path d="M 62 195 L 352 195 L 352 78 L 718 78" fill="none" stroke="var(--accent)" stroke-width="2.6"></path>
+  <path d="M 62 195 L 326 195 L 378 78 L 718 78" fill="none" stroke="currentColor" stroke-width="1.6" stroke-dasharray="6 4"></path>
+  <g fill="currentColor" font-size="11" font-family="inherit">
+    <text x="560" y="45">Lambert（连续）</text>
+    <text x="560" y="68" fill="var(--accent)">Step（硬切）</text>
+    <text x="560" y="92">SmoothStep（柔化）</text>
+    <text x="72" y="228">N·L = 0</text>
+    <text x="690" y="228">N·L = 1</text>
+    <text x="72" y="52">亮度</text>
+  </g>
+  <line x1="352" y1="205" x2="352" y2="78" stroke="var(--accent)" stroke-width="1" stroke-dasharray="3 3"></line>
+  <text x="352" y="224" fill="var(--accent)" font-size="10.5" text-anchor="middle" font-family="inherit">阈值</text>
+</svg>
+<figcaption>图 2-1：同一条 N·L 曲线，被 Step 压成两档，或被 SmoothStep 压成带窄过渡的两档。阈值位置就是明暗交界线。</figcaption>
+</figure>
+
+<h3>Ramp：把色阶做成一张可画的贴图</h3>
+
+<p><code>step</code> 只有两档，遇到需要三档、四档或者“暗部偏紫、亮部偏黄”的角色就不够用了。这时把 <code>halfLambert</code> 当作 U 坐标，去采样一张一维 Ramp 贴图：贴图从左到右就是暗到亮，美术可以直接在贴图上画颜色。</p>
+
+<p>Ramp 贴图一般设成 Point 过滤，避免采样时把相邻色阶混在一起；如果使用 Linear 过滤，边缘会自然柔化，但也会失去“硬边”的味道。还要注意 sRGB 和项目颜色空间：Ramp 是颜色贴图就按 sRGB 导入，是纯数据遮罩就关掉 sRGB。</p>
+
+<pre><code>float2 rampUV = float2(halfLambert, 0.5);
+float3 rampColor = SAMPLE_TEXTURE2D(_RampTex, sampler_RampTex, rampUV).rgb;
+float3 color = rampColor * _BaseColor.rgb;
+
+// 有些项目把 Ramp 偏移存在顶点色或 LightMap 里：
+float u = saturate(halfLambert + _RampOffset);
+float3 shifted = SAMPLE_TEXTURE2D(_RampTex, sampler_RampTex, float2(u, 0.5)).rgb;</code></pre>
+
+<figure>
+<svg viewBox="0 0 760 240" role="img" aria-label="Ramp 贴图与 RampOffset 的采样映射" style="width:100%;height:auto;color:var(--text-soft)">
+  <text x="40" y="38" fill="currentColor" font-size="12" font-weight="600" font-family="inherit">Ramp 贴图（从左到右：暗 → 亮）</text>
+  <g stroke="currentColor" stroke-width="1.2">
+    <rect x="40" y="56" width="120" height="44" style="fill:var(--bg-soft)"></rect>
+    <rect x="160" y="56" width="120" height="44" style="fill:var(--bg-soft)"></rect>
+    <rect x="280" y="56" width="120" height="44" style="fill:var(--accent-soft)"></rect>
+    <rect x="400" y="56" width="120" height="44" style="fill:var(--accent-soft)"></rect>
+    <rect x="520" y="56" width="120" height="44" style="fill:var(--accent-soft)"></rect>
+    <rect x="640" y="56" width="80" height="44" style="fill:var(--accent-soft)"></rect>
+  </g>
+  <g fill="currentColor" font-size="10" text-anchor="middle" font-family="inherit" opacity=".85">
+    <text x="100" y="83">暗部 1</text><text x="220" y="83">暗部 2</text>
+    <text x="340" y="83">交界</text><text x="460" y="83">亮部 1</text>
+    <text x="580" y="83">亮部 2</text><text x="680" y="83">高光</text>
+  </g>
+  <g fill="none" stroke="currentColor" stroke-width="1.4">
+    <line x1="40" y1="130" x2="720" y2="130"></line>
+    <line x1="380" y1="122" x2="380" y2="138"></line>
+  </g>
+  <g fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">
+    <text x="40" y="152">0.0</text><text x="380" y="152">0.5</text><text x="720" y="152">1.0</text>
+    <text x="380" y="176" font-weight="600">halfLambert → U</text>
+  </g>
+  <g stroke="var(--accent)" stroke-width="1.6" fill="none">
+    <path d="M 230 190 L 230 170 L 268 170 L 268 118"></path>
+    <path d="M 520 190 L 520 170 L 558 170 L 558 118"></path>
+  </g>
+  <g fill="var(--accent)" font-size="10.5" font-family="inherit">
+    <text x="150" y="212">RampOffset &lt; 0：采样点左移</text>
+    <text x="470" y="212">RampOffset &gt; 0：采样点右移</text>
+  </g>
+  <text x="380" y="232" fill="currentColor" font-size="10.5" text-anchor="middle" font-family="inherit">偏移量通常来自 LightMap 的某个通道或顶点色，用来让不同部件“更易感光/更不易感光”</text>
+</svg>
+<figcaption>图 2-2：Ramp 采样与偏移。Ramp 让色阶变成可编辑的 LUT，RampOffset 让同一张 Ramp 在不同部件上产生不同明暗位置。</figcaption>
+</figure>
+
+<h3>为什么原笔记强调“裁边”</h3>
+
+<p>四个项目用了不同的数据，但思路一致：罪恶装备把材质类型和偏移塞进 LightMap，碧蓝幻想用 BaseMap 乘阴影色，原神把 10 层 Ramp 排成一张图，战双则把 PBR 和 NPR 混在一起。它们都不是“算一个更真实的漫反射”，而是“把漫反射压成美术能理解的几块”。</p>
+
+<div class="table-wrap"><table>
+<thead>
+<tr><th>做法</th><th>效果</th><th>成本 / 注意点</th></tr>
+</thead>
+<tbody>
+<tr><td>Step</td><td>最干净的硬边，适合赛璐璐</td><td>阈值一动，画面变化很大；过渡完全消失</td></tr>
+<tr><td>SmoothStep</td><td>交界处留一点柔化，避免锯齿感</td><td>过渡宽度要克制，太宽会回到 Lambert</td></tr>
+<tr><td>Ramp LUT</td><td>多档颜色、可画渐变、可加色相偏移</td><td>多一张贴图；过滤模式和 sRGB 要设对</td></tr>
+<tr><td>LightMap 偏移</td><td>同一套 Shader 适配不同部件</td><td>需要美术在贴图/顶点色里写数据</td></tr>
+</tbody>
+</table></div>
+
+<blockquote>
+<p><strong>Unity 视角：</strong>URP 里主光方向可以从 <code>GetMainLight()</code> 拿，阴影坐标用 <code>GetShadowCoord()</code>。如果你只想用主光做色阶，副光只做环境提亮，就不要让副光参与同一个 <code>step</code>，否则阈值会被多光源搅乱。Ramp 贴图的 Import Settings 里把 Wrap Mode 设为 Clamp，Filter Mode 按风格选 Point 或 Bilinear。</p>
+</blockquote>
+
+<blockquote>
+<p><strong>本章要点：</strong>裁边漫反射不是“取消光照”，而是把连续光照压成几档；Step 最硬、SmoothStep 最稳、Ramp 最可画；阈值、过渡宽度、RampOffset 是三个最值得做成参数的量。</p>
+</blockquote>
