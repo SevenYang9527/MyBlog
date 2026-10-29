@@ -29,6 +29,54 @@
 <figcaption>图 9-1：UI 面板管理。PanelManager 统一管理层级/缓存/生命周期，各面板订阅网络事件。</figcaption>
 </figure>
 
+<h3>原书脉络</h3>
+<ul>
+<li>9.1 界面模块设计；9.2 场景结构；9.3 BasePanel；9.4 PanelManager。</li>
+<li>9.5 LoginPanel；9.6 RegisterPanel；9.7 TipPanel；9.8 GameMain；9.9 功能测试。</li>
+</ul>
+<h3>关键实现：面板生命周期</h3>
+<p>BasePanel 负责“显示/隐藏/刷新/订阅/退订”，PanelManager 负责“层级/缓存/打开/关闭”。面板不要在 Update 里轮询网络状态，而是订阅 NetManager 的事件；关闭时退订，避免场景切换后回调旧对象。</p>
+<pre><code>public abstract class BasePanel : MonoBehaviour
+{
+    public virtual void OnShow() { }
+    public virtual void OnHide() { }
+    public virtual void OnRefresh() { }
+}
+
+public class PanelManager : MonoBehaviour
+{
+    readonly Dictionary&lt;string, BasePanel&gt; cache = new();
+    readonly List&lt;BasePanel&gt; stack = new();
+
+    public void Open(string key)
+    {
+        if (!cache.TryGetValue(key, out var panel))
+        {
+            panel = Instantiate(Resources.Load&lt;BasePanel&gt;("UI/" + key), transform);
+            cache[key] = panel;
+        }
+        panel.gameObject.SetActive(true);
+        panel.OnShow();
+        stack.Add(panel);
+    }
+
+    public void Close(BasePanel panel)
+    {
+        panel.OnHide();
+        panel.gameObject.SetActive(false);
+        stack.Remove(panel);
+    }
+}</code></pre>
+<h3>常见坑</h3>
+<ul>
+<li>面板缓存不释放/事件不退订，越玩越卡、越玩越容易空引用。</li>
+<li>每次打开都 Instantiate + 全屏布局，卡顿；用缓存/异步加载/分帧。</li>
+<li>UI 每帧刷新文本/列表，触发 Canvas Rebuild；只在数据变化时刷新。</li>
+<li>分辨率/刘海/安全区没适配；按钮被挡住。</li>
+</ul>
+<h3>练习</h3>
+<p>给 PanelManager 加“返回栈/ESC 关闭”；把登录/注册面板改成事件驱动；用 Frame Debugger 看打开面板时的 Canvas 批次。</p>
+
 <blockquote>
 <p><strong>2026 更新：</strong>UGUI + TMP 仍是主流；UI Toolkit 适合工具/数据界面；MVVM/UniRx/消息总线可解耦；异步加载/安全区/无障碍/本地化要纳入设计；避免每帧刷新 UI。</p>
 </blockquote>

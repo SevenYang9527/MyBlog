@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>第 7 章 通用服务端框架 · 《Unity3D 网络游戏实战（第2版）》精要导读</title>
-<meta name="description" content="以罗培羽原书的 12 章结构为线索，用原创表述重讲 Socket、异步、粘包、TCP、客户端/服务端框架、大厅、战斗与同步；每章补充 2026 年仍适用的工程做法；图示为本站重绘，不复制原书正文/插图。">
+<title>第 7 章 通用服务端框架 · 《Unity3D 网络游戏实战（第2版）》完整精讲</title>
+<meta name="description" content="按原书 12 章结构逐节精讲 Socket、异步、粘包、TCP、客户端/服务端框架、大厅、战斗与同步；含原创代码、图解、练习与 2026 更新；不复制原书原文/插图。">
 <link rel="stylesheet" href="../assets/book.css">
 </head>
 <body>
 <a class="hub-bar" href="../../series/">← 回到知识站</a>
 <div class="layout">
   <aside class="sidebar">
-    <div class="book-name">《Unity3D 网络游戏实战（第2版）》精要导读</div>
-    <div class="book-en">Multiplayer Game Development with Unity3D: A Guided Companion</div>
+    <div class="book-name">《Unity3D 网络游戏实战（第2版）》完整精讲</div>
+    <div class="book-en">Multiplayer Game Development with Unity3D: A Complete Companion</div>
     <nav>
       <div class="nav-title">目录</div>
       <ol>
@@ -33,8 +33,8 @@
       </ol>
     </nav>
     <div class="side-foot">
-      《Unity3D 网络游戏实战》导读<br>
-      原书 434 页 · 2019 年 · 2026 年导读
+      《Unity3D 网络游戏实战》完整精讲<br>
+      原书 434 页 · 2019 年 · 2026 年完整精讲
       <button class="theme-btn" type="button">☾ 深色模式</button>
     </div>
   </aside>
@@ -76,6 +76,62 @@
 </svg></div>
 <figcaption>图 7-1：服务端框架。Listener 接受连接，ClientState 保存连接/玩家，消息分发到业务/DB。</figcaption>
 </figure>
+
+<h3>原书脉络</h3>
+<ul>
+<li>7.1 服务端架构/模块划分/游戏流程。</li>
+<li>7.2 Json 编解码；7.3 网络模块（ClientState、监听、多路复用、消息处理、Timer）。</li>
+<li>7.4 心跳；7.5 玩家数据结构；7.6 MySQL；7.7 数据库模块；7.8 登录注册。</li>
+</ul>
+<h3>关键实现：ClientState 与数据库</h3>
+<p>每个连接一个 <code>ClientState</code>：Socket、接收缓冲、玩家数据、最后心跳时间。消息分发到 Handler；数据库操作不要阻塞网络线程，用连接池/异步，并且所有 SQL 参数化。</p>
+<pre><code>public class ClientState
+{
+    public Socket Socket;
+    public ByteArray Buffer = new();
+    public PlayerData Player;
+    public DateTime LastPing;
+}
+
+// 参数化查询（示意，使用 MySqlConnector）
+public async Task&lt;bool&gt; IsAccountExist(string account)
+{
+    using var conn = new MySqlConnection(connStr);
+    await conn.OpenAsync();
+    using var cmd = new MySqlCommand("select 1 from account where account=@a limit 1", conn);
+    cmd.Parameters.AddWithValue("@a", account);
+    return await cmd.ExecuteScalarAsync() != null;
+}</code></pre>
+<figure>
+<div class="figure-scroll"><svg viewBox="0 0 760 210" role="img" aria-label="登录注册时序与数据表" style="width:100%;height:auto;color:var(--text-soft)">
+  <defs><marker id="arrow-net7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path></marker></defs>
+  <line x1="100" y1="35" x2="100" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+  <line x1="380" y1="35" x2="380" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+  <line x1="660" y1="35" x2="660" y2="180" stroke="currentColor" stroke-width="1.5"></line>
+  <g fill="currentColor" font-size="11.5" text-anchor="middle" font-family="inherit">
+    <text x="100" y="25">客户端</text><text x="380" y="25">服务端</text><text x="660" y="25">MySQL</text>
+    <text x="240" y="65">登录/注册请求</text><text x="520" y="65">查询/写入</text>
+    <text x="240" y="110">返回 token/玩家数据</text><text x="520" y="110">结果</text>
+    <text x="380" y="155">密码要加盐哈希；SQL 参数化；token 有过期/刷新</text>
+  </g>
+  <g stroke="currentColor" stroke-width="1.5" marker-end="url(#arrow-net7b)">
+    <line x1="108" y1="60" x2="372" y2="60"></line>
+    <line x1="388" y1="60" x2="652" y2="60"></line>
+    <line x1="652" y1="105" x2="388" y2="105"></line>
+    <line x1="372" y1="105" x2="108" y2="105"></line>
+  </g>
+</svg></div>
+<figcaption>图 7-2：登录/注册时序与数据库。服务端校验、查库、发 token；密码加盐哈希，SQL 参数化。</figcaption>
+</figure>
+<h3>常见坑</h3>
+<ul>
+<li>字符串拼接 SQL → SQL 注入；必须参数化。</li>
+<li>明文/简单 MD5 存密码；用 bcrypt/Argon2/PBKDF2 + salt。</li>
+<li>网络线程同步查库，慢查询拖死所有客户端；异步/连接池/缓存。</li>
+<li>登录成功但重复登录/顶号/断线重连没处理；需要会话表/心跳/踢人策略。</li>
+</ul>
+<h3>练习</h3>
+<p>把登录改成 token + 过期时间；加 Redis 缓存在线会话；用 <code>EXPLAIN</code> 检查账号查询索引。</p>
 
 <blockquote>
 <p><strong>2026 更新：</strong>现代服务端可用 ASP.NET Core/gRPC、Orleans/Akka、Redis、PostgreSQL、EF Core/Dapper、Docker/K8s；加 JWT/OAuth2、限流、可观测性（日志/指标/追踪）、SQL 参数化、服务端权威。</p>

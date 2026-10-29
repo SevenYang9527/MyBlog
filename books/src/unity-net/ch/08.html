@@ -35,6 +35,49 @@
 <figcaption>图 8-1：坦克大战的客户端/服务端分工。客户端做输入与表现，服务端做权威状态与胜负。</figcaption>
 </figure>
 
+<h3>原书脉络</h3>
+<ul>
+<li>8.1 游戏功能：登录注册、房间、战斗；8.2 坦克模型；8.3 资源管理器。</li>
+<li>8.4 坦克类；8.5 行走控制；8.6 爬坡；8.7 相机跟随；8.8 旋转炮塔。</li>
+<li>8.9 发射炮弹；8.10 摧毁敌人、生命值、特效。</li>
+</ul>
+<h3>关键实现：移动与同步的分层</h3>
+<p>客户端用输入驱动本地坦克，服务端保存权威位置/朝向/血量；<code>SyncTank</code> 负责把服务器状态插值到表现层。移动/炮塔/子弹/特效要拆成独立组件，方便复用和优化。</p>
+<pre><code>public class Tank : MonoBehaviour
+{
+    public float speed = 6f;
+    public float turnSpeed = 90f;
+    public Transform turret;
+
+    public void ApplyInput(float move, float turn, float turretYaw, float dt)
+    {
+        transform.Translate(0, 0, move * speed * dt, Space.Self);
+        transform.Rotate(0, turn * turnSpeed * dt, 0);
+        turret.localRotation = Quaternion.Euler(0, turretYaw, 0);
+    }
+}
+
+public class SyncTank : MonoBehaviour
+{
+    public Vector3 targetPos;
+    public Quaternion targetRot;
+
+    void Update()
+    {
+        transform.position = Vector3.Lerp(transform.position, targetPos, 10f * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, 10f * Time.deltaTime);
+    }
+}</code></pre>
+<h3>常见坑</h3>
+<ul>
+<li>客户端直接决定命中/伤害；服务端必须校验射线/距离/冷却。</li>
+<li>相机 LateUpdate/插值没做好，移动抖动；物理和表现不同步。</li>
+<li>爬坡用 Transform 硬移，穿模/抖动；用 CharacterController/物理或射线贴地。</li>
+<li>子弹/特效频繁 Instantiate/Destroy；用对象池。</li>
+</ul>
+<h3>练习</h3>
+<p>给坦克加“炮塔独立瞄准 + 车体移动”；用对象池管理炮弹/爆炸；把相机改成 Cinemachine 并对比抖动。</p>
+
 <blockquote>
 <p><strong>2026 更新：</strong>Unity 6/URP、Addressables、Cinemachine、Input System 是更现代的工程组合；物理/移动要区分“客户端表现”和“服务端权威”，动作游戏考虑预测/回滚/确定性物理。</p>
 </blockquote>

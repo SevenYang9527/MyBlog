@@ -1,14 +1,14 @@
 {
   "slug": "unity-net",
   "kind": "notes",
-  "title_en": "Multiplayer Game Development with Unity3D: A Guided Companion",
-  "title_zh": "《Unity3D 网络游戏实战（第2版）》精要导读",
-  "subtitle_zh": "以罗培羽原书的 12 章结构为线索，用原创表述重讲 Socket、异步、粘包、TCP、客户端/服务端框架、大厅、战斗与同步；每章补充 2026 年仍适用的工程做法；图示为本站重绘，不复制原书正文/插图。",
-  "kicker": "书籍导读 · 网络",
-  "foot_note": "《Unity3D 网络游戏实战》导读",
+  "title_en": "Multiplayer Game Development with Unity3D: A Complete Companion",
+  "title_zh": "《Unity3D 网络游戏实战（第2版）》完整精讲",
+  "subtitle_zh": "按原书 12 章结构逐节精讲 Socket、异步、粘包、TCP、客户端/服务端框架、大厅、战斗与同步；含原创代码、图解、练习与 2026 更新；不复制原书原文/插图。",
+  "kicker": "书籍精讲 · 网络",
+  "foot_note": "《Unity3D 网络游戏实战》完整精讲",
   "source_pages_label": "原书页数",
-  "source_line": "原书 434 页 · 2019 年 · 2026 年导读",
-  "book_label": "导读",
+  "source_line": "原书 434 页 · 2019 年 · 2026 年完整精讲",
+  "book_label": "精讲",
   "part_label": "已整理章节",
   "chapters": [
     {

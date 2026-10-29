@@ -28,6 +28,42 @@
 <figcaption>图 3-1：大乱斗协议时序。客户端发意图，服务端校验并广播结果；服务端才是权威。</figcaption>
 </figure>
 
+<h3>原书脉络</h3>
+<ul>
+<li>3.1 大乱斗玩法；3.2 场景；3.3 Human/BaseHuman/CtrlHuman/SyncHuman。</li>
+<li>3.4 网络模块：委托、通信协议、消息队列、NetManager。</li>
+<li>3.5-3.12 Enter/List/Move/Leave/Attack/Hit/Die 协议与客户端/服务端处理。</li>
+</ul>
+<h3>关键实现：协议表 + 分发</h3>
+<p>先定义消息基类和消息 ID，再写一个“ID → 处理函数”的分发表。客户端只负责把输入变成消息；服务端负责校验、更新状态、广播结果。</p>
+<pre><code>public abstract class MsgBase
+{
+    public abstract int Id { get; }
+}
+
+public static class MsgDispatcher
+{
+    static readonly Dictionary&lt;int, Action&lt;MsgBase, ClientState&gt;&gt; Handlers = new();
+
+    public static void Register(int id, Action&lt;MsgBase, ClientState&gt; handler)
+        =&gt; Handlers[id] = handler;
+
+    public static void Dispatch(MsgBase msg, ClientState client)
+    {
+        if (Handlers.TryGetValue(msg.Id, out var handler))
+            handler(msg, client);
+    }
+}</code></pre>
+<h3>常见坑</h3>
+<ul>
+<li>客户端直接改血量/位置，服务端照单全收；必须服务端权威校验。</li>
+<li>协议字段没有版本/默认值，旧客户端连新服务端就崩。</li>
+<li>消息顺序/重复没有处理；移动/攻击要考虑时间戳/序列号。</li>
+<li>断线/重连没有状态恢复；玩家卡在“已进入”状态。</li>
+</ul>
+<h3>练习</h3>
+<p>新增一个 <code>Jump</code> 协议：客户端发、服务端校验冷却、广播；再给 Move 加“最大速度”校验，记录超速日志。</p>
+
 <blockquote>
 <p><strong>2026 更新：</strong>现代协议多用 Protobuf/MessagePack/FlatBuffers，带 schema 版本和向后兼容；消息要幂等、可重放、可限流。动作游戏通常不用纯 TCP 广播，而是 UDP/ENet/UTP + 快照/预测；防作弊必须服务端权威。</p>
 </blockquote>

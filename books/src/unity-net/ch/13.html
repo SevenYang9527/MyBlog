@@ -31,6 +31,35 @@
 <figcaption>图 13-1：现代网络栈选型。TCP/UDP/WebSocket/QUIC 是传输层；NGO/UTP、Mirror/FishNet、Photon/Nakama、GameLift/Agones 是上层方案。</figcaption>
 </figure>
 
+<h3>迁移路线</h3>
+<p>如果今天从原书的自定义 Socket 迁移，建议分三步：先保留协议/业务层，把传输层换成成熟方案；再把服务端拆成“网关 + 游戏服 + 数据层”；最后补鉴权、限流、可观测性和压测。不要一次性重写所有模块。</p>
+<table>
+<thead>
+<tr><th>场景</th><th>优先方案</th><th>理由</th></tr>
+</thead>
+<tbody>
+<tr><td>回合制/大厅/聊天</td><td>TCP / WebSocket / HTTP</td><td>可靠、易调试、服务器压力可控。</td></tr>
+<tr><td>实时动作/FPS</td><td>UDP / ENet / Unity Transport / QUIC</td><td>低延迟、可丢帧、支持预测/回滚。</td></tr>
+<tr><td>Unity 官方路线</td><td>Netcode for GameObjects + Unity Transport</td><td>与 Unity 集成好，适合中小项目。</td></tr>
+<tr><td>社区框架</td><td>Mirror / FishNet</td><td>成熟、资料多、可定制。</td></tr>
+<tr><td>托管后端</td><td>Photon / Nakama / PlayFab</td><td>省运维，按量付费。</td></tr>
+<tr><td>专用服务器</td><td>GameLift / Agones / Kubernetes</td><td>大规模、可弹性伸缩。</td></tr>
+</tbody>
+</table>
+<h3>上线检查清单</h3>
+<ul>
+<li>鉴权：登录 token、过期/刷新、顶号/踢人。</li>
+<li>传输：TLS/DTLS、证书、重连/退避、心跳。</li>
+<li>权威：移动/攻击/命中/经济由服务端校验。</li>
+<li>防刷：限流、验证码、冷却、异常检测。</li>
+<li>可观测：日志/指标/追踪/告警/战斗回放。</li>
+<li>压测：连接数、广播、房间创建、数据库慢查询。</li>
+<li>部署：容器化、灰度、回滚、备份、灾备。</li>
+<li>成本：带宽、CPU、数据库、托管服务费用。</li>
+</ul>
+<h3>练习</h3>
+<p>给一个“回合制卡牌 + 实时观战”的项目选型，写出传输层、服务端框架、数据库、部署方案，并说明为什么。</p>
+
 <blockquote>
 <p><strong>2026 更新：</strong>Unity 6 推荐 Netcode for GameObjects + Unity Transport（或第三方）；WebGL 用 WebSocket/WebRTC；生产要加 TLS、鉴权、限流、可观测性、压测、容器化、灰度/回滚。原书的 Socket 知识仍然有用：理解底层才能排查粘包、延迟、断线、同步问题。</p>
 </blockquote>

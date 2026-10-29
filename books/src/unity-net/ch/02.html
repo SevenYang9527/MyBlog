@@ -31,6 +31,45 @@
 <figcaption>图 2-1：异步网络事件循环。I/O 完成后把事件放入队列，主线程消费并更新游戏/UI。</figcaption>
 </figure>
 
+<h3>原书脉络</h3>
+<ul>
+<li>2.1 什么是异步代码；2.2 异步客户端 Connect/Receive/Send。</li>
+<li>2.3 异步服务端 Accept、管理客户端、程序结构。</li>
+<li>2.4 聊天室实践；2.5 Poll；2.6 Select 多路复用。</li>
+</ul>
+<h3>关键实现：异步聊天室</h3>
+<p>服务端用 <code>AcceptTcpClientAsync</code> 循环接受连接，每个连接一个读循环；收到消息后广播给所有客户端。客户端用 <code>ConnectAsync/ReadAsync/WriteAsync</code>，把收到的消息放进线程安全队列，主线程再更新 UI。</p>
+<pre><code>// 服务端广播（简化）
+static readonly ConcurrentDictionary&lt;string, TcpClient&gt; Clients = new();
+
+static async Task ReadLoop(string id, TcpClient client, CancellationToken ct)
+{
+    using var stream = client.GetStream();
+    var buffer = new byte[4096];
+    while (!ct.IsCancellationRequested)
+    {
+        int n = await stream.ReadAsync(buffer, ct);
+        if (n == 0) break;
+        var msg = Encoding.UTF8.GetBytes(id + ": " + Encoding.UTF8.GetString(buffer, 0, n));
+        foreach (var pair in Clients)
+        {
+            try { await pair.Value.GetStream().WriteAsync(msg, ct); }
+            catch { /* 记录并移除 */ }
+        }
+    }
+    Clients.TryRemove(id, out _);
+    client.Close();
+}</code></pre>
+<h3>常见坑</h3>
+<ul>
+<li><code>async void</code> 吞异常；除事件处理器外优先 <code>async Task</code>。</li>
+<li>多个线程同时写同一个 <code>NetworkStream</code>，消息可能交错；每个连接用发送队列/锁。</li>
+<li>不传 <code>CancellationToken</code>，关闭时读循环卡住；关闭要能取消。</li>
+<li>在子线程直接调 Unity API；用主线程 dispatcher/队列。</li>
+</ul>
+<h3>练习</h3>
+<p>给聊天室加昵称、私聊、在线列表；用 <code>Channel&lt;string&gt;</code> 替换手写队列；模拟 100 个客户端压测广播。</p>
+
 <blockquote>
 <p><strong>2026 更新：</strong>现代 .NET 用 <code>ValueTask</code>、<code>Span&lt;byte&gt;</code>、<code>ArrayPool</code>、<code>System.IO.Pipelines</code>、<code>Channel</code> 降低分配；Unity 可用 <code>UniTask</code> 或 Unity 6 的 <code>Awaitable</code> 回到主线程。服务端用 <code>ConfigureAwait(false)</code>，客户端回调要切回主线程。</p>
 </blockquote>
